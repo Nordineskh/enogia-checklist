@@ -238,6 +238,37 @@ textarea{height:52px;resize:none;font-size:12px}
 
 <!-- Three.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- Firebase CDN -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+  import { getFirestore, collection, doc, setDoc, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBkRDYMUQkgJQcngQCarYbUIwtImHDS3B8",
+    authDomain: "enogia-checklist.firebaseapp.com",
+    projectId: "enogia-checklist",
+    storageBucket: "enogia-checklist.firebasestorage.app",
+    messagingSenderId: "8579340076",
+    appId: "1:8579340076:web:3c25faef06c625ed443e89",
+    measurementId: "G-E9CLMHYB32"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window._db = db;
+  window._fsCollection = collection;
+  window._fsDoc = doc;
+  window._fsSetDoc = setDoc;
+  window._fsGetDocs = getDocs;
+  window._fsQuery = query;
+  window._fsOrderBy = orderBy;
+
+  // Signal that Firebase is ready
+  window._firebaseReady = true;
+  document.dispatchEvent(new Event('firebaseReady'));
+</script>
+
 <script>
 // ===================== DATA =====================
 const STEPS=[
@@ -428,14 +459,40 @@ const STEPS=[
 
 // ===================== STATE =====================
 let session=null, currentStep=0;
-let sessions=JSON.parse(localStorage.getItem('eno_sessions')||'[]');
+let sessions=[];
 // 3D state per step (in-memory, cleared on reload)
 let stepModels={};
 
-function saveState(){
-  if(session) sessions=sessions.map(s=>s.id===session.id?session:s);
-  localStorage.setItem('eno_sessions',JSON.stringify(sessions));
+// ---- Firebase helpers ----
+async function saveState(){
+  if(!session) return;
+  // Update local array
+  const idx = sessions.findIndex(s=>s.id===session.id);
+  if(idx>=0) sessions[idx]=session; else sessions.unshift(session);
+  // Save to Firestore
+  try {
+    const db = window._db;
+    if(!db) return;
+    await window._fsSetDoc(window._fsDoc(db,'sessions', String(session.id)), session);
+  } catch(e){ console.warn('Firebase save error:', e); }
 }
+
+async function loadSessions(){
+  try {
+    const db = window._db;
+    if(!db) return;
+    const q = window._fsQuery(window._fsCollection(db,'sessions'), window._fsOrderBy('started','desc'));
+    const snap = await window._fsGetDocs(q);
+    sessions = snap.docs.map(d=>d.data());
+  } catch(e){ console.warn('Firebase load error:', e); sessions=[]; }
+}
+
+// Init when Firebase is ready
+function initApp(){
+  loadSessions().then(()=>renderHistory());
+}
+if(window._firebaseReady){ initApp(); }
+else { document.addEventListener('firebaseReady', initApp); }
 
 // ===================== THREE.JS =====================
 let threeRenderer=null,threeScene=null,threeCamera=null,threeModel=null;
@@ -712,7 +769,7 @@ function startSession(){
     }))
   };
   sessions.unshift(session);
-  saveState();
+  saveState(); // async, fire-and-forget
   currentStep=0;stepModels={};
   showScreen('scChecklist');
   renderStep();
@@ -726,7 +783,7 @@ function loadSession(id){
   renderStep();
 }
 
-function goHome(){showScreen('scHome');renderHistory();}
+function goHome(){showScreen('scHome');loadSessions().then(()=>renderHistory());}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 
 // ===================== HISTORY =====================
@@ -922,7 +979,7 @@ function showReport(){
 }
 
 // ===================== INIT =====================
-renderHistory();
+// App initialized by firebaseReady event above
 </script>
 </body>
 </html>
