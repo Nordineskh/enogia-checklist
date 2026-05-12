@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0a1628">
+<title>ENOGIA — Checklist Montage</title>
+<style>
+:root{
+  --bg:#0a1628;--surface:#111e35;--surface2:#172440;--border:#1e3358;
+  --accent:#00c4ff;--accent2:#0077aa;--green:#00e676;--yellow:#ffd600;
+  --red:#ff5252;--text:#e8f0fe;--text2:#8ab4d8;--text3:#4a6fa8;
+  --radius:10px;--font:'Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden}
+
+.hdr{background:linear-gradient(135deg,#0a1628,#0d2045);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px #0006}
+.logo{font-size:20px;font-weight:800;letter-spacing:2px;color:var(--accent);text-transform:uppercase}
+.logo span{color:var(--text2);font-weight:400;font-size:12px;display:block;letter-spacing:1px}
+.hdr-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.badge{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--text2)}
+.badge.live{border-color:var(--green);color:var(--green)}
+
+.screen{display:none;padding:16px;max-width:960px;margin:0 auto}
+.screen.active{display:block}
+
+.project-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.project-title{font-size:22px;font-weight:700;color:var(--accent);margin-bottom:4px}
+.project-sub{color:var(--text2);font-size:13px;margin-bottom:16px}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+label{display:block;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:10px 12px;font-size:14px;font-family:var(--font);transition:.2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #00c4ff22}
+select option{background:var(--surface)}
+
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:.2s;font-family:var(--font)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 15px #00c4ff33}
+.btn-primary:hover{transform:translateY(-1px)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-success{background:var(--green);color:#111}
+.btn-full{width:100%;justify-content:center}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-3d{background:linear-gradient(135deg,#1a1060,#2a1880);border:1px solid #6040ff88;color:#a080ff}
+.btn-3d:hover{border-color:#a080ff;color:#c0a0ff}
+
+.progress-bar-wrap{background:var(--surface);border-radius:var(--radius);padding:14px;margin-bottom:12px;border:1px solid var(--border)}
+.progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:6px}
+.progress-track{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:3px;transition:.5s}
+
+.steps-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.step-dot{width:30px;height:30px;border-radius:50%;border:2px solid var(--border);background:var(--surface);color:var(--text3);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;flex-shrink:0}
+.step-dot.done{border-color:var(--green);background:#00e67622;color:var(--green)}
+.step-dot.active{border-color:var(--accent);background:#00c4ff22;color:var(--accent)}
+
+/* === LAYOUT 2 COLONNES === */
+.step-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px}
+@media(max-width:650px){.step-layout{grid-template-columns:1fr}}
+
+.step-header{background:linear-gradient(135deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.step-num{font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px}
+.step-name{font-size:18px;font-weight:700}
+.step-meta{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.chip{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--text2)}
+
+/* === 3D VIEWER === */
+.viewer-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+.viewer-toolbar{padding:10px 12px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.viewer-toolbar span{font-size:12px;color:var(--text2);flex:1}
+.viewer-canvas-wrap{position:relative;background:#060f1e;flex:1;min-height:280px}
+#threeCanvas{width:100%;height:100%;display:block}
+.viewer-hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:#0008;border-radius:20px;padding:4px 12px;font-size:11px;color:var(--text3);pointer-events:none;white-space:nowrap}
+.viewer-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:280px;color:var(--text3);gap:10px}
+.viewer-empty .emo{font-size:48px;opacity:.4}
+.viewer-controls{padding:8px 12px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--border)}
+.viewer-btn{background:var(--bg);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:var(--font)}
+.viewer-btn:hover{border-color:var(--accent);color:var(--accent)}
+.loading-3d{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#060f1ecc;z-index:10;flex-direction:column;gap:8px;color:var(--text2);font-size:13px}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* === CHECKLIST PANEL === */
+.checklist-panel{display:flex;flex-direction:column;gap:8px}
+.item-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:.2s}
+.item-card.validated{border-color:var(--accent)}
+.item-card.validated-ve{border-color:var(--green);background:#00e67606}
+.item-header{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer}
+.item-icon{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;transition:.2s}
+.item-icon.op-done{border-color:var(--accent);background:#00c4ff22}
+.item-icon.both-done{border-color:var(--green);background:#00e67622}
+.item-title{flex:1;font-weight:600;font-size:13px;line-height:1.3}
+.item-badges{display:flex;gap:4px;align-items:center;flex-shrink:0}
+.badge-op{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700}
+.badge-op.op{background:#00c4ff22;color:var(--accent);border:1px solid #00c4ff44}
+.badge-op.ve{background:#00e67622;color:var(--green);border:1px solid #00e67644}
+.badge-op.pending{background:var(--bg);color:var(--text3);border:1px solid var(--border)}
+
+.item-body{padding:0 13px 13px;display:none}
+.item-body.open{display:block}
+
+.actions-list{margin-bottom:10px}
+.action-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
+.action-row:last-child{border:none}
+.action-check{width:20px;height:20px;border-radius:4px;border:2px solid var(--border);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:.2s}
+.action-check.checked{border-color:var(--green);background:var(--green);color:#111}
+.action-text{font-size:12px;color:var(--text2);line-height:1.4}
+.action-torque{font-size:11px;font-weight:700;color:var(--yellow);white-space:nowrap}
+.action-qty{font-size:11px;color:var(--text3);white-space:nowrap}
+
+.val-section{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.val-box{background:var(--bg);border-radius:8px;border:1px solid var(--border);padding:10px}
+.val-box h4{font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.val-box.op h4{color:var(--accent)}
+.val-box.ve h4{color:var(--green)}
+textarea{height:52px;resize:none;font-size:12px}
+
+.sn-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px}
+.sn-table th{background:var(--bg);color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:1px;padding:7px 8px;text-align:left;border-bottom:1px solid var(--border)}
+.sn-table td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.sn-table input{padding:5px 7px;font-size:11px}
+
+.section-title{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin:12px 0 7px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.flex{display:flex;gap:10px;align-items:center}
+.flex-wrap{flex-wrap:wrap}
+.mt8{margin-top:8px}
+.mt12{margin-top:12px}
+.hist-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start}
+.hist-info{flex:1}
+.hist-title{font-weight:600;margin-bottom:2px}
+.hist-meta{font-size:12px;color:var(--text2)}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty-state .emo{font-size:48px;margin-bottom:12px}
+.alert-warn{background:#ffd60015;border:1px solid #ffd60044;color:var(--yellow);padding:10px 13px;border-radius:8px;font-size:13px;margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <div class="logo">ENOGIA<span>Checklist Montage</span></div>
+  </div>
+  <div class="hdr-right">
+    <span class="badge live">● EN LIGNE</span>
+    <span class="badge" id="sessionBadge">–</span>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="screen active" id="scHome">
+  <div class="project-card">
+    <div class="project-title">ENO 180 LTV3</div>
+    <div class="project-sub">N° Plan : Pi085 – 051 – DC002 | Indice D | 10 étapes</div>
+    <div class="section-title">Nouveau montage</div>
+    <div class="input-row">
+      <div><label>N° Projet</label><input id="inProjet" value="Pi085"></div>
+      <div><label>N° Série machine</label><input id="inSerie" placeholder="ex: ENO-001"></div>
+    </div>
+    <div class="input-row">
+      <div><label>Opérateur (OP)</label><input id="inOp" placeholder="Nom opérateur"></div>
+      <div><label>Vérificateur (VE)</label><input id="inVe" placeholder="Nom vérificateur"></div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="startSession()">▶ Démarrer le montage</button>
+  </div>
+  <div class="section-title">Historique</div>
+  <div id="histList"></div>
+</div>
+
+<!-- CHECKLIST -->
+<div class="screen" id="scChecklist">
+  <div class="progress-bar-wrap">
+    <div class="progress-label"><span id="progLabel">Progression</span><span id="progPct">0%</span></div>
+    <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  </div>
+  <div class="steps-nav" id="stepsNav"></div>
+
+  <div class="step-header" id="stepHdr"></div>
+
+  <!-- 2 colonnes : viewer 3D | checklist -->
+  <div class="step-layout">
+    <!-- Viewer 3D -->
+    <div class="viewer-panel" id="viewerPanel">
+      <div class="viewer-toolbar">
+        <span id="modelName">Aucun modèle chargé</span>
+        <label class="btn btn-3d btn-sm" style="cursor:pointer;margin:0">
+          📎 Charger .glb / .obj
+          <input type="file" accept=".glb,.obj,.gltf" style="display:none" onchange="load3DFile(this)">
+        </label>
+      </div>
+      <div class="viewer-canvas-wrap" id="canvasWrap">
+        <div class="viewer-empty" id="viewerEmpty">
+          <div class="emo">🔩</div>
+          <div>Chargez un fichier 3D (.glb / .obj)</div>
+          <div style="font-size:11px">Export depuis SolidWorks, CATIA, Fusion 360…</div>
+        </div>
+        <canvas id="threeCanvas" style="display:none"></canvas>
+        <div class="viewer-hint" id="viewerHint" style="display:none">🖱 Clic+glisser : rotation | Molette : zoom | Clic droit : déplacer</div>
+        <div class="loading-3d" id="loading3d" style="display:none">
+          <div class="spinner"></div>Chargement du modèle…
+        </div>
+      </div>
+      <div class="viewer-controls" id="viewerControls" style="display:none">
+        <button class="viewer-btn" onclick="resetCamera()">⟳ Réinitialiser vue</button>
+        <button class="viewer-btn" onclick="toggleWire()">◻ Filaire</button>
+        <button class="viewer-btn" onclick="toggleAutoRotate()">▶ Auto-rotation</button>
+        <button class="viewer-btn" onclick="setView('front')">Vue Avant</button>
+        <button class="viewer-btn" onclick="setView('top')">Vue Dessus</button>
+        <button class="viewer-btn" onclick="setView('iso')">Vue Iso</button>
+      </div>
+    </div>
+
+    <!-- Checklist -->
+    <div class="checklist-panel" id="checklistPanel"></div>
+  </div>
+
+  <div id="snSection"></div>
+  <div id="stepCommentSection"></div>
+
+  <div class="flex mt12 flex-wrap" style="justify-content:space-between">
+    <button class="btn btn-outline" id="btnPrev" onclick="navStep(-1)">◀ Précédent</button>
+    <button class="btn btn-primary" id="btnNext" onclick="navStep(1)">Suivant ▶</button>
+  </div>
+  <div class="mt12">
+    <button class="btn btn-outline btn-full" onclick="goHome()">↩ Retour accueil</button>
+  </div>
+</div>
+
+<!-- REPORT -->
+<div class="screen" id="scReport">
+  <div id="reportContent"></div>
+  <div class="flex mt12 flex-wrap">
+    <button class="btn btn-primary" onclick="window.print()">📄 Exporter PDF</button>
+    <button class="btn btn-outline" onclick="goHome()">↩ Accueil</button>
+  </div>
+</div>
+
+<!-- Three.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ===================== DATA =====================
+const STEPS=[
+  {id:'turbineA',name:'Turbine A (Armoire)',icon:'⚙️',
+   snComponents:['Génératrice','Injecteur','Capteur de vibration','Capteurs de température'],
+   items:[
+    {id:'tA1',label:'Génératrice',actions:[{txt:'Enregistrer le numéro de série de la génératrice',torque:null,qty:1}]},
+    {id:'tA2',label:'Injecteurs',actions:[
+      {txt:'Mise en place des entretoires fixées à la Loctite 272',torque:null,qty:6},
+      {txt:'Fixer injecteurs avec vis CHC M6x40',torque:'7,5 Nm',qty:6},
+      {txt:'Vérification Sizer (injecteurs bouchés)',torque:null,qty:1}]},
+    {id:'tA3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
+    {id:'tA4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes (Ohm)',torque:null,qty:2}]},
+    {id:'tA5',label:'Repérage phases U,V,W',actions:[{txt:'Identifier et repérer l\'ordre des phases U, V, W',torque:null,qty:1}]},
+  ]},
+  {id:'turbineB',name:'Turbine B (Brides)',icon:'⚙️',
+   snComponents:['Génératrice','Injecteur','Capteur de vibration','Capteurs de température'],
+   items:[
+    {id:'tB1',label:'Génératrice',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
+    {id:'tB2',label:'Injecteurs',actions:[
+      {txt:'Entretoires à la Loctite 272',torque:null,qty:6},
+      {txt:'Fixer injecteurs CHC M6x40',torque:'7,5 Nm',qty:6},
+      {txt:'Vérification Sizer',torque:null,qty:1}]},
+    {id:'tB3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
+    {id:'tB4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes',torque:null,qty:2}]},
+    {id:'tB5',label:'Repérage phases U,V,W',actions:[{txt:'Identifier l\'ordre des phases U, V, W',torque:null,qty:1}]},
+  ]},
+  {id:'cycleORC',name:'Cycle ORC',icon:'🔄',items:[
+    {id:'orc1',label:'Tuyauterie cycle',actions:[{txt:'Vérifier propreté intérieur/extérieur des tubes',torque:null,qty:1}]},
+    {id:'orc2',label:'Pompe ORC',actions:[
+      {txt:'Vérifier le sens de la pompe',torque:null,qty:1},
+      {txt:'Fixation boulons au châssis',torque:'40 Nm',qty:'4× M12x80'},
+      {txt:'Mise en place joint DN80',torque:null,qty:2},
+      {txt:'Serrer les brides',torque:'40 Nm',qty:'16× M16x80'}]},
+    {id:'orc3',label:'Évaporateur & Condenseurs',actions:[
+      {txt:'Vérification 4 boulons châssis ×3',torque:'76 Nm',qty:'12× M16x60'},
+      {txt:'Mise en place joints DN150',torque:null,qty:6},
+      {txt:'Serrer brides partie haute',torque:'120 Nm',qty:'64× M20x60'},
+      {txt:'Mise en place joints DN100',torque:null,qty:3},
+      {txt:'Serrer brides partie basse',torque:'76 Nm',qty:'24× M16x80'}]},
+    {id:'orc4',label:'Volutes + Turbines',actions:[
+      {txt:'Mise en place joint plat DN150 & DN125',torque:null,qty:2},
+      {txt:'Serrer brides DN125',torque:'76 Nm',qty:'16× M16x50'},
+      {txt:'Serrer brides DN150',torque:'120 Nm',qty:'16× M20x90'},
+      {txt:'Mise en place isolants intérieurs',torque:null,qty:2},
+      {txt:'Fixation isolants extérieurs + génératrice',torque:null,qty:'16× M6x35'},
+      {txt:'Joints toriques ID164.47×CS6.99',torque:null,qty:4}]},
+    {id:'orc5',label:'Filtre',actions:[
+      {txt:'Vérifier le sens du filtre',torque:null,qty:1},
+      {txt:'Mise en place du tamis',torque:null,qty:1},
+      {txt:'Serrer les boulons',torque:'44 Nm',qty:4}]},
+    {id:'orc6',label:'Clapet anti-retour',actions:[
+      {txt:'Remplacement joints toriques',torque:null,qty:2},
+      {txt:'Vérifier le sens du clapet',torque:null,qty:1},
+      {txt:'Serrer les boulons',torque:'44 Nm',qty:1}]},
+    {id:'orc7',label:'Vanne Bypass',actions:[
+      {txt:'Vérifier le sens de la vanne',torque:null,qty:1},
+      {txt:'Serrer les boulons',torque:'150 Nm',qty:4},
+      {txt:'Serrer le bouchon',torque:'25 Nm',qty:1},
+      {txt:'Serrer le pilote',torque:'50 Nm',qty:1}]},
+  ]},
+  {id:'instrORC',name:'Instrumentation Cycle ORC',icon:'🌡️',items:[
+    {id:'ins1',label:'Vannes remplissage/vidange (VA)',actions:[
+      {txt:'Fixer vannes 1/4NPT–3/8SAE à la Loctite 272',torque:null,qty:4},
+      {txt:'Bouchon femelle 3/8SAE + coupelle cuivre 3/8',torque:null,qty:4}]},
+    {id:'ins2',label:'Retour lub',actions:[{txt:'Raccord 1/2NPT–1/2SAE à la Loctite 272',torque:null,qty:4}]},
+    {id:'ins3',label:'Capteur pression (PT)',actions:[
+      {txt:'Raccord 1/4NPT–1/4SAE à la Loctite 272',torque:null,qty:2},
+      {txt:'Fixer capteur sur vanne MM 1/4SAE avec joint cuivre',torque:null,qty:2},
+      {txt:'Fixer vannes MM 1/4SAE sur châssis',torque:null,qty:'4× M4'},
+      {txt:'Connecter capillaire sans schrader',torque:null,qty:2}]},
+    {id:'ins4',label:'Sondes TT — Cycle ORC',actions:[
+      {txt:'TT-01 — L70mm, Non cal. — Loctite 272',torque:null,qty:1},
+      {txt:'TT-03A — L130mm, Calibrée — Loctite 272',torque:null,qty:1},
+      {txt:'TT-03B — L130mm, Calibrée — Loctite 272',torque:null,qty:1},
+      {txt:'TT-04B — L130mm, Non cal. — Loctite 272',torque:null,qty:1}]},
+    {id:'ins5',label:'Sondes TT — Cold/Hot/Cooling',actions:[
+      {txt:'TT-11 Cold Loop — L150mm',torque:null,qty:1},
+      {txt:'TT-13 Cold Loop — L150mm',torque:null,qty:1},
+      {txt:'TT-21 Hot Loop — L150mm',torque:null,qty:1},
+      {txt:'TT-22 Hot Loop — L150mm',torque:null,qty:1},
+      {txt:'TT-30A Cooling — L150mm',torque:null,qty:1},
+      {txt:'TT-31A Cooling — L150mm',torque:null,qty:1}]},
+  ]},
+  {id:'cycleLub',name:'Cycle Lub',icon:'🛢️',items:[
+    {id:'lub1',label:'Départ de lub',actions:[
+      {txt:'Raccord MM 1/2NPT–3/8SAE dans vanne FF 1/2NPT — Loctite 272',torque:null,qty:1},
+      {txt:'Vanne FF 1/2NPT sur embout mâle 1/2NPT — Loctite 272',torque:null,qty:1}]},
+    {id:'lub2',label:'Vanne de vidange',actions:[
+      {txt:'Raccord tournant cuivre sur té 3/8-1/4-3/8',torque:null,qty:2},
+      {txt:'Raccord tournant cuivre sur vanne MM 1/4SAE',torque:null,qty:2},
+      {txt:'Fixer vanne avec boulons M4 sur châssis',torque:null,qty:2},
+      {txt:'Bouchon F 1/4 avec joint sur vanne de vidange',torque:null,qty:1}]},
+    {id:'lub3',label:'Pompe de lub',actions:[
+      {txt:'Positionner + fixer pompe avec support (4× vis+rondelle M6x16)',torque:null,qty:1},
+      {txt:'Vérifier sens de montage (vers les turbines)',torque:null,qty:1}]},
+    {id:'lub4',label:'Filtre + Flexibles 1–4',actions:[
+      {txt:'Fixer filtre avec collier sur châssis (1× vis+rondelle M8x12)',torque:null,qty:1},
+      {txt:'Mise en place flexibles 1 à 4',torque:'20 Nm',qty:4}]},
+    {id:'lub5',label:'Capteur pression + Flexibles 5–11',actions:[
+      {txt:'Capteur pression sur vanne avec coupelle cuivre',torque:null,qty:1},
+      {txt:'Fixer vanne M4 sur châssis',torque:null,qty:2},
+      {txt:'Té 3/8-1/4-3/8 sur flexible 4',torque:'20 Nm',qty:1},
+      {txt:'Flexible 5 sur Té',torque:'20 Nm',qty:1},
+      {txt:'Vanne sur flexible 5',torque:null,qty:1},
+      {txt:'Flexible 6 sur vanne',torque:'20 Nm',qty:1},
+      {txt:'Té 1/4-3/8-1/4 sur flexible 6',torque:null,qty:1},
+      {txt:'Supports sur flexibles 5&6',torque:null,qty:4}]},
+    {id:'lub6',label:'Clarinette + Tube Lub + Marquage',actions:[
+      {txt:'Raccords MM 1/2NPT–3/8SAE sur clarinette',torque:null,qty:5},
+      {txt:'Flexibles 7/11 clarinette → turbine',torque:'20 Nm',qty:'3+1'},
+      {txt:'Raccords 1/2NPT–5/8SAE sur tube lub',torque:null,qty:4},
+      {txt:'Raccord union conique sur réservoir ORC',torque:null,qty:1},
+      {txt:'Visser tôle au châssis (3× M8)',torque:null,qty:1},
+      {txt:'Étrier DN25 sur tôle autour tube lub',torque:null,qty:1},
+      {txt:'Flexibles 8&9 turbine → tube retour lub',torque:'20 Nm',qty:4},
+      {txt:'Trait de marqueur sur 28 points de serrage',torque:null,qty:28}]},
+  ]},
+  {id:'coolingPrep',name:'Cycle Cooling — Préparation',icon:'❄️',items:[
+    {id:'cp1',label:'Pot de décantation',actions:[
+      {txt:'Mamelon MM 26x34 + joint fibre 26x34',torque:'30 Nm',qty:1},
+      {txt:'Vanne sphère MM 1/2 ENO-VA-32 — Loctite 272',torque:null,qty:1},
+      {txt:'Vanne sphère MM 3/4 ENO-VA-31 — Loctite 272',torque:null,qty:1},
+      {txt:'Mamelon MM 12x17–15x21 — Loctite 272',torque:null,qty:1}]},
+    {id:'cp2',label:'Tube transparent + Pompe + Filtre',actions:[
+      {txt:'Sertir 2 écrous tournants sur tube transparent (4 joints toriques)',torque:null,qty:1},
+      {txt:'Raccorder pompe aux écrous tournants 26x34 26F + 1"–1"1/2',torque:null,qty:1},
+      {txt:'Mamelons MM 26x34 sur filtre — Loctite 272',torque:null,qty:2}]},
+  ]},
+  {id:'coolingInst',name:'Cycle Cooling — Installation',icon:'❄️',items:[
+    {id:'ci1',label:'Ventilateur + Réservoir',actions:[
+      {txt:'Fixer ventilateur sur châssis',torque:'9,5 Nm',qty:'3× M8'},
+      {txt:'Installer pot décantation avec collier 6"',torque:null,qty:1},
+      {txt:'Installer pot + collier sur support réservoir (1× M10)',torque:null,qty:1},
+      {txt:'Tube transparent sur pot — joint fibre 15x21',torque:'30 Nm',qty:1},
+      {txt:'Purgeur au-dessus tube transparent — joint fibre 15x21',torque:'30 Nm',qty:1}]},
+    {id:'ci2',label:'Vase + Flow switch + Supports',actions:[
+      {txt:'Vase expansion avec collier 6" (1× M10)',torque:null,qty:1},
+      {txt:'Flow switch sur lignes montantes turbines',torque:null,qty:2},
+      {txt:'Fixer supports de tuyauterie',torque:null,qty:7}]},
+    {id:'ci3',label:'Assemblage raccords',actions:[
+      {txt:'Écrou tournant 20x27–26F',torque:'30 Nm',qty:2},
+      {txt:'Flow Switch MM 20x27',torque:'30 Nm',qty:2},
+      {txt:'Té Réduit 26F-20F-26F & 26F-26F-20F',torque:null,qty:2},
+      {txt:'Sonde T° M1/2G PT1000 L150',torque:'30 Nm',qty:2},
+      {txt:'Écrous tournants 15x21–20F',torque:'30 Nm',qty:4},
+      {txt:'Coudes FF 26',torque:null,qty:3},
+      {txt:'Pompe cooling + raccord 1"–1"1/2',torque:'30 Nm',qty:1},
+      {txt:'Filtre Tamis 26x34 F',torque:'30 Nm',qty:1},
+      {txt:'Coude écrou tournant 20x27–20F',torque:'30 Nm',qty:5},
+      {txt:'Bouchons vannes avec joint fibre',torque:null,qty:3}]},
+  ]},
+  {id:'elec',name:'Assemblage électrique',icon:'⚡',items:[
+    {id:'el1',label:'Résistances CBT-V560',actions:[{txt:'Fixer les deux résistances au châssis',torque:null,qty:'8× M6'}]},
+    {id:'el2',label:'Armoires électriques',actions:[
+      {txt:'Fixer armoire au châssis — pieds',torque:null,qty:'4× M10'},
+      {txt:'Fixer armoire par le haut — plats oblong',torque:null,qty:'4× M12'}]},
+    {id:'el3',label:'Vérine & Antenne 4G',actions:[
+      {txt:'Fixer la vérine sur l\'armoire',torque:null,qty:1},
+      {txt:'Fixer l\'antenne 4G sur l\'armoire',torque:null,qty:1}]},
+    {id:'el4',label:'Chocke',actions:[{txt:'Fixer chocke ×2 au châssis',torque:null,qty:'8× M16'}]},
+  ]},
+  {id:'boucleChd',name:'Boucle chaude',icon:'🔥',items:[
+    {id:'bc1',label:'Évaporateur — partie haute',actions:[
+      {txt:'Joint bride DN150',torque:null,qty:1},
+      {txt:'Serrer les brides',torque:'140 Nm',qty:'8× M20'}]},
+    {id:'bc2',label:'Évaporateur — partie basse',actions:[
+      {txt:'Insérer vanne DN150 entre 2 brides',torque:null,qty:1},
+      {txt:'Serrer brides en bloquant la vanne',torque:'140 Nm',qty:'8× M20'}]},
+    {id:'bc3',label:'Partie centrale',actions:[
+      {txt:'Insérer vanne DN150 entre 2 brides',torque:null,qty:1},
+      {txt:'Serrer brides en bloquant la vanne',torque:'140 Nm',qty:'8× M20'}]},
+    {id:'bc4',label:'Sondes TT + Servo-moteurs',actions:[
+      {txt:'Sondes TT-11 & TT-13 — Loctite 272',torque:null,qty:2},
+      {txt:'Servo-moteurs ENO-FCV-11 & ENO-FCV-12 sur vannes',torque:null,qty:2}]},
+  ]},
+  {id:'boucleFrd',name:'Boucle froide',icon:'🧊',items:[
+    {id:'bf1',label:'Condenseur — partie haute',actions:[
+      {txt:'Joints bride DN100',torque:null,qty:2},
+      {txt:'Serrer les brides',torque:'72 Nm',qty:'16× M16'}]},
+    {id:'bf2',label:'Condenseur — partie basse',actions:[
+      {txt:'Joints bride DN100',torque:null,qty:2},
+      {txt:'Serrer les brides',torque:'72 Nm',qty:'16× M16'}]},
+    {id:'bf3',label:'Sondes TT-21 & TT-22',actions:[
+      {txt:'Visser sondes TT-21 & TT-22 — Loctite 272',torque:null,qty:2}]},
+  ]},
+];
+
+// ===================== STATE =====================
+let session=null, currentStep=0;
+let sessions=JSON.parse(localStorage.getItem('eno_sessions')||'[]');
+// 3D state per step (in-memory, cleared on reload)
+let stepModels={};
+
+function saveState(){
+  if(session) sessions=sessions.map(s=>s.id===session.id?session:s);
+  localStorage.setItem('eno_sessions',JSON.stringify(sessions));
+}
+
+// ===================== THREE.JS =====================
+let threeRenderer=null,threeScene=null,threeCamera=null,threeModel=null;
+let isDragging=false,prevMouse={x:0,y:0},rotX=0,rotY=0,autoRotate=false,wireframe=false;
+let isRightDragging=false,panOffset={x:0,y:0};
+let zoomDist=5;
+
+function initThree(){
+  const canvas=document.getElementById('threeCanvas');
+  const wrap=document.getElementById('canvasWrap');
+  if(threeRenderer){threeRenderer.dispose();}
+
+  threeRenderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  threeRenderer.setPixelRatio(window.devicePixelRatio);
+  threeRenderer.shadowMap.enabled=true;
+  threeRenderer.setClearColor(0x060f1e,1);
+
+  threeScene=new THREE.Scene();
+  threeScene.add(new THREE.AmbientLight(0xffffff,0.6));
+  const dir=new THREE.DirectionalLight(0x00c4ff,0.8);
+  dir.position.set(5,10,7);
+  threeScene.add(dir);
+  const dir2=new THREE.DirectionalLight(0xffffff,0.4);
+  dir2.position.set(-5,-3,-5);
+  threeScene.add(dir2);
+
+  // Grid
+  const grid=new THREE.GridHelper(10,20,0x1e3358,0x1e3358);
+  threeScene.add(grid);
+
+  threeCamera=new THREE.PerspectiveCamera(45,1,0.01,1000);
+  threeCamera.position.set(0,2,5);
+
+  // Mouse events
+  const c=canvas;
+  c.addEventListener('mousedown',e=>{
+    if(e.button===2){isRightDragging=true;}else{isDragging=true;}
+    prevMouse={x:e.clientX,y:e.clientY};
+  });
+  c.addEventListener('mousemove',e=>{
+    const dx=e.clientX-prevMouse.x, dy=e.clientY-prevMouse.y;
+    if(isDragging){rotY+=dx*0.5;rotX+=dy*0.5;}
+    if(isRightDragging){panOffset.x+=dx*0.005;panOffset.y-=dy*0.005;}
+    prevMouse={x:e.clientX,y:e.clientY};
+  });
+  c.addEventListener('mouseup',()=>{isDragging=false;isRightDragging=false;});
+  c.addEventListener('mouseleave',()=>{isDragging=false;isRightDragging=false;});
+  c.addEventListener('wheel',e=>{zoomDist=Math.max(0.5,Math.min(50,zoomDist+e.deltaY*0.01));e.preventDefault();},{passive:false});
+  c.addEventListener('contextmenu',e=>e.preventDefault());
+
+  // Touch
+  let lastTouch=null,lastDist=null;
+  c.addEventListener('touchstart',e=>{
+    if(e.touches.length===1){isDragging=true;prevMouse={x:e.touches[0].clientX,y:e.touches[0].clientY};}
+    if(e.touches.length===2){lastDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}
+  });
+  c.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    if(e.touches.length===1&&isDragging){
+      const dx=e.touches[0].clientX-prevMouse.x,dy=e.touches[0].clientY-prevMouse.y;
+      rotY+=dx*0.5;rotX+=dy*0.5;
+      prevMouse={x:e.touches[0].clientX,y:e.touches[0].clientY};
+    }
+    if(e.touches.length===2){
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      if(lastDist)zoomDist=Math.max(0.5,Math.min(50,zoomDist-(d-lastDist)*0.05));
+      lastDist=d;
+    }
+  },{passive:false});
+  c.addEventListener('touchend',()=>{isDragging=false;lastDist=null;});
+
+  resizeRenderer();
+  animate();
+}
+
+function resizeRenderer(){
+  const wrap=document.getElementById('canvasWrap');
+  if(!threeRenderer||!wrap)return;
+  const w=wrap.clientWidth,h=Math.max(280,wrap.clientHeight);
+  threeRenderer.setSize(w,h);
+  if(threeCamera){threeCamera.aspect=w/h;threeCamera.updateProjectionMatrix();}
+}
+
+function animate(){
+  if(!threeRenderer)return;
+  requestAnimationFrame(animate);
+  if(autoRotate)rotY+=0.3;
+  const r=rotY*Math.PI/180,rx=rotX*Math.PI/180;
+  threeCamera.position.x=Math.sin(r)*Math.cos(rx)*zoomDist+panOffset.x;
+  threeCamera.position.y=Math.sin(rx)*zoomDist+panOffset.y;
+  threeCamera.position.z=Math.cos(r)*Math.cos(rx)*zoomDist;
+  threeCamera.lookAt(panOffset.x,panOffset.y,0);
+  threeRenderer.render(threeScene,threeCamera);
+}
+
+function resetCamera(){rotX=20;rotY=30;zoomDist=5;panOffset={x:0,y:0};}
+function toggleWire(){
+  wireframe=!wireframe;
+  if(threeModel)threeModel.traverse(c=>{if(c.isMesh&&c.material)c.material.wireframe=wireframe;});
+}
+function toggleAutoRotate(){autoRotate=!autoRotate;}
+function setView(v){
+  if(v==='front'){rotX=0;rotY=0;}
+  else if(v==='top'){rotX=89;rotY=0;}
+  else if(v==='iso'){rotX=25;rotY=45;}
+}
+
+function load3DFile(input){
+  const file=input.files[0];
+  if(!file)return;
+  const ext=file.name.split('.').pop().toLowerCase();
+  document.getElementById('loading3d').style.display='flex';
+  document.getElementById('viewerEmpty').style.display='none';
+  document.getElementById('threeCanvas').style.display='block';
+  document.getElementById('viewerHint').style.display='block';
+  document.getElementById('viewerControls').style.display='flex';
+  document.getElementById('modelName').textContent=file.name;
+
+  if(!threeRenderer)initThree();
+
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const buf=e.target.result;
+    // Store reference for this step
+    stepModels[currentStep]={name:file.name,buf,ext};
+
+    if(ext==='glb'||ext==='gltf'){
+      loadGLB(buf);
+    } else if(ext==='obj'){
+      loadOBJ(buf);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function loadGLB(buf){
+  // Manual GLB parser for Three.js r128 (no GLTFLoader available on CDN)
+  // Fallback: show placeholder mesh with message
+  showPlaceholderMesh('GLB chargé — viewer basique actif\n(Pour un rendu complet, utilisez le format OBJ)');
+}
+
+function loadOBJ(buf){
+  const text=new TextDecoder().decode(buf);
+  const verts=[],uvs=[],normals=[],faces=[];
+  text.split('\n').forEach(line=>{
+    const p=line.trim().split(/\s+/);
+    if(p[0]==='v')verts.push(parseFloat(p[1]),parseFloat(p[2]),parseFloat(p[3]));
+    else if(p[0]==='vt')uvs.push(parseFloat(p[1]),parseFloat(p[2]));
+    else if(p[0]==='vn')normals.push(parseFloat(p[1]),parseFloat(p[2]),parseFloat(p[3]));
+    else if(p[0]==='f')faces.push(p.slice(1));
+  });
+
+  const pos=[],nm=[],uv2=[];
+  faces.forEach(fverts=>{
+    const tri=fverts.length===4?[[0,1,2],[0,2,3]]:[[0,1,2]];
+    tri.forEach(idx=>idx.forEach(i=>{
+      const parts=fverts[i].split('/');
+      const vi=(parseInt(parts[0])-1)*3;
+      pos.push(verts[vi],verts[vi+1],verts[vi+2]);
+      if(parts[2]&&normals.length){const ni=(parseInt(parts[2])-1)*3;nm.push(normals[ni],normals[ni+1],normals[ni+2]);}
+      if(parts[1]&&uvs.length){const ui=(parseInt(parts[1])-1)*2;uv2.push(uvs[ui],uvs[ui+1]);}
+    }));
+  });
+
+  if(pos.length===0){showPlaceholderMesh('OBJ vide ou non supporté');return;}
+
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  if(nm.length)geo.setAttribute('normal',new THREE.Float32BufferAttribute(nm,3));
+  else geo.computeVertexNormals();
+  if(uv2.length)geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv2,2));
+
+  const mat=new THREE.MeshPhongMaterial({color:0x4080c0,specular:0x00c4ff,shininess:60,side:THREE.DoubleSide});
+  const mesh=new THREE.Mesh(geo,mat);
+
+  geo.computeBoundingBox();
+  const box=geo.boundingBox;
+  const center=new THREE.Vector3();
+  box.getCenter(center);
+  const size=new THREE.Vector3();
+  box.getSize(size);
+  const maxD=Math.max(size.x,size.y,size.z);
+  mesh.position.sub(center);
+  zoomDist=maxD*2;
+
+  placeModel(mesh);
+}
+
+function showPlaceholderMesh(msg){
+  // Show a representative 3D shape with label
+  const grp=new THREE.Group();
+  // Main body cylinder
+  const body=new THREE.Mesh(
+    new THREE.CylinderGeometry(0.8,0.8,1.8,32),
+    new THREE.MeshPhongMaterial({color:0x2060a0,specular:0x00c4ff,shininess:80})
+  );
+  grp.add(body);
+  // End caps
+  [-1,1].forEach(s=>{
+    const cap=new THREE.Mesh(
+      new THREE.CylinderGeometry(0.9,0.9,0.15,32),
+      new THREE.MeshPhongMaterial({color:0x104080})
+    );
+    cap.position.y=s*0.97;
+    grp.add(cap);
+    const ring=new THREE.Mesh(
+      new THREE.TorusGeometry(0.85,0.06,8,24),
+      new THREE.MeshPhongMaterial({color:0x00c4ff})
+    );
+    ring.rotation.x=Math.PI/2;
+    ring.position.y=s*1.05;
+    grp.add(ring);
+  });
+
+  placeModel(grp);
+  // Show info
+  document.getElementById('loading3d').style.display='none';
+  console.log(msg);
+}
+
+function placeModel(obj){
+  if(threeModel&&threeScene)threeScene.remove(threeModel);
+  threeModel=obj;
+  threeScene.add(threeModel);
+  resetCamera();
+  document.getElementById('loading3d').style.display='none';
+}
+
+// Restore model if step has one loaded in memory
+function restoreModel(){
+  const m=stepModels[currentStep];
+  if(m){
+    document.getElementById('viewerEmpty').style.display='none';
+    document.getElementById('threeCanvas').style.display='block';
+    document.getElementById('viewerHint').style.display='block';
+    document.getElementById('viewerControls').style.display='flex';
+    document.getElementById('modelName').textContent=m.name;
+    if(!threeRenderer)initThree();
+    if(m.ext==='obj')loadOBJ(m.buf);
+    else loadGLB(m.buf);
+  } else {
+    document.getElementById('viewerEmpty').style.display='flex';
+    document.getElementById('threeCanvas').style.display='none';
+    document.getElementById('viewerHint').style.display='none';
+    document.getElementById('viewerControls').style.display='none';
+    document.getElementById('modelName').textContent='Aucun modèle chargé';
+    if(threeModel&&threeScene){threeScene.remove(threeModel);threeModel=null;}
+  }
+}
+
+window.addEventListener('resize',resizeRenderer);
+
+// ===================== SESSION =====================
+function startSession(){
+  const op=document.getElementById('inOp').value.trim();
+  if(!op){alert('Veuillez renseigner le nom de l\'opérateur.');return;}
+  session={
+    id:Date.now(),
+    projet:document.getElementById('inProjet').value.trim()||'–',
+    serie:document.getElementById('inSerie').value.trim()||'–',
+    op, ve:document.getElementById('inVe').value.trim(),
+    date:new Date().toLocaleDateString('fr-FR'),
+    started:new Date().toISOString(),
+    completed:null, currentStep:0,
+    steps:STEPS.map(s=>({
+      id:s.id,
+      items:(s.items||[]).map(it=>({
+        id:it.id,
+        actions:it.actions.map(()=>false),
+        opDone:false,opName:'',opDate:'',opComment:'',
+        veDone:false,veName:'',veDate:'',veComment:'',
+      })),
+      snData:{},comment:'',
+    }))
+  };
+  sessions.unshift(session);
+  saveState();
+  currentStep=0;stepModels={};
+  showScreen('scChecklist');
+  renderStep();
+}
+
+function loadSession(id){
+  session=sessions.find(s=>s.id===id);
+  currentStep=session.currentStep||0;
+  stepModels={};
+  showScreen('scChecklist');
+  renderStep();
+}
+
+function goHome(){showScreen('scHome');renderHistory();}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+// ===================== HISTORY =====================
+function renderHistory(){
+  const el=document.getElementById('histList');
+  if(!sessions.length){el.innerHTML=`<div class="empty-state"><div class="emo">📋</div><p>Aucun montage enregistré</p></div>`;return;}
+  el.innerHTML=sessions.map(s=>{
+    const p=calcProgress(s);
+    return `<div class="hist-card">
+      <div style="font-size:24px">⚙️</div>
+      <div class="hist-info">
+        <div class="hist-title">${s.serie} — ${s.projet}</div>
+        <div class="hist-meta">OP: ${s.op} | ${s.date} | ${p.pct}% complété</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="loadSession(${s.id})">Reprendre</button>
+    </div>`;
+  }).join('');
+}
+
+function calcProgress(s){
+  let total=0,done=0;
+  s.steps.forEach(st=>st.items.forEach(it=>{total++;if(it.opDone)done++;}));
+  return{pct:total?Math.round(done/total*100):0,done,total};
+}
+
+// ===================== STEP RENDER =====================
+function renderStep(){
+  const step=STEPS[currentStep];
+  const sstate=session.steps[currentStep];
+  const prog=calcProgress(session);
+
+  document.getElementById('progLabel').textContent=`Étape ${currentStep+1}/${STEPS.length} — ${step.name}`;
+  document.getElementById('progPct').textContent=prog.pct+'%';
+  document.getElementById('progFill').style.width=prog.pct+'%';
+  document.getElementById('sessionBadge').textContent=session.op;
+
+  document.getElementById('stepsNav').innerHTML=STEPS.map((s,i)=>{
+    const allOp=session.steps[i].items.every(it=>it.opDone);
+    const cls=i===currentStep?'active':(allOp?'done':'');
+    return `<div class="step-dot ${cls}" onclick="jumpStep(${i})" title="${s.name}">${i+1}</div>`;
+  }).join('');
+
+  document.getElementById('stepHdr').innerHTML=`
+    <div class="step-num">Étape ${currentStep+1} / ${STEPS.length}</div>
+    <div class="step-name">${step.icon} ${step.name}</div>
+    <div class="step-meta">
+      <span class="chip">OP: ${session.op}</span>
+      ${session.ve?`<span class="chip">VE: ${session.ve}</span>`:''}
+      <span class="chip">${session.date}</span>
+      <span class="chip">${session.projet}</span>
+    </div>`;
+
+  // Checklist items
+  const panel=document.getElementById('checklistPanel');
+  panel.innerHTML=step.items.map((item,idx)=>{
+    const it=sstate.items[idx];
+    const iconEmoji=it.veDone?'✅':(it.opDone?'🔵':'○');
+    const iconCls=it.veDone?'both-done':(it.opDone?'op-done':'');
+    const cardCls=it.veDone?'validated-ve':(it.opDone?'validated':'');
+    return `<div class="item-card ${cardCls}" id="card_${item.id}">
+      <div class="item-header" onclick="toggleItem('body_${item.id}')">
+        <div class="item-icon ${iconCls}">${iconEmoji}</div>
+        <div class="item-title">${item.label}</div>
+        <div class="item-badges">
+          <span class="badge-op op ${it.opDone?'':'pending'}">${it.opDone?'OP ✓':'OP'}</span>
+          <span class="badge-op ve ${it.veDone?'':'pending'}">${it.veDone?'VE ✓':'VE'}</span>
+        </div>
+      </div>
+      <div class="item-body" id="body_${item.id}">
+        <div class="actions-list">
+          ${item.actions.map((act,ai)=>`
+          <div class="action-row">
+            <div class="action-check ${it.actions[ai]?'checked':''}" onclick="toggleAction(${currentStep},${idx},${ai})">${it.actions[ai]?'✓':''}</div>
+            <div class="action-text">${act.txt}</div>
+            <div class="action-torque">${act.torque||''}</div>
+            <div class="action-qty">${act.qty?'×'+act.qty:''}</div>
+          </div>`).join('')}
+        </div>
+        <div class="val-section">
+          <div class="val-box op">
+            <h4>✋ Opérateur</h4>
+            <input type="text" value="${it.opName||session.op}" oninput="saveVal(${currentStep},${idx},'opName',this.value)" placeholder="Nom OP">
+            <textarea placeholder="Commentaire…" oninput="saveVal(${currentStep},${idx},'opComment',this.value)" style="margin-top:6px">${it.opComment||''}</textarea>
+            <button class="btn btn-primary btn-full mt8 btn-sm" onclick="validateOP(${currentStep},${idx})" ${it.opDone?'disabled':''}>
+              ${it.opDone?'✅ Validé OP — '+it.opDate:'✋ Valider (OP)'}
+            </button>
+          </div>
+          <div class="val-box ve">
+            <h4>🔍 Vérificateur</h4>
+            <input type="text" value="${it.veName||session.ve||''}" oninput="saveVal(${currentStep},${idx},'veName',this.value)" placeholder="Nom VE">
+            <textarea placeholder="Commentaire…" oninput="saveVal(${currentStep},${idx},'veComment',this.value)" style="margin-top:6px">${it.veComment||''}</textarea>
+            <button class="btn ${it.veDone?'btn-success':'btn-outline'} btn-full mt8 btn-sm" onclick="validateVE(${currentStep},${idx})" ${it.veDone?'disabled':(!it.opDone?'disabled':'')}>
+              ${it.veDone?'✅ Validé VE — '+it.veDate:(it.opDone?'🔍 Valider (VE)':'⏳ Attente OP')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // SN table
+  const snSec=document.getElementById('snSection');
+  if(step.snComponents){
+    snSec.innerHTML=`<div class="section-title">Numéros de série</div>
+    <div class="item-card"><div style="padding:12px">
+    <table class="sn-table"><thead><tr><th>Composant</th><th>N° Série (SN)</th><th>OP</th><th>VE</th></tr></thead><tbody>
+    ${step.snComponents.map(comp=>{
+      const k=comp.replace(/\s+/g,'_');
+      return `<tr><td>${comp}</td>
+        <td><input type="text" value="${sstate.snData[k]||''}" oninput="saveSN('${k}',this.value)" placeholder="SN…"></td>
+        <td><input type="text" value="${sstate.snData[k+'_op']||''}" oninput="saveSN('${k}_op',this.value)" style="width:70px" placeholder="OP"></td>
+        <td><input type="text" value="${sstate.snData[k+'_ve']||''}" oninput="saveSN('${k}_ve',this.value)" style="width:70px" placeholder="VE"></td>
+      </tr>`;
+    }).join('')}
+    </tbody></table></div></div>`;
+  } else snSec.innerHTML='';
+
+  // Comment
+  document.getElementById('stepCommentSection').innerHTML=`
+    <div class="section-title">Commentaire étape</div>
+    <textarea style="width:100%" placeholder="Observations, anomalies…" oninput="saveStepComment(${currentStep},this.value)">${sstate.comment||''}</textarea>`;
+
+  document.getElementById('btnPrev').style.visibility=currentStep===0?'hidden':'visible';
+  document.getElementById('btnNext').textContent=currentStep===STEPS.length-1?'📄 Rapport final ▶':'Suivant ▶';
+
+  // 3D viewer
+  setTimeout(()=>{resizeRenderer();restoreModel();},50);
+}
+
+function toggleItem(id){document.getElementById(id).classList.toggle('open');}
+function toggleAction(si,ii,ai){
+  session.steps[si].items[ii].actions[ai]=!session.steps[si].items[ii].actions[ai];
+  saveState();renderStep();
+  document.getElementById('body_'+STEPS[si].items[ii].id).classList.add('open');
+}
+function saveVal(si,ii,key,val){session.steps[si].items[ii][key]=val;saveState();}
+function saveSN(key,val){session.steps[currentStep].snData[key]=val;saveState();}
+function saveStepComment(si,val){session.steps[si].comment=val;saveState();}
+
+function validateOP(si,ii){
+  const it=session.steps[si].items[ii];
+  if(!it.actions.every(Boolean)&&!confirm('Actions incomplètes. Valider quand même ?'))return;
+  it.opDone=true;it.opDate=new Date().toLocaleDateString('fr-FR');
+  if(!it.opName)it.opName=session.op;
+  saveState();renderStep();
+}
+function validateVE(si,ii){
+  const it=session.steps[si].items[ii];
+  if(!it.opDone)return;
+  it.veDone=true;it.veDate=new Date().toLocaleDateString('fr-FR');
+  if(!it.veName)it.veName=session.ve||'–';
+  saveState();renderStep();
+}
+function jumpStep(i){currentStep=i;session.currentStep=i;saveState();renderStep();window.scrollTo(0,0);}
+function navStep(dir){
+  const next=currentStep+dir;
+  if(next<0)return;
+  if(next>=STEPS.length){showReport();return;}
+  currentStep=next;session.currentStep=next;saveState();renderStep();window.scrollTo(0,0);
+}
+
+// ===================== REPORT =====================
+function showReport(){
+  session.completed=new Date().toISOString();saveState();
+  const prog=calcProgress(session);
+  document.getElementById('reportContent').innerHTML=`
+    <div class="project-card">
+      <div class="project-title">📄 Rapport de montage — ENO 180 LTV3</div>
+      <div class="project-sub">${session.serie} | ${session.projet} | ${session.date}</div>
+      <div class="input-row">
+        <div><label>Opérateur</label><div style="padding:8px">${session.op}</div></div>
+        <div><label>Vérificateur</label><div style="padding:8px">${session.ve||'–'}</div></div>
+      </div>
+      <div class="alert-warn">Progression globale : <strong>${prog.pct}%</strong> — ${prog.done}/${prog.total} items validés OP</div>
+    </div>
+    ${STEPS.map((step,si)=>{
+      const ss=session.steps[si];
+      const opD=ss.items.filter(it=>it.opDone).length;
+      const veD=ss.items.filter(it=>it.veDone).length;
+      return `<div class="item-card" style="margin-bottom:8px">
+        <div class="item-header">
+          <div class="item-icon ${opD===ss.items.length?'both-done':''}">${step.icon}</div>
+          <div class="item-title">${step.name}</div>
+          <div class="item-badges">
+            <span class="chip">OP: ${opD}/${ss.items.length}</span>
+            <span class="chip">VE: ${veD}/${ss.items.length}</span>
+          </div>
+        </div>
+        ${ss.comment?`<div style="padding:0 14px 12px;font-size:12px;color:var(--text2)">💬 ${ss.comment}</div>`:''}
+      </div>`;
+    }).join('')}`;
+  showScreen('scReport');
+}
+
+// ===================== INIT =====================
+renderHistory();
+</script>
+</body>
+</html>
