@@ -299,7 +299,7 @@ textarea{height:52px;resize:none;font-size:12px}
 <!-- Firebase CDN -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-  import { getFirestore, collection, doc, setDoc, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+  import { getFirestore, collection, doc, setDoc, getDocs, orderBy, query, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -337,6 +337,8 @@ textarea{height:52px;resize:none;font-size:12px}
   window._fsGetDocs = getDocs;
   window._fsQuery = query;
   window._fsOrderBy = orderBy;
+  window._fsDeleteDoc = deleteDoc;
+  window._ADMIN_EMAIL = 'nordine.sakhri@enogia.com';
 
   window._signIn = async () => {
     try {
@@ -1540,13 +1542,17 @@ function renderHistory(){
   if(!sessions.length){el.innerHTML=`<div class="empty-state"><div class="emo">📋</div><p>Aucun montage enregistré</p></div>`;return;}
   el.innerHTML=sessions.map(s=>{
     const p=calcProgress(s);
+    const isAdmin = window._currentUser && window._currentUser.email === window._ADMIN_EMAIL;
     return `<div class="hist-card">
       <div style="font-size:24px">⚙️</div>
       <div class="hist-info">
         <div class="hist-title">${s.serie} — ${s.projet}</div>
         <div class="hist-meta">${s.modelName||'ENO 180 LTV3'} | OP: ${s.op} | ${s.date} | ${p.pct}% complété</div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="loadSession(${s.id})">Reprendre</button>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn btn-outline btn-sm" onclick="loadSession(${s.id})">Reprendre</button>
+        ${isAdmin ? `<button class="btn btn-sm" style="background:#e0555522;border:1px solid #e0555544;color:#e05555" onclick="deleteSession(${s.id})">🗑</button>` : ''}
+      </div>
     </div>`;
   }).join('');
 }
@@ -1555,6 +1561,17 @@ function calcProgress(s){
   let total=0,done=0;
   s.steps.forEach(st=>st.items.forEach(it=>{total++;if(it.opDone)done++;}));
   return{pct:total?Math.round(done/total*100):0,done,total};
+}
+
+async function deleteSession(id){
+  if(!confirm('Supprimer définitivement cette checklist ?')) return;
+  try {
+    await window._fsDeleteDoc(window._fsDoc(window._db, 'sessions', String(id)));
+    sessions = sessions.filter(s => s.id !== id);
+    renderHistory();
+  } catch(e) {
+    alert('Erreur lors de la suppression : ' + e.message);
+  }
 }
 
 // ===================== STEP RENDER =====================
