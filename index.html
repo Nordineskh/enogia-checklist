@@ -1180,8 +1180,7 @@ async function loadSessions(){
 function initApp(){
   loadSessions().then(()=>{
     renderHistory();
-    // Show model selector on first load
-    showModelSelector();
+    renderModelGrid();
   });
 }
 if(window._firebaseReady){ initApp(); }
@@ -1723,6 +1722,10 @@ function showReport(){
 
 // ===================== INIT =====================
 // App initialized by firebaseReady event above
+// Pre-render model grid immediately (doesn't need Firebase)
+document.addEventListener('DOMContentLoaded', function(){
+  if(document.getElementById('modelGrid')) renderModelGrid();
+});
 </script>
 </div><!-- end appWrapper -->
 </body>
