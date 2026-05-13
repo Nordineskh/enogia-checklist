@@ -360,6 +360,7 @@ textarea{height:52px;resize:none;font-size:12px}
       document.getElementById('scLogin').style.display = 'none';
       document.getElementById('appWrapper').style.display = 'block';
       document.getElementById('userEmail').textContent = user.displayName || user.email;
+      document.getElementById('inOp').value = user.displayName || '';
       window._firebaseReady = true;
       document.dispatchEvent(new Event('firebaseReady'));
       // Render model grid now that DOM is visible
