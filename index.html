@@ -327,11 +327,6 @@ textarea{height:52px;resize:none;font-size:12px}
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
 
-  // Mode test local/GitHub : ouvrez index.html?demo=1 pour afficher l'application
-  // sans bloquer sur Firebase Auth. Ne donne pas accès aux données Firestore si vos
-  // règles Firebase exigent une authentification réelle.
-  const DEMO_MODE = new URLSearchParams(window.location.search).has('demo');
-
   window._db = db;
   window._fsCollection = collection;
   window._fsDoc = doc;
@@ -350,31 +345,16 @@ textarea{height:52px;resize:none;font-size:12px}
         document.getElementById('loginError').style.display = 'block';
       }
     } catch(e) {
-      const msg = e?.code || e?.message || 'Erreur inconnue';
-      document.getElementById('loginError').textContent = `Erreur de connexion : ${msg}. Vérifiez aussi que le domaine GitHub Pages est autorisé dans Firebase Authentication.`;
+      document.getElementById('loginError').textContent = 'Erreur de connexion. Réessayez.';
       document.getElementById('loginError').style.display = 'block';
     }
   };
 
   window._signOut = async () => {
-    if (DEMO_MODE) {
-      window.location.href = window.location.pathname;
-      return;
-    }
     await signOut(auth);
   };
 
   onAuthStateChanged(auth, (user) => {
-    if (DEMO_MODE) {
-      window._currentUser = { email: 'mode-demo@local', displayName: 'Mode démo' };
-      document.getElementById('scLogin').style.display = 'none';
-      document.getElementById('appWrapper').style.display = 'block';
-      document.getElementById('userEmail').textContent = 'Mode démo';
-      window._firebaseReady = true;
-      document.dispatchEvent(new Event('firebaseReady'));
-      return;
-    }
-
     if (user && ALLOWED_EMAILS.includes(user.email)) {
       window._currentUser = user;
       document.getElementById('scLogin').style.display = 'none';
@@ -382,6 +362,8 @@ textarea{height:52px;resize:none;font-size:12px}
       document.getElementById('userEmail').textContent = user.displayName || user.email;
       window._firebaseReady = true;
       document.dispatchEvent(new Event('firebaseReady'));
+      // Render model grid now that DOM is visible
+      setTimeout(()=>{ if(typeof renderModelGrid==='function') renderModelGrid(); }, 100);
     } else {
       window._currentUser = null;
       document.getElementById('scLogin').style.display = 'flex';
@@ -1505,18 +1487,10 @@ function selectModel(modelId){
 }
 
 function startSession(){
-  if(!currentModel || !ACTIVE_STEPS.length){
-    alert('Veuillez sélectionner une gamme avant de démarrer le montage.');
-    showModelSelector();
-    return;
-  }
-
   const op=document.getElementById('inOp').value.trim();
   if(!op){alert('Veuillez renseigner le nom de l\'opérateur.');return;}
   session={
     id:Date.now(),
-    modelId:currentModel.id,
-    modelName:currentModel.name,
     projet:document.getElementById('inProjet').value.trim()||'–',
     serie:document.getElementById('inSerie').value.trim()||'–',
     op, ve:document.getElementById('inVe').value.trim(),
@@ -1677,7 +1651,7 @@ function renderStep(){
     <textarea style="width:100%" placeholder="Observations, anomalies…" oninput="saveStepComment(${currentStep},this.value)">${sstate.comment||''}</textarea>`;
 
   document.getElementById('btnPrev').style.visibility=currentStep===0?'hidden':'visible';
-  document.getElementById('btnNext').textContent=currentStep===ACTIVE_STEPS.length-1?'📄 Rapport final ▶':'Suivant ▶';
+  document.getElementById('btnNext').textContent=currentStep===STEPS.length-1?'📄 Rapport final ▶':'Suivant ▶';
 
   // 3D viewer
   setTimeout(()=>{resizeRenderer();restoreModel();},50);
@@ -1687,7 +1661,7 @@ function toggleItem(id){document.getElementById(id).classList.toggle('open');}
 function toggleAction(si,ii,ai){
   session.steps[si].items[ii].actions[ai]=!session.steps[si].items[ii].actions[ai];
   saveState();renderStep();
-  document.getElementById('body_'+ACTIVE_STEPS[si].items[ii].id).classList.add('open');
+  document.getElementById('body_'+STEPS[si].items[ii].id).classList.add('open');
 }
 function saveVal(si,ii,key,val){session.steps[si].items[ii][key]=val;saveState();}
 function saveSN(key,val){session.steps[currentStep].snData[key]=val;saveState();}
@@ -1721,7 +1695,7 @@ function showReport(){
   const prog=calcProgress(session);
   document.getElementById('reportContent').innerHTML=`
     <div class="project-card">
-      <div class="project-title">📄 Rapport de montage — ${session.modelName||'Gamme sélectionnée'}</div>
+      <div class="project-title">📄 Rapport de montage — ENO 180 LTV3</div>
       <div class="project-sub">${session.serie} | ${session.projet} | ${session.date}</div>
       <div class="input-row">
         <div><label>Opérateur</label><div style="padding:8px">${session.op}</div></div>
@@ -1729,7 +1703,7 @@ function showReport(){
       </div>
       <div class="alert-warn">Progression globale : <strong>${prog.pct}%</strong> — ${prog.done}/${prog.total} items validés OP</div>
     </div>
-    ${ACTIVE_STEPS.map((step,si)=>{
+    ${STEPS.map((step,si)=>{
       const ss=session.steps[si];
       const opD=ss.items.filter(it=>it.opDone).length;
       const veD=ss.items.filter(it=>it.veDone).length;
@@ -1750,10 +1724,6 @@ function showReport(){
 
 // ===================== INIT =====================
 // App initialized by firebaseReady event above
-// Pre-render model grid immediately (doesn't need Firebase)
-document.addEventListener('DOMContentLoaded', function(){
-  if(document.getElementById('modelGrid')) renderModelGrid();
-});
 </script>
 </div><!-- end appWrapper -->
 </body>
