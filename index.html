@@ -218,14 +218,11 @@ textarea{height:52px;resize:none;font-size:12px}
 
 <!-- MODEL SELECTOR -->
 <div class="screen" id="scModels">
-  <div class="project-card" style="margin-bottom:8px">
+  <div class="project-card" style="margin-bottom:16px">
     <div class="project-title">Sélectionner une gamme</div>
     <div class="project-sub">Choisissez le modèle de machine à assembler</div>
   </div>
-  <div class="model-grid" id="modelGrid"></div>
-  <div class="mt12">
-    <button class="btn btn-outline btn-full" onclick="goHome()">↩ Retour accueil</button>
-  </div>
+  <div id="modelGrid"></div>
 </div>
 
 <!-- CHECKLIST -->
@@ -1451,19 +1448,29 @@ function renderModelGrid(){
   const grid = document.getElementById('modelGrid');
   grid.innerHTML = Object.values(MODELS).map(m => {
     const steps = m.available ? m.getSteps() : [];
-    const cls = m.available ? '' : 'model-card-coming';
-    const onclick = m.available ? `selectModel('${m.id}')` : '';
-    return `<div class="model-card ${cls}" onclick="${onclick}">
-      ${!m.available ? '<div class="model-card-badge">Bientôt</div>' : ''}
-      <div class="model-card-icon">${m.icon}</div>
-      <div class="model-card-name">${m.name}</div>
-      <div class="model-card-ref">${m.ref}</div>
-      <div class="model-card-desc">${m.desc}</div>
-      <div class="model-card-steps">
-        <span class="model-card-step">⚡ ${m.power}</span>
-        ${m.available ? `<span class="model-card-step">${steps.length} étapes</span>` : ''}
-      </div>
-    </div>`;
+    if(!m.available) return `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;opacity:0.4;display:flex;align-items:center;gap:14px">
+        <div style="font-size:28px">🔧</div>
+        <div style="flex:1">
+          <div style="font-family:var(--font-title);font-size:18px;color:var(--text2)">${m.name}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">Prochainement disponible</div>
+        </div>
+        <div style="background:#ffffff15;border-radius:20px;padding:3px 10px;font-size:11px;color:var(--text3)">Bientôt</div>
+      </div>`;
+    return `
+      <div onclick="selectModel('${m.id}')" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.2s" onmouseover="this.style.borderColor='#2aa99e';this.style.background='#00536d'" onmouseout="this.style.borderColor='';this.style.background='var(--surface)'">
+        <div style="font-size:28px">${m.icon}</div>
+        <div style="flex:1">
+          <div style="font-family:var(--font-title);font-size:20px;color:var(--accent);letter-spacing:1px">${m.name}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">${m.ref}</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:4px">${m.desc}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+          <div style="background:var(--accent2);color:#fff;border-radius:20px;padding:3px 10px;font-size:11px">${m.power}</div>
+          <div style="font-size:11px;color:var(--text3)">${steps.length} étapes</div>
+        </div>
+        <div style="color:var(--accent);font-size:20px;margin-left:4px">›</div>
+      </div>`;
   }).join('');
 }
 
