@@ -140,6 +140,21 @@ textarea{height:52px;resize:none;font-size:12px}
 .empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
 .empty-state .emo{font-size:48px;margin-bottom:12px}
 .alert-warn{background:#f0a50015;border:1px solid #f0a50044;color:var(--yellow);padding:10px 13px;border-radius:8px;font-size:13px;margin-bottom:10px}
+
+/* MODEL SELECTOR */
+.model-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:16px}
+.model-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.model-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px #00000033}
+.model-card-badge{position:absolute;top:12px;right:12px;background:var(--accent2);color:#fff;font-size:10px;padding:2px 8px;border-radius:20px;font-family:var(--font)}
+.model-card-icon{font-size:36px;margin-bottom:12px}
+.model-card-name{font-family:var(--font-title);font-size:22px;color:var(--accent);letter-spacing:1px;margin-bottom:4px}
+.model-card-ref{font-size:11px;color:var(--text3);margin-bottom:8px}
+.model-card-desc{font-size:13px;color:var(--text2);line-height:1.5}
+.model-card-steps{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.model-card-step{background:#00364a;border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:10px;color:var(--text3)}
+.model-card-coming{opacity:0.5;cursor:not-allowed}
+.model-card-coming:hover{transform:none;border-color:var(--border);box-shadow:none}
+
 </style>
 </head>
 <body>
@@ -181,8 +196,11 @@ textarea{height:52px;resize:none;font-size:12px}
 <!-- HOME -->
 <div class="screen active" id="scHome">
   <div class="project-card">
-    <div class="project-title">ENO 180 LTV3</div>
-    <div class="project-sub">N° Plan : Pi085 – 051 – DC002 | Indice D | 10 étapes</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="project-title" id="homeModelTitle">Sélectionnez une gamme</div>
+      <button class="btn btn-outline btn-sm" onclick="showModelSelector()" style="flex-shrink:0">🔄 Changer</button>
+    </div>
+    <div class="project-sub" id="homeModelRef">Cliquez sur "Changer" pour choisir votre modèle</div>
     <div class="section-title">Nouveau montage</div>
     <div class="input-row">
       <div><label>N° Projet</label><input id="inProjet" value="Pi085"></div>
@@ -196,6 +214,18 @@ textarea{height:52px;resize:none;font-size:12px}
   </div>
   <div class="section-title">Historique</div>
   <div id="histList"></div>
+</div>
+
+<!-- MODEL SELECTOR -->
+<div class="screen" id="scModels">
+  <div class="project-card" style="margin-bottom:8px">
+    <div class="project-title">Sélectionner une gamme</div>
+    <div class="project-sub">Choisissez le modèle de machine à assembler</div>
+  </div>
+  <div class="model-grid" id="modelGrid"></div>
+  <div class="mt12">
+    <button class="btn btn-outline btn-full" onclick="goHome()">↩ Retour accueil</button>
+  </div>
 </div>
 
 <!-- CHECKLIST -->
@@ -345,7 +375,7 @@ textarea{height:52px;resize:none;font-size:12px}
 
 <script>
 // ===================== DATA =====================
-const STEPS=[
+const STEPS_180LTV3=[
   {id:'turbineA',name:'Turbine A (Armoire)',icon:'⚙️',
    snComponents:['Génératrice','Injecteur','Capteur de vibration','Capteurs de température'],
    items:[
@@ -531,6 +561,594 @@ const STEPS=[
   ]},
 ];
 
+
+
+// ===================== STEPS ENO 180 MTV3 =====================
+const STEPS_180MTV3=[
+  {id:'tA_mtv3',name:'Turbine A (Armoire)',icon:'⚙️',
+   snComponents:['Génératrice','Injecteur','Capteur de vibration','Capteurs de température'],
+   items:[
+    {id:'mtvtA1',label:'Génératrice',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
+    {id:'mtvtA2',label:'Injecteurs',actions:[
+      {txt:'Entretoires à la Loctite 272',torque:null,qty:6},
+      {txt:'Fixer injecteurs CHC M6x40',torque:'7,5 Nm',qty:6},
+      {txt:'Vérification Sizer',torque:null,qty:1}]},
+    {id:'mtvtA3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
+    {id:'mtvtA4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes',torque:null,qty:2}]},
+    {id:'mtvtA5',label:'Repérage phases U,V,W',actions:[{txt:'Identifier l'ordre des phases',torque:null,qty:1}]},
+  ]},
+  {id:'tB_mtv3',name:'Turbine B (Brides)',icon:'⚙️',
+   snComponents:['Génératrice','Injecteur','Capteur de vibration','Capteurs de température'],
+   items:[
+    {id:'mtvtB1',label:'Génératrice',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
+    {id:'mtvtB2',label:'Injecteurs',actions:[
+      {txt:'Entretoires à la Loctite 272',torque:null,qty:6},
+      {txt:'Fixer injecteurs CHC M6x40',torque:'7,5 Nm',qty:6},
+      {txt:'Vérification Sizer',torque:null,qty:1}]},
+    {id:'mtvtB3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
+    {id:'mtvtB4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes',torque:null,qty:2}]},
+    {id:'mtvtB5',label:'Repérage phases U,V,W',actions:[{txt:'Identifier l'ordre des phases',torque:null,qty:1}]},
+  ]},
+  {id:'cycleORC_mtv3',name:'Cycle ORC',icon:'🔄',items:[
+    {id:'mtvorc1',label:'Tuyauterie cycle',actions:[{txt:'Vérifier propreté intérieur/extérieur des tubes',torque:null,qty:1}]},
+    {id:'mtvorc2',label:'Pompes ORC',actions:[
+      {txt:'Vérifier le sens des pompes',torque:null,qty:2},
+      {txt:'Fixation boulons M12 au châssis',torque:'40 Nm',qty:8},
+      {txt:'Mise en place joints inox DN50',torque:null,qty:4},
+      {txt:'Serrer les brides',torque:'130 Nm',qty:'32× M16x75'}]},
+    {id:'mtvorc3',label:'Évaporateur, Condenseurs & Régénérateur',actions:[
+      {txt:'Vérification 4 boulons châssis ×3',torque:'76 Nm',qty:'12× M16x50'},
+      {txt:'Joints PTFE DN150 PN25/40',torque:null,qty:6},
+      {txt:'Serrer brides partie haute',torque:'285 Nm',qty:'80× M20x100'},
+      {txt:'Joints inox DN100',torque:null,qty:3},
+      {txt:'Serrer brides partie basse',torque:'285 Nm',qty:'24× M20x85'}]},
+    {id:'mtvorc4',label:'Volutes + Turbines',actions:[
+      {txt:'Joints plats PTFE (DN150 & DN125) PN25/40',torque:null,qty:2},
+      {txt:'Serrer brides DN125',torque:'285 Nm',qty:'16× M20x100'},
+      {txt:'Serrer brides DN150',torque:'250 Nm',qty:'16× M24x100'},
+      {txt:'Entretoires à la Loctite 272',torque:'7,5 Nm',qty:12},
+      {txt:'Isolants intérieurs',torque:null,qty:2},
+      {txt:'Fixation isolants extérieurs + génératrice',torque:null,qty:'16× CHC M8x35'},
+      {txt:'Joint torique ID164.47×CS6.99',torque:null,qty:2}]},
+    {id:'mtvorc5',label:'Filtre',actions:[
+      {txt:'Vérifier le sens du filtre',torque:null,qty:2},
+      {txt:'Mise en place du tamis',torque:null,qty:2}]},
+    {id:'mtvorc6',label:'Clapet anti-retour',actions:[
+      {txt:'Remplacement joints toriques',torque:null,qty:4},
+      {txt:'Vérifier le sens du clapet',torque:null,qty:2},
+      {txt:'Serrer les boulons',torque:'44 Nm',qty:8}]},
+    {id:'mtvorc7',label:'Vanne Bypass',actions:[
+      {txt:'Vérifier le sens de la vanne',torque:null,qty:1}]},
+  ]},
+  {id:'instrORC_mtv3',name:'Instrumentation Cycle ORC',icon:'🌡️',items:[
+    {id:'mtvins1',label:'Vannes remplissage/vidange (VA)',actions:[
+      {txt:'Vannes 1/4NPT–3/8SAE à la Loctite 272',torque:null,qty:4},
+      {txt:'Bouchon femelle 3/8SAE + coupelle cuivre',torque:null,qty:4}]},
+    {id:'mtvins2',label:'Retour lub',actions:[{txt:'Raccord 1/2NPT–1/2SAE Loctite 272 sur bossage 1/2NPT',torque:null,qty:4}]},
+    {id:'mtvins3',label:'Capteur pression (PT)',actions:[
+      {txt:'Raccord 1/4NPT–1/4SAE Loctite 272',torque:null,qty:2},
+      {txt:'Capteur sur vanne MM 1/4SAE avec joint cuivre',torque:null,qty:2},
+      {txt:'Vannes MM 1/4SAE sur châssis (4× M4)',torque:null,qty:4},
+      {txt:'Capillaire sans schrader',torque:null,qty:2}]},
+    {id:'mtvins4',label:'Sondes TT — Loctite 272',actions:[
+      {txt:'TT-01 (L=60mm)',torque:null,qty:1},
+      {txt:'TT-03A (L=130mm) Calibrée',torque:null,qty:1},
+      {txt:'TT-03B (L=130mm) Calibrée',torque:null,qty:1},
+      {txt:'TT-04 (L=130mm)',torque:null,qty:1},
+      {txt:'TT-05 (L=130mm)',torque:null,qty:1},
+      {txt:'TT-06 (L=60mm)',torque:null,qty:1}]},
+    {id:'mtvins5',label:'Sondes TT — Hot/Cold/Turbine',actions:[
+      {txt:'TT-11 Hot Loop (L=150mm)',torque:null,qty:1},
+      {txt:'TT-13 Hot Loop (L=150mm)',torque:null,qty:1},
+      {txt:'TT-21 Cold Loop (L=150mm)',torque:null,qty:1},
+      {txt:'TT-22 Cold Loop (L=150mm)',torque:null,qty:1},
+      {txt:'TT-51A in turbine bearings',torque:null,qty:1},
+      {txt:'TT-51B in turbine bearings',torque:null,qty:1}]},
+  ]},
+  {id:'cycleLub_mtv3',name:'Cycle Lub',icon:'🛢️',items:[
+    {id:'mtvlub1',label:'Départ de lub',actions:[
+      {txt:'Raccord MM 1/2NPT–3/8SAE dans vanne FF 1/2NPT — Loctite 272',torque:null,qty:1},
+      {txt:'Vanne FF 1/2NPT sur embout mâle 1/2NPT — Loctite 272',torque:null,qty:1}]},
+    {id:'mtvlub2',label:'Vanne de vidange',actions:[
+      {txt:'Raccord tournant cuivre sur té 3/8-1/4-3/8',torque:null,qty:2},
+      {txt:'Raccord tournant cuivre sur vanne MM 1/4SAE',torque:null,qty:2},
+      {txt:'Fixer vanne M4 sur châssis',torque:null,qty:2},
+      {txt:'Bouchon F 1/4 avec joint',torque:null,qty:1}]},
+    {id:'mtvlub3',label:'Pompe de lub',actions:[
+      {txt:'Positionner + fixer pompe (4× vis+rondelle M6x16)',torque:null,qty:1},
+      {txt:'Vérifier sens de montage (vers les turbines)',torque:null,qty:1}]},
+    {id:'mtvlub4',label:'Filtre + Flexibles 1–4',actions:[
+      {txt:'Fixer filtre avec collier (1× vis+rondelle M8x12)',torque:null,qty:1},
+      {txt:'Flexibles 1 à 4',torque:'20 Nm',qty:4}]},
+    {id:'mtvlub5',label:'Circuit flexible 5–11',actions:[
+      {txt:'Capteur pression sur vanne + coupelle cuivre',torque:null,qty:1},
+      {txt:'Fixer vanne M4 sur châssis',torque:null,qty:2},
+      {txt:'Té 3/8-1/4-3/8 sur flexible 4',torque:'20 Nm',qty:1},
+      {txt:'Flexible 5 sur Té',torque:'20 Nm',qty:1},
+      {txt:'Vanne sur flexible 5',torque:null,qty:1},
+      {txt:'Flexible 6 sur vanne',torque:'20 Nm',qty:1},
+      {txt:'Supports flexibles 5&6',torque:null,qty:4}]},
+    {id:'mtvlub6',label:'Clarinette + Tube Lub + Marquage',actions:[
+      {txt:'Raccords MM 1/2NPT–3/8SAE sur clarinette',torque:null,qty:5},
+      {txt:'Flexibles 7/11 clarinette → turbine',torque:'20 Nm',qty:'3+1'},
+      {txt:'Raccords 1/2NPT–5/8SAE sur tube lub',torque:null,qty:4},
+      {txt:'Raccord union conique sur réservoir ORC',torque:null,qty:1},
+      {txt:'Tôle au châssis (3× M8)',torque:null,qty:1},
+      {txt:'Étrier DN25 sur tôle',torque:null,qty:1},
+      {txt:'Flexibles 8&9 turbine → retour lub',torque:'20 Nm',qty:4},
+      {txt:'Trait de marqueur — 28 points',torque:null,qty:28}]},
+  ]},
+  {id:'coolingPrep_mtv3',name:'Cycle Cooling — Préparation',icon:'❄️',items:[
+    {id:'mtvcpot',label:'Pot de décantation',actions:[
+      {txt:'Mamelon MM 26x34 + joint fibre 26x34',torque:'30 Nm',qty:1},
+      {txt:'Vanne sphère MM 1/2 ENO-VA-32 — Loctite 272',torque:null,qty:1},
+      {txt:'Vanne sphère MM 3/4 ENO-VA-31 — Loctite 272',torque:null,qty:1},
+      {txt:'Mamelon MM 12x17–15x21 — Loctite 272',torque:null,qty:1}]},
+    {id:'mtvcpompe',label:'Tube transparent + Pompe + Filtre',actions:[
+      {txt:'Sertir 2 écrous tournants sur tube transparent (4 joints toriques)',torque:null,qty:1},
+      {txt:'Raccorder pompe aux écrous tournants 26x34 26F',torque:null,qty:1},
+      {txt:'Mamelons MM 20x27 sur filtre — Loctite 272',torque:null,qty:2},
+      {txt:'Vanne MM 1/2 sur té — Loctite 272',torque:null,qty:1}]},
+  ]},
+  {id:'coolingInst_mtv3',name:'Cycle Cooling — Installation',icon:'❄️',items:[
+    {id:'mtvcvi1',label:'Ventilateur + Réservoir',actions:[
+      {txt:'Fixer ventilateurs sur châssis',torque:'9,5 Nm',qty:'6× M8'},
+      {txt:'Pot décantation avec collier 6"',torque:null,qty:1},
+      {txt:'Pot + collier sur support réservoir (1× M10)',torque:null,qty:1},
+      {txt:'Tube transparent — joint fibre 15x21',torque:'30 Nm',qty:1},
+      {txt:'Purgeur — joint fibre 15x21',torque:'30 Nm',qty:1}]},
+    {id:'mtvcvi2',label:'Vase + Flow switch + Supports',actions:[
+      {txt:'Vase expansion avec collier 6" (1× M10)',torque:null,qty:1},
+      {txt:'Flow switch sur lignes montantes turbines',torque:null,qty:2},
+      {txt:'Fixer supports de tuyauterie',torque:null,qty:6}]},
+    {id:'mtvcvi3',label:'Assemblage raccords',actions:[
+      {txt:'Écrou tournant 20x27–20F',torque:'30 Nm',qty:2},
+      {txt:'Flow Switch MM 20x27',torque:'30 Nm',qty:2},
+      {txt:'Té Réduit 26F–20F',torque:null,qty:3},
+      {txt:'Sonde T° M1/2G PT1000 L150',torque:'30 Nm',qty:4},
+      {txt:'Écrous tournants 15x21–20F',torque:'30 Nm',qty:4},
+      {txt:'Coude FF 26',torque:null,qty:10},
+      {txt:'Pompe cooling',torque:'30 Nm',qty:1},
+      {txt:'Filtre Tamis 20x27 F',torque:'30 Nm',qty:1},
+      {txt:'Coude écrou tournant 20x27–20F',torque:'30 Nm',qty:5},
+      {txt:'Bouchons vannes avec joint fibre (1×1/2 & 1×3/4)',torque:null,qty:2}]},
+  ]},
+  {id:'elec_mtv3',name:'Assemblage électrique',icon:'⚡',items:[
+    {id:'mtvel1',label:'Résistances CBT-V560',actions:[{txt:'Fixer les deux résistances au châssis (8× M6)',torque:null,qty:1}]},
+    {id:'mtvel2',label:'Armoires électriques',actions:[
+      {txt:'Fixer armoire châssis — pieds (4× M10)',torque:null,qty:1},
+      {txt:'Fixer armoire par le haut — plats oblong (4× M12)',torque:null,qty:1}]},
+    {id:'mtvel3',label:'Vérine & Antenne 4G & Chocke',actions:[
+      {txt:'Fixer la vérine sur l'armoire',torque:null,qty:1},
+      {txt:'Fixer l'antenne 4G sur l'armoire',torque:null,qty:1},
+      {txt:'Fixer chocke ×2 au châssis (8× M16)',torque:null,qty:1}]},
+  ]},
+  {id:'boucleChd_mtv3',name:'Boucle chaude',icon:'🔥',items:[
+    {id:'mtvbc1',label:'Évaporateur — partie haute',actions:[
+      {txt:'Joint bride DN150',torque:null,qty:1},
+      {txt:'Serrer les brides',torque:'200 Nm',qty:'8× M20x85'}]},
+    {id:'mtvbc2',label:'Évaporateur — partie basse',actions:[
+      {txt:'Insérer vanne DN150 entre 2 brides',torque:null,qty:1},
+      {txt:'Serrer brides en bloquant la vanne',torque:'200 Nm',qty:'8× M20x150'}]},
+    {id:'mtvbc3',label:'Partie centrale',actions:[
+      {txt:'Insérer vanne DN150 entre 2 brides',torque:null,qty:1},
+      {txt:'Serrer brides en bloquant la vanne',torque:'200 Nm',qty:'8× M20x150'}]},
+    {id:'mtvbc4',label:'Sondes TT + Servo-moteurs',actions:[
+      {txt:'Sondes TT-11 & TT-12 — Loctite 272',torque:null,qty:2},
+      {txt:'Servo-moteurs ENO-FCV-11 & ENO-FCV-12',torque:null,qty:2}]},
+  ]},
+  {id:'boucleFrd_mtv3',name:'Boucle froide',icon:'🧊',items:[
+    {id:'mtvbf1',label:'Condenseur — partie haute',actions:[
+      {txt:'Joints bride DN150',torque:null,qty:2},
+      {txt:'Serrer les brides',torque:'200 Nm',qty:'16× M20x85'}]},
+    {id:'mtvbf2',label:'Condenseur — partie basse',actions:[
+      {txt:'Joints bride DN150',torque:null,qty:2},
+      {txt:'Serrer les brides',torque:'200 Nm',qty:'16× M20x85'}]},
+    {id:'mtvbf3',label:'Sondes TT-21 & TT-22',actions:[
+      {txt:'Sondes TT-21 & TT-22 — Loctite 272',torque:null,qty:2}]},
+  ]},
+];
+
+// ===================== STEPS ENO 100 LTV3 =====================
+const STEPS_100LTV3=[
+  {id:'turb_100',name:'Turbine',icon:'⚙️',
+   snComponents:['Génératrice','Injecteur','Capteur de vibration','Capteurs de température'],
+   items:[
+    {id:'t100_1',label:'Génératrice',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
+    {id:'t100_2',label:'Injecteurs',actions:[
+      {txt:'Entretoires à la Loctite 272',torque:'7,5 Nm',qty:6},
+      {txt:'Injecteurs avec vis CHC M6x30',torque:'7,5 Nm',qty:6},
+      {txt:'Vérification Sizer',torque:null,qty:1}]},
+    {id:'t100_3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
+    {id:'t100_4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes',torque:null,qty:2}]},
+    {id:'t100_5',label:'Repérage phases U,V,W',actions:[{txt:'Identifier l'ordre des phases',torque:null,qty:1}]},
+  ]},
+  {id:'cycleORC_100',name:'Cycle ORC',icon:'🔄',items:[
+    {id:'orc100_1',label:'Tuyauterie cycle',actions:[{txt:'Vérifier propreté intérieur/extérieur des tubes',torque:null,qty:1}]},
+    {id:'orc100_2',label:'Pompe ORC',actions:[
+      {txt:'Vérifier le sens de la pompe',torque:null,qty:1},
+      {txt:'Fixation boulons M12 au châssis',torque:'40 Nm',qty:4},
+      {txt:'Joint plat INOX DN50',torque:null,qty:2},
+      {txt:'Serrer les brides',torque:'76 Nm',qty:'8× M16'}]},
+    {id:'orc100_3',label:'Évaporateur & Condenseur',actions:[
+      {txt:'Vérification 4 boulons châssis ×2',torque:'76 Nm',qty:'8× M16'},
+      {txt:'Serrer les brides',torque:'76 Nm / 100 Nm',qty:'16× M16 & 24× M20'}]},
+    {id:'orc100_4',label:'Volute + Turbine',actions:[
+      {txt:'Joint plat inox DN125',torque:null,qty:1},
+      {txt:'Joint plat inox DN150',torque:null,qty:1},
+      {txt:'Serrer bride DN125',torque:'76 Nm',qty:'8× M16'},
+      {txt:'Serrer bride DN150',torque:'100 Nm',qty:'8× M20'},
+      {txt:'Entretoises Loctite 272',torque:'7,5 Nm',qty:6},
+      {txt:'Injecteur vis CHC M6x30',torque:'7,5 Nm',qty:6},
+      {txt:'Isolant PEEK',torque:null,qty:1},
+      {txt:'Joint torique turbine',torque:null,qty:1},
+      {txt:'Fixation génératrice vis CHC M8',torque:'12 Nm',qty:10},
+      {txt:'Bouchons 1/4NPT sur volute',torque:null,qty:3}]},
+    {id:'orc100_5',label:'Filtre',actions:[
+      {txt:'Vérifier le sens du filtre',torque:null,qty:1},
+      {txt:'Tamis FIA50',torque:null,qty:1},
+      {txt:'Couvercle avec joint papier',torque:'44 Nm',qty:1}]},
+    {id:'orc100_6',label:'Vanne bypass',actions:[
+      {txt:'Vérifier le sens de la vanne',torque:null,qty:1},
+      {txt:'Couvercle avec joint PTFE',torque:'150 Nm',qty:4},
+      {txt:'Pilote avec joint PTFE',torque:'50 Nm',qty:1},
+      {txt:'Bobine comme indiqué sur la doc',torque:null,qty:1}]},
+    {id:'orc100_7',label:'Clapet anti-retour',actions:[
+      {txt:'Vérifier le sens du clapet',torque:null,qty:1},
+      {txt:'Serrer les boulons',torque:'44 Nm',qty:1}]},
+  ]},
+  {id:'instrORC_100',name:'Instrumentation Cycle ORC',icon:'🌡️',items:[
+    {id:'ins100_1',label:'Vannes remplissage/vidange (VA)',actions:[
+      {txt:'Vannes 1/4NPT–3/8SAE Loctite 272',torque:null,qty:4},
+      {txt:'Bouchon femelle 3/8SAE + coupelle cuivre',torque:null,qty:4}]},
+    {id:'ins100_2',label:'Retour lub',actions:[{txt:'Raccord 1/2NPT–1/2SAE Loctite 272 sur bossage',torque:null,qty:2}]},
+    {id:'ins100_3',label:'Capteur pression (PT)',actions:[
+      {txt:'Raccord 1/4NPT–1/4SAE Loctite 272',torque:null,qty:2},
+      {txt:'Capteur sur vanne MM 1/4SAE + joint cuivre',torque:null,qty:2},
+      {txt:'4 vannes MM 1/4SAE sur châssis (8× M4)',torque:null,qty:1},
+      {txt:'Capillaire sans schrader',torque:null,qty:4}]},
+    {id:'ins100_4',label:'Sondes TT',actions:[
+      {txt:'TT-01 (L=60mm) N° série à noter',torque:null,qty:1},
+      {txt:'TT-03 (L=130mm) N° série à noter',torque:null,qty:1},
+      {txt:'TT-04 (L=130mm)',torque:null,qty:1},
+      {txt:'TT-11 (L=150mm)',torque:null,qty:1},
+      {txt:'TT-12 (L=150mm)',torque:null,qty:1},
+      {txt:'TT-21 (L=150mm)',torque:null,qty:1},
+      {txt:'TT-22 (L=150mm)',torque:null,qty:1},
+      {txt:'TT-30 (L=70mm)',torque:null,qty:1},
+      {txt:'TT-31 (L=70mm)',torque:null,qty:1}]},
+  ]},
+  {id:'cycleLub_100',name:'Cycle Lub',icon:'🛢️',items:[
+    {id:'lub100_1',label:'Départ de lub',actions:[
+      {txt:'Raccord MM 1/2NPT–3/8SAE dans vanne FF — Loctite 272',torque:null,qty:1},
+      {txt:'Vanne FF 1/2NPT sur embout mâle — Loctite 272',torque:null,qty:1}]},
+    {id:'lub100_2',label:'Vanne de vidange',actions:[
+      {txt:'Raccord tournant cuivre sur té 3/8-1/4-3/8',torque:null,qty:2},
+      {txt:'Raccord tournant cuivre sur vanne MM 1/4SAE',torque:null,qty:2},
+      {txt:'Fixer vanne M4 sur châssis',torque:null,qty:2},
+      {txt:'Bouchon avec joint',torque:null,qty:1}]},
+    {id:'lub100_3',label:'Pompe de lub',actions:[
+      {txt:'Raccords MM 1/8NPT–3/8SAE sur pompe — Loctite 272',torque:null,qty:2},
+      {txt:'Positionner + fixer pompe (2× vis+rondelle M6x16)',torque:null,qty:1}]},
+    {id:'lub100_4',label:'Filtre + Flexibles 1–4',actions:[
+      {txt:'Fixer filtre avec collier (1× vis+rondelle M6×25)',torque:null,qty:1},
+      {txt:'Flexibles 1 à 4',torque:'20 Nm',qty:4},
+      {txt:'Supports sur flexibles 1, 2 & 4',torque:null,qty:3}]},
+    {id:'lub100_5',label:'Circuit flexible 5–10',actions:[
+      {txt:'Capteur pression sur vanne + coupelle cuivre',torque:null,qty:1},
+      {txt:'Fixer vanne M4 sur châssis',torque:null,qty:2},
+      {txt:'Té 3/8-1/4-3/8 sur flexible 4',torque:'20 Nm',qty:1},
+      {txt:'Flexible 5 sur Té',torque:'20 Nm',qty:1},
+      {txt:'Vanne sur flexible 5',torque:null,qty:1},
+      {txt:'Flexible 6 sur vanne',torque:'20 Nm',qty:1},
+      {txt:'Té 3/8 sur flexible 6',torque:null,qty:1},
+      {txt:'Supports flexibles 5&6',torque:null,qty:2},
+      {txt:'Flexibles 7&8 Té → turbine',torque:'20 Nm',qty:2},
+      {txt:'Supports flexibles 7&8',torque:null,qty:2},
+      {txt:'Flexibles 9&10 génératrice → retour lub',torque:'20 Nm',qty:2},
+      {txt:'Supports flexibles 9&10',torque:null,qty:2},
+      {txt:'Trait de marqueur — 24 points',torque:null,qty:24}]},
+  ]},
+  {id:'coolingPrep_100',name:'Cycle Cooling — Préparation',icon:'❄️',items:[
+    {id:'cp100_1',label:'Préparation composants',actions:[
+      {txt:'Braser mamelon MF16–20x27 sur ventilateur',torque:null,qty:2},
+      {txt:'Mamelon MM 26x34–20x27 sur pot décantation — Loctite',torque:null,qty:1},
+      {txt:'Mamelon FM 26x34–20x27 + joint fibre 26x34',torque:'30 Nm',qty:1},
+      {txt:'Vanne sphère MM 1/2 ENO-VA-32 — Loctite 272',torque:null,qty:1},
+      {txt:'Vanne sphère MM 3/4 ENO-VA-31 — Loctite 272',torque:null,qty:1},
+      {txt:'Mamelon MM 12x17–15x21 — Loctite 272',torque:null,qty:1},
+      {txt:'Sertir 2 écrous tournants tube transparent (4 joints toriques)',torque:null,qty:1},
+      {txt:'Mamelon MM 20x27–15x21 sur pompe cooling — Loctite 272',torque:null,qty:2},
+      {txt:'Mamelon MM 20x27 sur filtre — Loctite 272',torque:null,qty:1},
+      {txt:'Vanne MM 1/2 sur té — Loctite 272',torque:null,qty:1}]},
+  ]},
+  {id:'coolingInst_100',name:'Cycle Cooling — Installation',icon:'❄️',items:[
+    {id:'ci100_1',label:'Ventilateur + Réservoir',actions:[
+      {txt:'Fixer ventilateur sur châssis',torque:'15 Nm',qty:'4× M10'},
+      {txt:'Support réservoir au châssis (2× M10)',torque:null,qty:1},
+      {txt:'Pot décantation avec collier 6"',torque:null,qty:1},
+      {txt:'Pot + collier sur support (1× M10)',torque:null,qty:1},
+      {txt:'Tube transparent — joint fibre 15x21',torque:'30 Nm',qty:1},
+      {txt:'Purgeur — joint fibre 15x21',torque:'30 Nm',qty:1}]},
+    {id:'ci100_2',label:'Vase + Flow switch + Supports',actions:[
+      {txt:'Vase expansion avec collier 6" (1× M10)',torque:null,qty:1},
+      {txt:'Flow switch sur ligne montante turbine',torque:null,qty:1},
+      {txt:'Supports tuyauterie',torque:null,qty:9},
+      {txt:'Support cooling sur volute (4× M6x20)',torque:null,qty:1}]},
+    {id:'ci100_3',label:'Assemblage raccords',actions:[
+      {txt:'Écrou tournant 20x27–20F',torque:'30 Nm',qty:8},
+      {txt:'Flow Switch MM 20x27',torque:'30 Nm',qty:1},
+      {txt:'Té égal 20F',torque:null,qty:1},
+      {txt:'Sonde T° M1/2G PT1000 L150',torque:'30 Nm',qty:2},
+      {txt:'Écrou tournant 15x21–20F',torque:'30 Nm',qty:2},
+      {txt:'Pompe cooling',torque:'30 Nm',qty:1},
+      {txt:'Filtre Tamis 20x27 F',torque:'30 Nm',qty:1},
+      {txt:'Coude écrou tournant 20x27–20F',torque:'30 Nm',qty:5},
+      {txt:'Té lateral F15x21–20F',torque:null,qty:3},
+      {txt:'Bouchons vannes (2×1/2 & 1×3/4)',torque:null,qty:3}]},
+  ]},
+  {id:'support_100',name:'Assemblage support turbine',icon:'🔩',items:[
+    {id:'sup100_1',label:'Châssis turbine',actions:[
+      {txt:'Tôles avant et arrière sur génératrice (8× M6x20)',torque:null,qty:1},
+      {txt:'Châssis turbine sur tôles — réglage (6× M8)',torque:null,qty:1}]},
+  ]},
+  {id:'elec_100',name:'Assemblage électrique',icon:'⚡',items:[
+    {id:'el100_1',label:'Résistance CBT-V560',actions:[{txt:'Fixer résistance au châssis (4× M6)',torque:null,qty:1}]},
+    {id:'el100_2',label:'Armoire électrique 1800×1700×600',actions:[
+      {txt:'Fixer armoire — pieds (4× M12)',torque:null,qty:1},
+      {txt:'Fixer armoire — haut plats oblong (2× M10)',torque:null,qty:1}]},
+    {id:'el100_3',label:'Vérine & Antenne 4G & Chocke',actions:[
+      {txt:'Fixer la vérine sur l'armoire',torque:null,qty:1},
+      {txt:'Fixer l'antenne 4G sur l'armoire',torque:null,qty:1},
+      {txt:'Fixer chocke au châssis (4× M16)',torque:null,qty:1}]},
+  ]},
+  {id:'bypass_100',name:'Assemblage Bypass',icon:'🔥',items:[
+    {id:'bp100_1',label:'Bypass évaporateur',actions:[
+      {txt:'Brides sur évaporateur, boulons M20x90',torque:'100 Nm',qty:8},
+      {txt:'Vérifier le sens des deux vannes papillon',torque:null,qty:2},
+      {txt:'Vannes papillon entre brides vis M20x140 + Rondelle M20',torque:'100 Nm',qty:16},
+      {txt:'Sondes TT-11 & TT-12 — Loctite 272',torque:null,qty:2},
+      {txt:'Actionneurs sur les vannes',torque:null,qty:2}]},
+  ]},
+];
+
+// ===================== STEPS ENO 40 LTV3 =====================
+const STEPS_40LTV3=[
+  {id:'tA_40',name:'Turbine A (Armoire)',icon:'⚙️',
+   snComponents:['Génératrice','Injecteur','Capteur de vibration','Capteurs de température'],
+   items:[
+    {id:'t40_A1',label:'Génératrice',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
+    {id:'t40_A2',label:'Injecteurs',actions:[
+      {txt:'Entretoires à la Loctite 272',torque:null,qty:6},
+      {txt:'Injecteurs avec vis CHC M6x30',torque:null,qty:6},
+      {txt:'Vérification Sizer',torque:null,qty:1}]},
+    {id:'t40_A3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
+    {id:'t40_A4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes',torque:null,qty:2}]},
+    {id:'t40_A5',label:'Repérage phases U,V,W',actions:[{txt:'Identifier l'ordre des phases',torque:null,qty:1}]},
+  ]},
+  {id:'tB_40',name:'Turbine B (Brides)',icon:'⚙️',
+   snComponents:['Génératrice','Injecteur','Capteur de vibration','Capteurs de température'],
+   items:[
+    {id:'t40_B1',label:'Génératrice',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
+    {id:'t40_B2',label:'Injecteurs',actions:[
+      {txt:'Entretoires à la Loctite 272',torque:null,qty:6},
+      {txt:'Injecteurs avec vis CHC M6x30',torque:null,qty:6},
+      {txt:'Vérification Sizer',torque:null,qty:1}]},
+    {id:'t40_B3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
+    {id:'t40_B4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes',torque:null,qty:2}]},
+    {id:'t40_B5',label:'Repérage phases U,V,W',actions:[{txt:'Identifier l'ordre des phases',torque:null,qty:1}]},
+  ]},
+  {id:'cycleORC_40',name:'Cycle ORC',icon:'🔄',items:[
+    {id:'orc40_1',label:'Tuyauterie cycle',actions:[{txt:'Vérifier propreté intérieur/extérieur des tubes',torque:null,qty:1}]},
+    {id:'orc40_2',label:'Pompe ORC',actions:[
+      {txt:'Vérifier le sens de la pompe',torque:null,qty:1},
+      {txt:'Fixation boulons M12x60 au châssis',torque:'40 Nm',qty:4},
+      {txt:'Joint inox DN40',torque:null,qty:2},
+      {txt:'Serrer les brides',torque:'40 Nm',qty:'16× M16'}]},
+    {id:'orc40_3',label:'Évaporateur & Condenseurs',actions:[
+      {txt:'Vérification 4 boulons châssis condenseur + 4 écrous M12 évaporateur',torque:'60 Nm',qty:'4× M16x50'},
+      {txt:'Joints inox DN50',torque:null,qty:4},
+      {txt:'Serrer brides DN50',torque:'76 Nm',qty:'16× M16'}]},
+    {id:'orc40_4',label:'Volutes + Turbines',actions:[
+      {txt:'Joints plats inox DN50 & DN80',torque:null,qty:2},
+      {txt:'Serrer brides DN50',torque:'60 Nm',qty:'8× M16'},
+      {txt:'Serrer brides DN80',torque:'76 Nm',qty:'16× M16'},
+      {txt:'Entretoires Loctite 272',torque:'7,5 Nm',qty:12},
+      {txt:'Isolants intérieurs',torque:null,qty:2},
+      {txt:'Fixation isolants + génératrice (16× CHC M6x35)',torque:null,qty:1},
+      {txt:'Joints toriques ID151.77×CS5.33',torque:null,qty:2}]},
+    {id:'orc40_5',label:'Filtre + Clapet + Bypass',actions:[
+      {txt:'Vérifier le sens du filtre',torque:null,qty:1},
+      {txt:'Mise en place du tamis',torque:null,qty:1},
+      {txt:'Vérifier le sens du clapet',torque:null,qty:1},
+      {txt:'Serrer les boulons du clapet',torque:'44 Nm',qty:1},
+      {txt:'Vérifier le sens de la vanne bypass',torque:null,qty:1}]},
+  ]},
+  {id:'instrORC_40',name:'Instrumentation Cycle ORC',icon:'🌡️',items:[
+    {id:'ins40_1',label:'Vannes remplissage/vidange',actions:[
+      {txt:'Vannes 1/4NPT–3/8SAE Loctite 272',torque:null,qty:4},
+      {txt:'Bouchon femelle 3/8SAE + coupelle cuivre',torque:null,qty:4}]},
+    {id:'ins40_2',label:'Retour lub + Capteurs PT',actions:[
+      {txt:'Raccord 1/2NPT–1/2SAE Loctite 272 sur bossage 1/4NPT réservoir',torque:null,qty:2},
+      {txt:'Raccord 1/4NPT–1/4SAE Loctite 272',torque:null,qty:2},
+      {txt:'Capteur sur vanne MM 1/4SAE + joint cuivre',torque:null,qty:2},
+      {txt:'2 vannes MM 1/4SAE sur châssis (4× M4)',torque:null,qty:1},
+      {txt:'Capillaire sans schrader',torque:null,qty:2}]},
+    {id:'ins40_3',label:'Sondes TT',actions:[
+      {txt:'TT-01 (L=60mm)',torque:null,qty:1},
+      {txt:'TT-03A (L=60mm)',torque:null,qty:1},
+      {txt:'TT-03B (L=60mm)',torque:null,qty:1},
+      {txt:'TT-04A (L=60mm)',torque:null,qty:1},
+      {txt:'TT-11 Cold Loop (L=70mm)',torque:null,qty:1},
+      {txt:'TT-13 Cold Loop (L=70mm)',torque:null,qty:1},
+      {txt:'TT-21 Hot Loop (L=70mm)',torque:null,qty:1},
+      {txt:'TT-22 Hot Loop (L=70mm)',torque:null,qty:1},
+      {txt:'TT-30A Cooling (L=150mm)',torque:null,qty:1},
+      {txt:'TT-31A Cooling (L=150mm)',torque:null,qty:1}]},
+  ]},
+  {id:'cycleLub_40',name:'Cycle Lub',icon:'🛢️',items:[
+    {id:'lub40_1',label:'Départ de lub',actions:[
+      {txt:'Raccord MM 1/2NPT–3/8SAE dans vanne FF — Loctite 272',torque:null,qty:1},
+      {txt:'Vanne FF 1/2NPT sur embout mâle — Loctite 272',torque:null,qty:1}]},
+    {id:'lub40_2',label:'Vanne de vidange',actions:[
+      {txt:'Raccord tournant cuivre sur té 3/8-1/4-3/8',torque:null,qty:2},
+      {txt:'Raccord tournant cuivre sur vanne MM 1/4SAE',torque:null,qty:2},
+      {txt:'Fixer vanne M4 sur châssis',torque:null,qty:2},
+      {txt:'Bouchon F 1/4 avec joint',torque:null,qty:1}]},
+    {id:'lub40_3',label:'Pompe + Filtre',actions:[
+      {txt:'Positionner + fixer pompe (4× vis+rondelle M6x16)',torque:null,qty:1},
+      {txt:'Vérifier sens de montage (vers les turbines)',torque:null,qty:1},
+      {txt:'Fixer filtre avec collier (1× vis+rondelle M8x12)',torque:null,qty:1}]},
+    {id:'lub40_4',label:'Flexibles 1–12',actions:[
+      {txt:'Flexibles 1 à 4',torque:'20 Nm',qty:4},
+      {txt:'Capteur pression + coupelle cuivre',torque:null,qty:1},
+      {txt:'Fixer vanne M4 sur châssis',torque:null,qty:2},
+      {txt:'Té 3/8-1/4-3/8 sur flexible 4',torque:'20 Nm',qty:1},
+      {txt:'Flexible 5–6 + vanne + Té 3/8',torque:'20 Nm',qty:3},
+      {txt:'Supports flexibles 5&6 (4×)',torque:null,qty:1},
+      {txt:'Flexibles 7 (×4)',torque:'20 Nm',qty:4},
+      {txt:'Tés 1/4-3/8-1/4 au bout flexibles 7',torque:null,qty:2},
+      {txt:'Flexibles 8, 9 & 10 sur turbines',torque:'20 Nm',qty:4},
+      {txt:'Flexible 11 turbine B → réservoir',torque:'20 Nm',qty:2},
+      {txt:'Flexible 12 turbine A → réservoir',torque:'20 Nm',qty:2},
+      {txt:'Supports flexible 12',torque:null,qty:2},
+      {txt:'Trait de marqueur — 28 points',torque:null,qty:28}]},
+  ]},
+  {id:'coolingPrep_40',name:'Cycle Cooling — Préparation',icon:'❄️',items:[
+    {id:'cp40_1',label:'Préparation composants',actions:[
+      {txt:'Joint fibre 26x34 entre raccord ventilateur et écrou tournant',torque:null,qty:2},
+      {txt:'Mamelon MM 26x34 + joint fibre sur pot décantation',torque:'30 Nm',qty:1},
+      {txt:'Vanne sphère MM 1/2 ENO-VA-32 — Loctite 272',torque:null,qty:1},
+      {txt:'Vanne sphère MM 3/4 ENO-VA-31 — Loctite 272',torque:null,qty:1},
+      {txt:'Mamelon MM 12x17–15x21 — Loctite 272',torque:null,qty:1},
+      {txt:'Sertir 2 écrous tournants tube transparent (4 joints toriques)',torque:null,qty:1},
+      {txt:'Raccorder pompe aux écrous tournants 26x34 26F',torque:null,qty:1},
+      {txt:'Mamelons MM 20x27 sur filtre — Loctite 272',torque:null,qty:2},
+      {txt:'Vanne MM 1/2 sur té — Loctite 272',torque:null,qty:1}]},
+  ]},
+  {id:'coolingInst_40',name:'Cycle Cooling — Installation',icon:'❄️',items:[
+    {id:'ci40_1',label:'Ventilateur + Réservoir',actions:[
+      {txt:'Fixer ventilateur sur châssis',torque:'9,5 Nm',qty:'3× M8'},
+      {txt:'Pot décantation avec collier 6"',torque:null,qty:1},
+      {txt:'Pot + collier sur support (1× M10)',torque:null,qty:1},
+      {txt:'Tube transparent — joint fibre 15x21',torque:'30 Nm',qty:1},
+      {txt:'Purgeur — joint fibre 15x21',torque:'30 Nm',qty:1}]},
+    {id:'ci40_2',label:'Vase + Flow switch + Supports',actions:[
+      {txt:'Vase expansion avec collier 6" (1× M10)',torque:null,qty:1},
+      {txt:'Flow switch sur lignes montantes turbines',torque:null,qty:2},
+      {txt:'Supports tuyauterie',torque:null,qty:6}]},
+    {id:'ci40_3',label:'Assemblage raccords',actions:[
+      {txt:'Écrou tournant 20x27–20F',torque:'30 Nm',qty:6},
+      {txt:'Flow Switch MM 20x27',torque:'30 Nm',qty:2},
+      {txt:'Té égal 20F',torque:null,qty:1},
+      {txt:'Sonde T° M1/2G PT1000 L150',torque:'30 Nm',qty:2},
+      {txt:'Écrou tournant 15x21–20F',torque:'30 Nm',qty:4},
+      {txt:'Coude FF 26 & 20',torque:null,qty:8},
+      {txt:'Pompe cooling',torque:'30 Nm',qty:1},
+      {txt:'Filtre Tamis 20x27 F',torque:'30 Nm',qty:1},
+      {txt:'Coude écrou tournant 20x27–20F',torque:'30 Nm',qty:5},
+      {txt:'Tés réduits FFF (5×)',torque:null,qty:5},
+      {txt:'Écrou tournant 26x34–26F',torque:'30 Nm',qty:5},
+      {txt:'Bouchons vannes (1×1/2 & 1×3/4)',torque:null,qty:2}]},
+  ]},
+  {id:'elec_40',name:'Assemblage électrique',icon:'⚡',items:[
+    {id:'el40_1',label:'Résistances CBT-V600',actions:[{txt:'Fixer les deux résistances au châssis (8× M6)',torque:null,qty:1}]},
+    {id:'el40_2',label:'Armoire électrique 1600×1200×500',actions:[
+      {txt:'Fixer armoire — pieds (4× M10)',torque:null,qty:1},
+      {txt:'Fixer armoire — haut plats oblong (4× M12)',torque:null,qty:1}]},
+    {id:'el40_3',label:'Vérine & Antenne 4G',actions:[
+      {txt:'Fixer la vérine sur l'armoire',torque:null,qty:1},
+      {txt:'Fixer l'antenne 4G sur l'armoire',torque:null,qty:1}]},
+  ]},
+  {id:'boucleChd_40',name:'Boucle chaude',icon:'🔥',items:[
+    {id:'bc40_1',label:'Évaporateur — partie haute',actions:[
+      {txt:'Joint bride DN80',torque:null,qty:1},
+      {txt:'Serrer les brides',torque:'76 Nm',qty:'8× M16'},
+      {txt:'Mise en place vanne + purgeur',torque:null,qty:2}]},
+    {id:'bc40_2',label:'Évaporateur — partie basse',actions:[
+      {txt:'Insérer vanne DN80 entre 2 brides',torque:null,qty:1},
+      {txt:'Serrer brides en bloquant la vanne',torque:'76 Nm',qty:'8× M16'}]},
+    {id:'bc40_3',label:'Partie centrale',actions:[
+      {txt:'Insérer vanne DN80 entre 2 brides',torque:null,qty:1},
+      {txt:'Serrer brides en bloquant la vanne',torque:'76 Nm',qty:'8× M16'}]},
+    {id:'bc40_4',label:'Sondes TT + Servo-moteurs',actions:[
+      {txt:'Sondes TT-11 & TT-12 — Loctite 272',torque:null,qty:2},
+      {txt:'Servo-moteurs ENO-FCV-11 & ENO-FCV-12',torque:null,qty:2}]},
+  ]},
+  {id:'boucleFrd_40',name:'Boucle froide',icon:'🧊',items:[
+    {id:'bf40_1',label:'Condenseur — partie haute',actions:[
+      {txt:'Mise en place vanne + purgeur',torque:null,qty:1},
+      {txt:'Sondes TT-21 & TT-22 — Loctite 272',torque:null,qty:2}]},
+  ]},
+];
+
+// ===================== MODELS CATALOG =====================
+const MODELS = {
+  'eno180ltv3': {
+    id: 'eno180ltv3',
+    name: 'ENO 180 LTV3',
+    ref: 'Pi085 – 051 – DC002 | Indice D',
+    icon: '⚙️',
+    desc: 'ORC 180 kW — Cycle basse température, version 3 turbines LTV',
+    power: '180 kW',
+    available: true,
+    getSteps: () => STEPS_180LTV3
+  },
+  'eno180mtv3': {
+    id: 'eno180mtv3',
+    name: 'ENO 180 MTV3',
+    ref: 'Pi104 – 051 – DC002 | Indice B',
+    icon: '⚙️',
+    desc: 'ORC 180 kW — Cycle moyenne température, version 3 turbines MTV',
+    power: '180 kW',
+    available: true,
+    getSteps: () => STEPS_180MTV3
+  },
+  'eno100ltv3': {
+    id: 'eno100ltv3',
+    name: 'ENO 100 LTV3',
+    ref: 'Pi084 – 051 – DC002 | Indice A',
+    icon: '⚙️',
+    desc: 'ORC 100 kW — Cycle basse température, version 3 turbines LTV',
+    power: '100 kW',
+    available: true,
+    getSteps: () => STEPS_100LTV3
+  },
+  'eno40ltv3': {
+    id: 'eno40ltv3',
+    name: 'ENO 40 LTV3',
+    ref: 'Pi072 – 051 – DC002 | Indice A',
+    icon: '⚙️',
+    desc: 'ORC 40 kW — Cycle basse température, version 3 turbines LTV',
+    power: '40 kW',
+    available: true,
+    getSteps: () => STEPS_40LTV3
+  },
+  'coming1': {
+    id: 'coming1',
+    name: 'Prochainement',
+    ref: '—',
+    icon: '🔧',
+    desc: 'Nouvelle gamme en cours d'intégration',
+    power: '—',
+    available: false,
+    getSteps: () => []
+  },
+  'coming2': {
+    id: 'coming2',
+    name: 'Prochainement',
+    ref: '—',
+    icon: '🔧',
+    desc: 'Nouvelle gamme en cours d'intégration',
+    power: '—',
+    available: false,
+    getSteps: () => []
+  },
+};
+
+// Current active model steps (set when model selected)
+let ACTIVE_STEPS = [];
+
 // ===================== STATE =====================
 let session=null, currentStep=0;
 let sessions=[];
@@ -563,7 +1181,11 @@ async function loadSessions(){
 
 // Init when Firebase is ready
 function initApp(){
-  loadSessions().then(()=>renderHistory());
+  loadSessions().then(()=>{
+    renderHistory();
+    // Show model selector on first load
+    showModelSelector();
+  });
 }
 if(window._firebaseReady){ initApp(); }
 else { document.addEventListener('firebaseReady', initApp); }
@@ -820,6 +1442,42 @@ function restoreModel(){
 window.addEventListener('resize',resizeRenderer);
 
 // ===================== SESSION =====================
+function showModelSelector(){
+  showScreen('scModels');
+  renderModelGrid();
+}
+
+function renderModelGrid(){
+  const grid = document.getElementById('modelGrid');
+  grid.innerHTML = Object.values(MODELS).map(m => {
+    const steps = m.available ? m.getSteps() : [];
+    const cls = m.available ? '' : 'model-card-coming';
+    const onclick = m.available ? `selectModel('${m.id}')` : '';
+    return `<div class="model-card ${cls}" onclick="${onclick}">
+      ${!m.available ? '<div class="model-card-badge">Bientôt</div>' : ''}
+      <div class="model-card-icon">${m.icon}</div>
+      <div class="model-card-name">${m.name}</div>
+      <div class="model-card-ref">${m.ref}</div>
+      <div class="model-card-desc">${m.desc}</div>
+      <div class="model-card-steps">
+        <span class="model-card-step">⚡ ${m.power}</span>
+        ${m.available ? `<span class="model-card-step">${steps.length} étapes</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+let currentModel = null;
+
+function selectModel(modelId){
+  currentModel = MODELS[modelId];
+  ACTIVE_STEPS = currentModel.getSteps();
+  showScreen('scHome');
+  // Update home screen title
+  document.getElementById('homeModelTitle').textContent = currentModel.name;
+  document.getElementById('homeModelRef').textContent = currentModel.ref;
+}
+
 function startSession(){
   const op=document.getElementById('inOp').value.trim();
   if(!op){alert('Veuillez renseigner le nom de l\'opérateur.');return;}
@@ -831,7 +1489,7 @@ function startSession(){
     date:new Date().toLocaleDateString('fr-FR'),
     started:new Date().toISOString(),
     completed:null, currentStep:0,
-    steps:STEPS.map(s=>({
+    steps:ACTIVE_STEPS.map(s=>({
       id:s.id,
       items:(s.items||[]).map(it=>({
         id:it.id,
@@ -853,6 +1511,10 @@ function loadSession(id){
   session=sessions.find(s=>s.id===id);
   currentStep=session.currentStep||0;
   stepModels={};
+  // Restore the correct model steps
+  const modelId = session.modelId || 'eno180ltv3';
+  currentModel = MODELS[modelId] || MODELS['eno180ltv3'];
+  ACTIVE_STEPS = currentModel.getSteps();
   showScreen('scChecklist');
   renderStep();
 }
@@ -870,7 +1532,7 @@ function renderHistory(){
       <div style="font-size:24px">⚙️</div>
       <div class="hist-info">
         <div class="hist-title">${s.serie} — ${s.projet}</div>
-        <div class="hist-meta">OP: ${s.op} | ${s.date} | ${p.pct}% complété</div>
+        <div class="hist-meta">${s.modelName||'ENO 180 LTV3'} | OP: ${s.op} | ${s.date} | ${p.pct}% complété</div>
       </div>
       <button class="btn btn-outline btn-sm" onclick="loadSession(${s.id})">Reprendre</button>
     </div>`;
@@ -885,23 +1547,23 @@ function calcProgress(s){
 
 // ===================== STEP RENDER =====================
 function renderStep(){
-  const step=STEPS[currentStep];
+  const step=ACTIVE_STEPS[currentStep];
   const sstate=session.steps[currentStep];
   const prog=calcProgress(session);
 
-  document.getElementById('progLabel').textContent=`Étape ${currentStep+1}/${STEPS.length} — ${step.name}`;
+  document.getElementById('progLabel').textContent=`Étape ${currentStep+1}/${ACTIVE_STEPS.length} — ${step.name}`;
   document.getElementById('progPct').textContent=prog.pct+'%';
   document.getElementById('progFill').style.width=prog.pct+'%';
   document.getElementById('sessionBadge').textContent=session.op;
 
-  document.getElementById('stepsNav').innerHTML=STEPS.map((s,i)=>{
+  document.getElementById('stepsNav').innerHTML=ACTIVE_STEPS.map((s,i)=>{
     const allOp=session.steps[i].items.every(it=>it.opDone);
     const cls=i===currentStep?'active':(allOp?'done':'');
     return `<div class="step-dot ${cls}" onclick="jumpStep(${i})" title="${s.name}">${i+1}</div>`;
   }).join('');
 
   document.getElementById('stepHdr').innerHTML=`
-    <div class="step-num">Étape ${currentStep+1} / ${STEPS.length}</div>
+    <div class="step-num">Étape ${currentStep+1} / ${ACTIVE_STEPS.length}</div>
     <div class="step-name">${step.icon} ${step.name}</div>
     <div class="step-meta">
       <span class="chip">OP: ${session.op}</span>
@@ -1015,7 +1677,7 @@ function jumpStep(i){currentStep=i;session.currentStep=i;saveState();renderStep(
 function navStep(dir){
   const next=currentStep+dir;
   if(next<0)return;
-  if(next>=STEPS.length){showReport();return;}
+  if(next>=ACTIVE_STEPS.length){showReport();return;}
   currentStep=next;session.currentStep=next;saveState();renderStep();window.scrollTo(0,0);
 }
 
