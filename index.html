@@ -143,6 +143,40 @@ textarea{height:52px;resize:none;font-size:12px}
 
 /* DASHBOARD */
 
+
+/* TIMER */
+.timer-bar{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.timer-display{font-family:var(--font-title);font-size:28px;color:var(--accent);letter-spacing:2px;min-width:90px}
+.timer-running{color:#f0a500;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.timer-btn{background:#00364a;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font);transition:.2s}
+.timer-btn:hover{border-color:var(--accent);color:var(--accent)}
+.timer-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.timer-history{font-size:11px;color:var(--text3);flex:1}
+
+/* NC PHOTO */
+.nc-photo-wrap{margin-top:8px}
+.nc-photo-grid{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.nc-photo-thumb{width:60px;height:60px;border-radius:6px;object-fit:cover;border:1px solid var(--border);cursor:pointer}
+.nc-photo-add{width:60px;height:60px;border-radius:6px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;background:#00364a;color:var(--text3)}
+.nc-photo-add:hover{border-color:var(--accent);color:var(--accent)}
+
+/* QR CODE */
+.qr-modal{position:fixed;inset:0;background:#000c;z-index:1000;display:flex;align-items:center;justify-content:center}
+.qr-modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;text-align:center;max-width:320px;width:90%}
+.qr-modal-title{font-family:var(--font-title);font-size:20px;color:var(--accent);margin-bottom:4px}
+.qr-modal-sub{font-size:12px;color:var(--text3);margin-bottom:16px}
+#qrCanvas{background:#fff;border-radius:8px;padding:8px;display:inline-block}
+
+/* OFFLINE BADGE */
+.offline-badge{background:#e0555522;border:1px solid #e0555544;color:#e05555;border-radius:20px;padding:3px 10px;font-size:11px;display:none}
+.offline-badge.show{display:inline-flex;align-items:center;gap:4px}
+
+/* NOTIFICATION TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:12px 20px;font-size:13px;color:var(--text);z-index:2000;box-shadow:0 8px 30px #000a;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.toast.error{border-color:#e05555;color:#e05555}
+
 /* NON-CONFORMITES */
 .nc-badge{background:#e0555522;border:1px solid #e0555544;color:#e05555;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700}
 .nc-modal{position:fixed;inset:0;background:#000a;z-index:999;display:flex;align-items:center;justify-content:center}
@@ -246,7 +280,8 @@ textarea{height:52px;resize:none;font-size:12px}
     </div>
   </div>
   <div class="hdr-right">
-    <span class="badge live">● EN LIGNE</span>
+    <span class="badge live" id="onlineBadge">● EN LIGNE</span>
+    <span class="offline-badge" id="offlineBadge">⚠ HORS LIGNE</span>
     <span class="badge" id="sessionBadge">–</span>
     <span class="badge" id="userEmail" style="color:var(--accent)"></span>
     <button class="btn btn-outline btn-sm" onclick="window._signOut()" style="padding:4px 10px;font-size:11px">⎋ Déconnexion</button>
@@ -295,6 +330,21 @@ textarea{height:52px;resize:none;font-size:12px}
     <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
   </div>
   <div class="steps-nav" id="stepsNav"></div>
+
+  <!-- TIMER BAR -->
+  <div class="timer-bar">
+    <div>
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">⏱ Chronomètre étape</div>
+      <div class="timer-display" id="timerDisplay">00:00:00</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="timer-btn" id="timerStartBtn" onclick="timerStart()">▶ Démarrer</button>
+      <button class="timer-btn" id="timerStopBtn" onclick="timerStop()" style="display:none">⏸ Pause</button>
+      <button class="timer-btn" id="timerResetBtn" onclick="timerReset()">↺ Réinitialiser</button>
+    </div>
+    <div class="timer-history" id="timerHistory"></div>
+    <button class="timer-btn" onclick="showQR()" style="margin-left:auto">📱 QR Code</button>
+  </div>
 
   <div class="step-header" id="stepHdr"></div>
 
@@ -372,6 +422,7 @@ textarea{height:52px;resize:none;font-size:12px}
 
 <!-- Three.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <!-- Firebase CDN -->
 <script type="module">
@@ -1240,32 +1291,52 @@ let stepModels={};
 // ---- Firebase helpers ----
 async function saveState(){
   if(!session) return;
-  // Update local array
   const idx = sessions.findIndex(s=>s.id===session.id);
   if(idx>=0) sessions[idx]=session; else sessions.unshift(session);
-  // Save to Firestore
-  try {
-    const db = window._db;
-    if(!db) return;
-    await window._fsSetDoc(window._fsDoc(db,'sessions', String(session.id)), session);
-  } catch(e){ console.warn('Firebase save error:', e); }
+  // Always save offline first
+  saveOffline();
+  // Then try Firebase
+  if(navigator.onLine){
+    try {
+      const db = window._db;
+      if(!db) return;
+      await window._fsSetDoc(window._fsDoc(db,'sessions', String(session.id)), session);
+    } catch(e){ console.warn('Firebase save error - kept offline:', e); }
+  }
 }
 
 async function loadSessions(){
-  try {
-    const db = window._db;
-    if(!db) return;
-    const q = window._fsQuery(window._fsCollection(db,'sessions'), window._fsOrderBy('started','desc'));
-    const snap = await window._fsGetDocs(q);
-    sessions = snap.docs.map(d=>d.data());
-  } catch(e){ console.warn('Firebase load error:', e); sessions=[]; }
+  // Load offline first for instant display
+  const offline = loadOffline();
+  if(offline.length) sessions = offline;
+  // Then try Firebase
+  if(navigator.onLine){
+    try {
+      const db = window._db;
+      if(!db) return;
+      const q = window._fsQuery(window._fsCollection(db,'sessions'), window._fsOrderBy('started','desc'));
+      const snap = await window._fsGetDocs(q);
+      const firebaseSessions = snap.docs.map(d=>d.data());
+      // Merge: firebase wins for synced, offline wins for pending
+      const pending = JSON.parse(localStorage.getItem('enogia_pending_sync')||'[]');
+      const merged = [...firebaseSessions];
+      pending.forEach(pid=>{
+        const local = offline.find(s=>s.id===pid);
+        if(local && !merged.find(s=>s.id===pid)) merged.unshift(local);
+      });
+      sessions = merged.sort((a,b)=>new Date(b.started||0)-new Date(a.started||0));
+      saveOffline();
+    } catch(e){ console.warn('Firebase load error - using offline:', e); }
+  }
 }
 
 // Init when Firebase is ready
 function initApp(){
+  setupOfflineDetection();
   loadSessions().then(()=>{
     renderHistory();
     renderModelGrid();
+    checkQRParam();
   });
 }
 if(window._firebaseReady){ initApp(); }
@@ -1587,14 +1658,18 @@ function startSession(){
         actions:it.actions.map(()=>false),
         opDone:false,opName:'',opDate:'',opComment:'',
         veDone:false,veName:'',veDate:'',veComment:'',
-        ncReason:'',firstPassResult:null,ncCount:0,
+        ncReason:'',firstPassResult:null,ncCount:0,photos:[],
       })),
       snData:{},comment:'',
     }))
   };
   sessions.unshift(session);
-  saveState(); // async, fire-and-forget
-  currentStep=0;stepModels={};
+  saveState();
+  sendNotification(
+    `▶ Nouveau montage démarré — ${session.serie}`,
+    `Montage démarré par ${session.op} sur ${session.serie} (${session.projet}, ${session.modelName||'—'}). Date: ${session.date}.`
+  );
+  currentStep=0;stepModels={};stepTimerLog={};
   showScreen('scChecklist');
   renderStep();
 }
@@ -1728,6 +1803,15 @@ function renderStep(){
               <option value="autre" ${it.ncReason==='autre'?'selected':''}>⚠️ Non-conforme — Autre</option>
             </select>`}
             ${it.ncReason&&it.ncReason!=='ok'?`<span class="nc-badge" style="display:inline-block;margin-top:4px">NC: ${it.ncReason}</span>`:''}
+            ${it.opDone?`<div class="nc-photo-wrap">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px">📸 Photos NC</div>
+              <div class="nc-photo-grid" id="photos_${currentStep}_${idx}">
+                ${(it.photos||[]).map((p,pi)=>`<img src="${p}" class="nc-photo-thumb" onclick="viewPhoto('${p}')">`).join('')}
+                <label class="nc-photo-add" title="Ajouter photo">
+                  ＋<input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhoto(${currentStep},${idx},this)">
+                </label>
+              </div>
+            </div>`:''}
             <button class="btn ${it.veDone?'btn-success':'btn-outline'} btn-full mt8 btn-sm" onclick="validateVE(${currentStep},${idx})" ${it.veDone?'disabled':(!it.opDone?'disabled':'')}>
               ${it.veDone?'✅ Validé VE — '+it.veDate:(it.opDone?'🔍 Valider (VE)':'⏳ Attente OP')}
             </button>
@@ -1764,6 +1848,8 @@ function renderStep(){
 
   // 3D viewer
   setTimeout(()=>{resizeRenderer();restoreModel();},50);
+  // Timer
+  restoreTimer();
 }
 
 function toggleItem(id){document.getElementById(id).classList.toggle('open');}
@@ -1786,9 +1872,17 @@ function validateOP(si,ii){
 function validateVE(si,ii){
   const it=session.steps[si].items[ii];
   if(!it.opDone)return;
-  // Track first-pass: was there a NC before?
   if(!it.firstPassResult){
     it.firstPassResult = (!it.ncReason || it.ncReason==='ok') ? 'pass' : 'fail';
+  }
+  // Notify if NC
+  if(it.ncReason && it.ncReason!=='ok' && it.ncReason!==''){
+    const stepName = ACTIVE_STEPS[si]?.name||'—';
+    const itemLabel = ACTIVE_STEPS[si]?.items[ii]?.label||'—';
+    sendNotification(
+      `⚠️ Non-conformité — ${session.serie}`,
+      `NC détectée sur ${session.serie} (${session.projet}), étape "${stepName}", item: "${itemLabel}". Raison: ${it.ncReason}. VE: ${it.veName||session.ve||'—'}.`
+    );
   }
   it.veDone=true;it.veDate=new Date().toLocaleDateString('fr-FR');
   if(!it.veName)it.veName=session.ve||'–';
@@ -1796,6 +1890,7 @@ function validateVE(si,ii){
 }
 function jumpStep(i){currentStep=i;session.currentStep=i;saveState();renderStep();window.scrollTo(0,0);}
 function navStep(dir){
+  timerStop();
   const next=currentStep+dir;
   if(next<0)return;
   if(next>=ACTIVE_STEPS.length){showReport();return;}
@@ -1804,7 +1899,14 @@ function navStep(dir){
 
 // ===================== REPORT =====================
 function showReport(){
-  session.completed=new Date().toISOString();saveState();
+  session.completed=new Date().toISOString();
+  timerStop();
+  saveState();
+  const prog=calcProgress(session);
+  sendNotification(
+    `✅ Montage terminé — ${session.serie}`,
+    `Montage de ${session.serie} (${session.projet}) terminé par ${session.op}. Qualité OP: ${prog.pct}%. Durée totale: ${Object.values(stepTimerLog).reduce((a,b)=>a+(b.seconds||0),0)?formatTimer(Object.values(stepTimerLog).reduce((a,b)=>a+(b.seconds||0),0)):'non chronométré'}.`
+  );
   const prog=calcProgress(session);
   document.getElementById('reportContent').innerHTML=`
     <div class="project-card">
@@ -1969,6 +2071,8 @@ async function renderDashboard(){
   </div>`;
 
   el.innerHTML = html;
+  // Check for late machines and notify
+  checkAndNotifyLate();
 }
 
 function renderGantt(sessions, isAdmin){
@@ -2287,6 +2391,280 @@ async function updateDash(sessionId, field, value){
   dashCache[key][field] = value;
   dashCache[key].sessionId = sessionId;
   await saveDashData(sessionId, dashCache[key]);
+}
+
+
+// ===================== TOAST NOTIFICATIONS =====================
+function showToast(msg, type=''){
+  let t = document.getElementById('toastEl');
+  if(!t){ t=document.createElement('div'); t.id='toastEl'; t.className='toast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.className = 'toast show' + (type?' '+type:'');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>{ t.className='toast'; }, 3500);
+}
+
+// ===================== EMAIL NOTIFICATIONS =====================
+const NOTIFY_EMAILS = ['nordine.sakhri@enogia.com','nicolas.stamboul@enogia.com'];
+
+async function sendNotification(subject, body){
+  // Use EmailJS free tier - store config in Firebase or use simple fetch
+  // For now: log + show in-app toast (real email requires backend or EmailJS setup)
+  console.log('NOTIFICATION:', subject, body);
+  showToast('📧 Alerte: ' + subject);
+  // Store notification in Firebase for admin to see
+  try {
+    const notif = { subject, body, ts: new Date().toISOString(), to: NOTIFY_EMAILS };
+    await window._fsSetDoc(window._fsDoc(window._db,'notifications', String(Date.now())), notif);
+  } catch(e){}
+}
+
+function checkAndNotifyLate(){
+  // Called on dashboard load - check for overdue machines
+  sessions.forEach(s=>{
+    if(s.completed) return;
+    const dash = dashCache[String(s.id)]||{};
+    if(dash.plannedEnd && new Date() > new Date(dash.plannedEnd) && !dash.lateNotified){
+      dash.lateNotified = true;
+      updateDash(s.id, 'lateNotified', true);
+      sendNotification(
+        `⚠️ Machine en retard — ${s.serie}`,
+        `La machine ${s.serie} (${s.projet}) devait être terminée le ${new Date(dash.plannedEnd).toLocaleDateString('fr-FR')}. Opérateur: ${s.op}.`
+      );
+    }
+  });
+}
+
+// ===================== TIMER =====================
+let timerInterval = null;
+let timerSeconds = 0;
+let timerRunning = false;
+let stepTimerLog = {}; // {stepIndex: {seconds, started, stopped}}
+
+function timerStart(){
+  if(timerRunning) return;
+  timerRunning = true;
+  if(!stepTimerLog[currentStep]) stepTimerLog[currentStep] = {seconds:0, started: new Date().toISOString()};
+  const startTime = Date.now() - (stepTimerLog[currentStep].seconds * 1000);
+  document.getElementById('timerStartBtn').style.display = 'none';
+  document.getElementById('timerStopBtn').style.display = '';
+  document.getElementById('timerDisplay').classList.add('timer-running');
+  timerInterval = setInterval(()=>{
+    stepTimerLog[currentStep].seconds = Math.floor((Date.now()-startTime)/1000);
+    timerDisplay();
+  }, 1000);
+}
+
+function timerStop(){
+  if(!timerRunning) return;
+  timerRunning = false;
+  clearInterval(timerInterval);
+  if(stepTimerLog[currentStep]) stepTimerLog[currentStep].stopped = new Date().toISOString();
+  document.getElementById('timerStartBtn').style.display = '';
+  document.getElementById('timerStopBtn').style.display = 'none';
+  document.getElementById('timerDisplay').classList.remove('timer-running');
+  // Save to session
+  session.steps[currentStep].timerSeconds = stepTimerLog[currentStep].seconds;
+  saveState();
+  showToast('⏱ Temps étape sauvegardé : ' + formatTimer(stepTimerLog[currentStep].seconds));
+}
+
+function timerReset(){
+  timerStop();
+  if(stepTimerLog[currentStep]) stepTimerLog[currentStep].seconds = 0;
+  timerSeconds = 0;
+  timerDisplay();
+  document.getElementById('timerHistory').textContent = '';
+}
+
+function timerDisplay(){
+  const secs = stepTimerLog[currentStep] ? stepTimerLog[currentStep].seconds : 0;
+  const el = document.getElementById('timerDisplay');
+  if(el) el.textContent = formatTimer(secs);
+  // Show history of other steps
+  const hist = Object.entries(stepTimerLog)
+    .filter(([k])=>Number(k)!==currentStep && stepTimerLog[k].seconds>0)
+    .map(([k,v])=>`Étape ${Number(k)+1}: ${formatTimer(v.seconds)}`).join(' | ');
+  const histEl = document.getElementById('timerHistory');
+  if(histEl) histEl.textContent = hist ? 'Autres: '+hist : '';
+}
+
+function formatTimer(s){
+  const h=Math.floor(s/3600), m=Math.floor(s%3600/60), sec=s%60;
+  return [h,m,sec].map(x=>String(x).padStart(2,'0')).join(':');
+}
+
+function restoreTimer(){
+  const saved = session.steps[currentStep].timerSeconds;
+  if(saved && !stepTimerLog[currentStep]){
+    stepTimerLog[currentStep] = {seconds:saved};
+  }
+  timerDisplay();
+  // Auto-start if not stopped
+  const el = document.getElementById('timerStartBtn');
+  if(el) el.style.display = '';
+  const stopEl = document.getElementById('timerStopBtn');
+  if(stopEl) stopEl.style.display = 'none';
+}
+
+// ===================== PHOTOS NC =====================
+async function addPhoto(si, ii, input){
+  const file = input.files[0];
+  if(!file) return;
+  // Resize & compress to base64
+  const canvas = document.createElement('canvas');
+  const img = new Image();
+  img.onload = async ()=>{
+    const maxW = 800, maxH = 600;
+    let w = img.width, h = img.height;
+    if(w>maxW){ h=Math.round(h*maxW/w); w=maxW; }
+    if(h>maxH){ w=Math.round(w*maxH/h); h=maxH; }
+    canvas.width=w; canvas.height=h;
+    canvas.getContext('2d').drawImage(img,0,0,w,h);
+    const b64 = canvas.toDataURL('image/jpeg', 0.7);
+    if(!session.steps[si].items[ii].photos) session.steps[si].items[ii].photos=[];
+    session.steps[si].items[ii].photos.push(b64);
+    await saveState();
+    renderStep();
+    // Re-open the item body
+    setTimeout(()=>{
+      const body = document.getElementById('body_'+ACTIVE_STEPS[si].items[ii].id);
+      if(body) body.classList.add('open');
+    }, 100);
+    // Notify if NC
+    if(session.steps[si].items[ii].ncReason && session.steps[si].items[ii].ncReason !== 'ok'){
+      sendNotification(
+        `📸 Photo NC ajoutée — ${session.serie}`,
+        `Photo NC ajoutée sur ${session.serie} (${session.projet}), étape ${ACTIVE_STEPS[si].name}, item: ${ACTIVE_STEPS[si].items[ii].label}. Raison: ${session.steps[si].items[ii].ncReason}.`
+      );
+    }
+    showToast('📸 Photo ajoutée !');
+  };
+  img.src = URL.createObjectURL(file);
+}
+
+function viewPhoto(src){
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:#000d;z-index:2000;display:flex;align-items:center;justify-content:center;cursor:pointer';
+  modal.innerHTML = `<img src="${src}" style="max-width:95vw;max-height:90vh;border-radius:8px;box-shadow:0 20px 60px #000">`;
+  modal.onclick = ()=>document.body.removeChild(modal);
+  document.body.appendChild(modal);
+}
+
+// ===================== QR CODE =====================
+function showQR(){
+  if(!session) return;
+  // Remove existing modal
+  const existing = document.getElementById('qrModal');
+  if(existing) document.body.removeChild(existing);
+
+  const url = `${window.location.origin}${window.location.pathname}?session=${session.id}`;
+
+  const modal = document.createElement('div');
+  modal.id = 'qrModal';
+  modal.className = 'qr-modal';
+  modal.innerHTML = `
+    <div class="qr-modal-box">
+      <div class="qr-modal-title">📱 QR Code Machine</div>
+      <div class="qr-modal-sub">${session.serie} — ${session.projet}</div>
+      <div id="qrCanvas"></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:10px;word-break:break-all">${url}</div>
+      <div style="margin-top:16px;display:flex;gap:8px;justify-content:center">
+        <button onclick="printQR()" class="btn btn-outline btn-sm">🖨 Imprimer</button>
+        <button onclick="document.body.removeChild(document.getElementById('qrModal'))" class="btn btn-outline btn-sm">✕ Fermer</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  // Generate QR
+  setTimeout(()=>{
+    new QRCode(document.getElementById('qrCanvas'), {
+      text: url,
+      width: 200,
+      height: 200,
+      colorDark: '#00455a',
+      colorLight: '#ffffff',
+    });
+  }, 50);
+}
+
+function printQR(){
+  const qr = document.getElementById('qrCanvas');
+  const w = window.open('');
+  w.document.write(`<html><body style="text-align:center;padding:40px;font-family:sans-serif">
+    <h2 style="color:#00455a">ENOGIA — Checklist Montage</h2>
+    <p><strong>${session.serie}</strong> — ${session.projet}</p>
+    <p>Opérateur: ${session.op}</p>
+    ${qr.innerHTML}
+    <p style="font-size:11px;color:#888;margin-top:20px">Scannez pour accéder à la checklist</p>
+  </body></html>`);
+  w.document.close();
+  w.print();
+}
+
+// Auto-load session from URL QR param
+function checkQRParam(){
+  const params = new URLSearchParams(window.location.search);
+  const sid = params.get('session');
+  if(sid && sessions.length){
+    const found = sessions.find(s=>String(s.id)===sid);
+    if(found){ loadSession(found.id); showToast('📱 Session chargée via QR Code'); }
+  }
+}
+
+// ===================== OFFLINE MODE =====================
+const OFFLINE_KEY = 'enogia_offline_sessions';
+const OFFLINE_PENDING_KEY = 'enogia_pending_sync';
+
+function saveOffline(){
+  try {
+    localStorage.setItem(OFFLINE_KEY, JSON.stringify(sessions));
+    if(session) {
+      const pending = JSON.parse(localStorage.getItem(OFFLINE_PENDING_KEY)||'[]');
+      if(!pending.includes(session.id)) pending.push(session.id);
+      localStorage.setItem(OFFLINE_PENDING_KEY, JSON.stringify(pending));
+    }
+  } catch(e){}
+}
+
+function loadOffline(){
+  try {
+    const data = localStorage.getItem(OFFLINE_KEY);
+    if(data) return JSON.parse(data);
+  } catch(e){}
+  return [];
+}
+
+async function syncPending(){
+  try {
+    const pending = JSON.parse(localStorage.getItem(OFFLINE_PENDING_KEY)||'[]');
+    if(!pending.length) return;
+    for(const id of pending){
+      const s = sessions.find(x=>x.id===id);
+      if(s) await window._fsSetDoc(window._fsDoc(window._db,'sessions',String(s.id)), s);
+    }
+    localStorage.removeItem(OFFLINE_PENDING_KEY);
+    showToast('✅ Données synchronisées !');
+  } catch(e){}
+}
+
+function setupOfflineDetection(){
+  const badge = document.getElementById('offlineBadge');
+  const online = document.getElementById('onlineBadge');
+  function update(){
+    if(navigator.onLine){
+      badge.classList.remove('show');
+      online.style.display = '';
+      syncPending();
+    } else {
+      badge.classList.add('show');
+      online.style.display = 'none';
+      showToast('⚠️ Mode hors ligne — données sauvegardées localement', 'error');
+    }
+  }
+  window.addEventListener('online', update);
+  window.addEventListener('offline', update);
+  update();
 }
 
 // ===================== INIT =====================
