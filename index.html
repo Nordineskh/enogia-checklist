@@ -1816,156 +1816,138 @@ async function loadDashData(sessionId){
 
 // Cache des données dashboard
 let dashCache = {};
+let dashSelectedYear = null;
+let dashSelectedMonth = null;
+
+const MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 
 async function renderDashboard(){
   const el = document.getElementById('dashboardContent');
-  el.innerHTML = `<div class="empty-state"><div class="spinner"></div><p style="margin-top:12px">Chargement...</p></div>`;
+  el.innerHTML = '<div class="empty-state"><div class="spinner"></div><p style="margin-top:12px">Chargement...</p></div>';
 
   if(!sessions.length){
-    el.innerHTML = `<div class="empty-state"><div class="emo">📊</div><p>Aucune checklist enregistrée</p></div>`;
+    el.innerHTML = '<div class="empty-state"><div class="emo">📊</div><p>Aucune checklist enregistrée</p></div>';
     return;
   }
 
-  // Load all dashboard metadata from Firebase
   try {
     const snap = await window._fsGetDocs(window._fsCollection(window._db,'dashboard'));
     dashCache = {};
     snap.docs.forEach(d=>{ dashCache[d.id] = d.data(); });
   } catch(e){}
 
+  // Group by year then month
+  const byYear = {};
+  sessions.forEach(s=>{
+    const d = s.started ? new Date(s.started) : new Date();
+    const year = String(d.getFullYear());
+    const month = String(d.getMonth());
+    if(!byYear[year]) byYear[year] = {};
+    if(!byYear[year][month]) byYear[year][month] = [];
+    byYear[year][month].push(s);
+  });
+
+  const years = Object.keys(byYear).sort((a,b)=>b-a);
+  if(!dashSelectedYear || !byYear[dashSelectedYear]) dashSelectedYear = years[0];
+  const months = Object.keys(byYear[dashSelectedYear]).sort((a,b)=>Number(a)-Number(b));
+  if(dashSelectedMonth === null || !byYear[dashSelectedYear][dashSelectedMonth]) dashSelectedMonth = months[months.length-1];
+
   const isAdmin = window._currentUser && window._currentUser.email === window._ADMIN_EMAIL;
 
-  // Group sessions by model
+  // Year tabs
+  let html = '<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">';
+  years.forEach(y=>{
+    const active = y === dashSelectedYear;
+    html += `<button onclick="selectDashYear('${y}')" class="btn ${active?'btn-primary':'btn-outline'}" style="min-width:80px">${y}</button>`;
+  });
+  html += '</div>';
+
+  // Month tabs
+  html += '<div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap">';
+  months.forEach(m=>{
+    const active = m === dashSelectedMonth;
+    const count = byYear[dashSelectedYear][m].length;
+    html += `<button onclick="selectDashMonth('${m}')" class="btn btn-sm ${active?'btn-primary':'btn-outline'}" style="min-width:110px">
+      ${MOIS[Number(m)]} <span style="margin-left:4px;background:#ffffff22;border-radius:10px;padding:1px 6px;font-size:10px">${count}</span>
+    </button>`;
+  });
+  html += '</div>';
+
+  // Month summary
+  const monthSessions = byYear[dashSelectedYear][dashSelectedMonth] || [];
+  const totalM = monthSessions.length;
+  const doneM = monthSessions.filter(s=>s.completed).length;
+  const inProgM = monthSessions.filter(s=>s.started && !s.completed).length;
+  const avgQ = totalM ? Math.round(monthSessions.reduce((acc,s)=>{
+    const tot = s.steps.reduce((a,st)=>a+st.items.length,0);
+    const don = s.steps.reduce((a,st)=>a+st.items.filter(it=>it.opDone).length,0);
+    return acc+(tot?don/tot*100:0);
+  },0)/totalM) : 0;
+
+  html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px">
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🏭 Machines</span><span class="kpi-value" style="font-size:22px">${totalM}</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">✅ Terminées</span><span class="kpi-value good" style="font-size:22px">${doneM}</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🔄 En cours</span><span class="kpi-value warn" style="font-size:22px">${inProgM}</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">⭐ Qualité moy.</span><span class="kpi-value ${avgQ>=80?'good':avgQ>=50?'warn':'bad'}" style="font-size:22px">${avgQ}%</span></div>
+  </div>`;
+
+  // Group by model
   const byModel = {};
-  sessions.forEach(s=>{
+  monthSessions.forEach(s=>{
     const key = s.modelName || 'ENO 180 LTV3';
     if(!byModel[key]) byModel[key] = [];
     byModel[key].push(s);
   });
 
-  let html = '';
   Object.entries(byModel).forEach(([modelName, modelSessions])=>{
-    html += `<div class="dash-section-title">⚙️ ${modelName}</div>
-    <div class="kpi-grid">`;
-
+    html += `<div class="dash-section-title">⚙️ ${modelName}</div><div class="kpi-grid">`;
     modelSessions.forEach(s=>{
-      const prog = calcProgress(s);
       const dash = dashCache[String(s.id)] || {};
-
-      // Quality KPI
       const totalItems = s.steps.reduce((acc,st)=>acc+st.items.length,0);
       const opDone = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.opDone).length,0);
       const veDone = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.veDone).length,0);
       const opPct = totalItems ? Math.round(opDone/totalItems*100) : 0;
       const vePct = totalItems ? Math.round(veDone/totalItems*100) : 0;
-
-      // Time KPI
       const startDate = s.started ? new Date(s.started) : null;
       const endDate = s.completed ? new Date(s.completed) : null;
       const plannedStart = dash.plannedStart ? new Date(dash.plannedStart) : null;
       const plannedEnd = dash.plannedEnd ? new Date(dash.plannedEnd) : null;
-
-      // Real duration in days
       let realDays = null;
-      if(startDate && endDate){
-        realDays = Math.round((endDate - startDate) / (1000*60*60*24));
-      } else if(startDate){
-        realDays = Math.round((new Date() - startDate) / (1000*60*60*24));
-      }
-
-      // Planned duration
+      if(startDate && endDate) realDays = Math.round((endDate-startDate)/(1000*60*60*24));
+      else if(startDate) realDays = Math.round((new Date()-startDate)/(1000*60*60*24));
       let plannedDays = null;
-      if(plannedStart && plannedEnd){
-        plannedDays = Math.round((plannedEnd - plannedStart) / (1000*60*60*24));
-      }
-
-      // Status
-      let status = 'grey', statusTxt = 'Non démarré';
+      if(plannedStart && plannedEnd) plannedDays = Math.round((plannedEnd-plannedStart)/(1000*60*60*24));
+      let status='grey', statusTxt='Non démarré';
       if(s.completed){ status='green'; statusTxt='Terminé ✓'; }
-      else if(startDate){
-        if(plannedEnd && new Date() > plannedEnd){ status='red'; statusTxt='En retard ⚠'; }
-        else { status='orange'; statusTxt='En cours'; }
-      }
-
-      // Delay indicator
-      let delayTxt = '—', delayClass = '';
+      else if(startDate){ status = plannedEnd && new Date()>plannedEnd ? 'red' : 'orange'; statusTxt = status==='red' ? 'En retard ⚠' : 'En cours'; }
+      let delayTxt='—', delayClass='';
       if(plannedStart && startDate){
-        const delayDays = Math.round((startDate - plannedStart)/(1000*60*60*24));
-        if(delayDays > 0){ delayTxt=`+${delayDays}j de retard`; delayClass='bad'; }
-        else if(delayDays < 0){ delayTxt=`${Math.abs(delayDays)}j d'avance`; delayClass='good'; }
+        const ddays = Math.round((startDate-plannedStart)/(1000*60*60*24));
+        if(ddays>0){ delayTxt='+'+ddays+'j de retard'; delayClass='bad'; }
+        else if(ddays<0){ delayTxt=Math.abs(ddays)+'j d\'avance'; delayClass='good'; }
         else { delayTxt='Dans les temps'; delayClass='good'; }
       }
-
-      const opBarColor = opPct>=80?'var(--accent)':opPct>=50?'var(--yellow)':'#e05555';
-      const veBarColor = vePct>=80?'var(--accent)':vePct>=50?'var(--yellow)':'#e05555';
-
-      html += `
-      <div class="kpi-card">
+      const opC = opPct>=80?'var(--accent)':opPct>=50?'var(--yellow)':'#e05555';
+      const veC = vePct>=80?'var(--accent)':vePct>=50?'var(--yellow)':'#e05555';
+      html += `<div class="kpi-card">
         <div class="kpi-card-header">
-          <div>
-            <div class="kpi-card-title">${s.serie}</div>
-            <div class="kpi-card-ref">${s.projet} | OP: ${s.op}</div>
-          </div>
+          <div><div class="kpi-card-title">${s.serie}</div><div class="kpi-card-ref">${s.projet} | OP: ${s.op}</div></div>
           <div class="kpi-status ${status}">${statusTxt}</div>
         </div>
-
-        <!-- Dates -->
         <div class="kpi-dates">
-          <div class="kpi-date-box ${isAdmin?'editable':''}">
-            <label>📅 Début prévu</label>
-            <input type="date" value="${dash.plannedStart||''}" 
-              ${isAdmin?`onchange="updateDash(${s.id},'plannedStart',this.value)"`:' readonly'}
-              style="${!isAdmin?'pointer-events:none':''}">
-          </div>
-          <div class="kpi-date-box ${isAdmin?'editable':''}">
-            <label>🏁 Fin prévue</label>
-            <input type="date" value="${dash.plannedEnd||''}"
-              ${isAdmin?`onchange="updateDash(${s.id},'plannedEnd',this.value)"`:' readonly'}
-              style="${!isAdmin?'pointer-events:none':''}">
-          </div>
-          <div class="kpi-date-box">
-            <label>▶ Début réel</label>
-            <input type="date" value="${startDate?startDate.toISOString().slice(0,10):''}" readonly style="pointer-events:none">
-          </div>
-          <div class="kpi-date-box">
-            <label>✅ Fin réelle</label>
-            <input type="date" value="${endDate?endDate.toISOString().slice(0,10):''}" readonly style="pointer-events:none">
-          </div>
+          <div class="kpi-date-box ${isAdmin?'editable':''}"><label>📅 Début prévu</label><input type="date" value="${dash.plannedStart||''}" ${isAdmin?'onchange="updateDash('+s.id+',\'plannedStart\',this.value)"':' readonly'} style="${!isAdmin?'pointer-events:none':''}"></div>
+          <div class="kpi-date-box ${isAdmin?'editable':''}"><label>🏁 Fin prévue</label><input type="date" value="${dash.plannedEnd||''}" ${isAdmin?'onchange="updateDash('+s.id+',\'plannedEnd\',this.value)"':' readonly'} style="${!isAdmin?'pointer-events:none':''}"></div>
+          <div class="kpi-date-box"><label>▶ Début réel</label><input type="date" value="${startDate?startDate.toISOString().slice(0,10):''}" readonly style="pointer-events:none"></div>
+          <div class="kpi-date-box"><label>✅ Fin réelle</label><input type="date" value="${endDate?endDate.toISOString().slice(0,10):''}" readonly style="pointer-events:none"></div>
         </div>
-
-        <!-- KPI rows -->
         <div class="kpi-rows" style="margin-top:10px">
-          <div class="kpi-row">
-            <span class="kpi-label">⏱ Durée réelle</span>
-            <span class="kpi-value">${realDays!==null?(s.completed?realDays+'j':realDays+'j (en cours)'):'—'}</span>
-          </div>
-          <div class="kpi-row">
-            <span class="kpi-label">📐 Durée prévue</span>
-            <span class="kpi-value">${plannedDays!==null?plannedDays+'j':'—'}</span>
-          </div>
-          <div class="kpi-row">
-            <span class="kpi-label">🚦 Écart délai</span>
-            <span class="kpi-value ${delayClass}">${delayTxt}</span>
-          </div>
+          <div class="kpi-row"><span class="kpi-label">⏱ Durée réelle</span><span class="kpi-value">${realDays!==null?(s.completed?realDays+'j':realDays+'j (en cours)'):'—'}</span></div>
+          <div class="kpi-row"><span class="kpi-label">📐 Durée prévue</span><span class="kpi-value">${plannedDays!==null?plannedDays+'j':'—'}</span></div>
+          <div class="kpi-row"><span class="kpi-label">🚦 Écart délai</span><span class="kpi-value ${delayClass}">${delayTxt}</span></div>
         </div>
-
-        <!-- Quality bars -->
-        <div class="kpi-bar-wrap">
-          <div class="kpi-bar-label"><span>✋ Validation OP</span><span style="color:${opBarColor}">${opPct}%</span></div>
-          <div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${opPct}%;background:${opBarColor}"></div></div>
-        </div>
-        <div class="kpi-bar-wrap" style="margin-top:6px">
-          <div class="kpi-bar-label"><span>🔍 Validation VE</span><span style="color:${veBarColor}">${vePct}%</span></div>
-          <div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${vePct}%;background:${veBarColor}"></div></div>
-        </div>
-
-        <!-- Commentaire admin -->
-        <div style="margin-top:10px">
-          <textarea placeholder="Commentaire / notes..." 
-            style="width:100%;height:50px;font-size:12px;resize:none"
-            ${isAdmin?`onchange="updateDash(${s.id},'comment',this.value)"`:'readonly'}
-          >${dash.comment||''}</textarea>
-        </div>
+        <div class="kpi-bar-wrap"><div class="kpi-bar-label"><span>✋ OP</span><span style="color:${opC}">${opPct}%</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${opPct}%;background:${opC}"></div></div></div>
+        <div class="kpi-bar-wrap" style="margin-top:6px"><div class="kpi-bar-label"><span>🔍 VE</span><span style="color:${veC}">${vePct}%</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${vePct}%;background:${veC}"></div></div></div>
+        <div style="margin-top:10px"><textarea placeholder="Commentaire / notes..." style="width:100%;height:50px;font-size:12px;resize:none" ${isAdmin?'onchange="updateDash('+s.id+',\'comment\',this.value)"':' readonly'}>${dash.comment||''}</textarea></div>
       </div>`;
     });
     html += '</div>';
@@ -1974,6 +1956,16 @@ async function renderDashboard(){
   el.innerHTML = html;
 }
 
+function selectDashYear(year){
+  dashSelectedYear = String(year);
+  dashSelectedMonth = null;
+  renderDashboard();
+}
+
+function selectDashMonth(month){
+  dashSelectedMonth = String(month);
+  renderDashboard();
+}
 async function updateDash(sessionId, field, value){
   const key = String(sessionId);
   if(!dashCache[key]) dashCache[key] = {};
