@@ -141,6 +141,38 @@ textarea{height:52px;resize:none;font-size:12px}
 .empty-state .emo{font-size:48px;margin-bottom:12px}
 .alert-warn{background:#f0a50015;border:1px solid #f0a50044;color:var(--yellow);padding:10px 13px;border-radius:8px;font-size:13px;margin-bottom:10px}
 
+/* DASHBOARD */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:20px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden}
+.kpi-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.kpi-card-title{font-family:var(--font-title);font-size:18px;color:var(--accent);letter-spacing:1px}
+.kpi-card-ref{font-size:11px;color:var(--text3);margin-top:2px}
+.kpi-status{border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700}
+.kpi-status.green{background:#2aa99e22;color:var(--accent);border:1px solid #2aa99e44}
+.kpi-status.orange{background:#f0a50022;color:var(--yellow);border:1px solid #f0a50044}
+.kpi-status.red{background:#e0555522;color:#e05555;border:1px solid #e0555544}
+.kpi-status.grey{background:#ffffff15;color:var(--text3);border:1px solid var(--border)}
+.kpi-rows{display:flex;flex-direction:column;gap:8px}
+.kpi-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#00364a;border-radius:6px}
+.kpi-label{font-size:12px;color:var(--text2)}
+.kpi-value{font-size:13px;font-weight:600;color:var(--text)}
+.kpi-value.good{color:var(--accent)}
+.kpi-value.warn{color:var(--yellow)}
+.kpi-value.bad{color:#e05555}
+.kpi-bar-wrap{margin-top:10px}
+.kpi-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:4px}
+.kpi-bar-track{height:8px;background:#00364a;border-radius:4px;overflow:hidden}
+.kpi-bar-fill{height:100%;border-radius:4px;transition:.5s}
+.kpi-dates{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.kpi-date-box{background:#00364a;border-radius:6px;padding:8px;text-align:center}
+.kpi-date-box label{display:block;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.kpi-date-box input[type=date]{background:transparent;border:none;color:var(--text);font-size:12px;width:100%;text-align:center;cursor:pointer}
+.kpi-date-box input[type=date]:focus{outline:none}
+.kpi-date-box.editable{border:1px solid var(--border)}
+.kpi-date-box.editable:hover{border-color:var(--accent)}
+.dash-section-title{font-family:var(--font-title);font-size:14px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+.dash-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
 /* MODEL SELECTOR */
 .model-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:16px}
 .model-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
@@ -212,7 +244,10 @@ textarea{height:52px;resize:none;font-size:12px}
     </div>
     <button class="btn btn-primary btn-full" onclick="startSession()">▶ Démarrer le montage</button>
   </div>
-  <div class="section-title">Historique</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div class="section-title" style="margin:0;flex:1">Historique</div>
+    <button class="btn btn-outline btn-sm" onclick="showDashboard()" style="margin-left:12px">📊 Tableau de bord</button>
+  </div>
   <div id="histList"></div>
 </div>
 
@@ -282,6 +317,20 @@ textarea{height:52px;resize:none;font-size:12px}
   <div class="mt12">
     <button class="btn btn-outline btn-full" onclick="goHome()">↩ Retour accueil</button>
   </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="screen" id="scDashboard">
+  <div class="project-card" style="margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div class="project-title">📊 Tableau de bord</div>
+        <div class="project-sub">KPI par machine — Qualité, Délais, Temps de montage</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="goHome()">↩ Retour</button>
+    </div>
+  </div>
+  <div id="dashboardContent"></div>
 </div>
 
 <!-- REPORT -->
@@ -1741,6 +1790,196 @@ function showReport(){
       </div>`;
     }).join('')}`;
   showScreen('scReport');
+}
+
+// ===================== DASHBOARD =====================
+function showDashboard(){
+  showScreen('scDashboard');
+  renderDashboard();
+}
+
+function getDashboardKey(s){ return 'dash_'+s.id; }
+
+async function saveDashData(sessionId, data){
+  try {
+    await window._fsSetDoc(window._fsDoc(window._db,'dashboard', String(sessionId)), data);
+  } catch(e){ console.warn('Dashboard save error:', e); }
+}
+
+async function loadDashData(sessionId){
+  try {
+    const snap = await window._fsGetDocs(window._fsQuery(window._fsCollection(window._db,'dashboard')));
+    const found = snap.docs.find(d=>d.id===String(sessionId));
+    return found ? found.data() : {};
+  } catch(e){ return {}; }
+}
+
+// Cache des données dashboard
+let dashCache = {};
+
+async function renderDashboard(){
+  const el = document.getElementById('dashboardContent');
+  el.innerHTML = `<div class="empty-state"><div class="spinner"></div><p style="margin-top:12px">Chargement...</p></div>`;
+
+  if(!sessions.length){
+    el.innerHTML = `<div class="empty-state"><div class="emo">📊</div><p>Aucune checklist enregistrée</p></div>`;
+    return;
+  }
+
+  // Load all dashboard metadata from Firebase
+  try {
+    const snap = await window._fsGetDocs(window._fsCollection(window._db,'dashboard'));
+    dashCache = {};
+    snap.docs.forEach(d=>{ dashCache[d.id] = d.data(); });
+  } catch(e){}
+
+  const isAdmin = window._currentUser && window._currentUser.email === window._ADMIN_EMAIL;
+
+  // Group sessions by model
+  const byModel = {};
+  sessions.forEach(s=>{
+    const key = s.modelName || 'ENO 180 LTV3';
+    if(!byModel[key]) byModel[key] = [];
+    byModel[key].push(s);
+  });
+
+  let html = '';
+  Object.entries(byModel).forEach(([modelName, modelSessions])=>{
+    html += `<div class="dash-section-title">⚙️ ${modelName}</div>
+    <div class="kpi-grid">`;
+
+    modelSessions.forEach(s=>{
+      const prog = calcProgress(s);
+      const dash = dashCache[String(s.id)] || {};
+
+      // Quality KPI
+      const totalItems = s.steps.reduce((acc,st)=>acc+st.items.length,0);
+      const opDone = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.opDone).length,0);
+      const veDone = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.veDone).length,0);
+      const opPct = totalItems ? Math.round(opDone/totalItems*100) : 0;
+      const vePct = totalItems ? Math.round(veDone/totalItems*100) : 0;
+
+      // Time KPI
+      const startDate = s.started ? new Date(s.started) : null;
+      const endDate = s.completed ? new Date(s.completed) : null;
+      const plannedStart = dash.plannedStart ? new Date(dash.plannedStart) : null;
+      const plannedEnd = dash.plannedEnd ? new Date(dash.plannedEnd) : null;
+
+      // Real duration in days
+      let realDays = null;
+      if(startDate && endDate){
+        realDays = Math.round((endDate - startDate) / (1000*60*60*24));
+      } else if(startDate){
+        realDays = Math.round((new Date() - startDate) / (1000*60*60*24));
+      }
+
+      // Planned duration
+      let plannedDays = null;
+      if(plannedStart && plannedEnd){
+        plannedDays = Math.round((plannedEnd - plannedStart) / (1000*60*60*24));
+      }
+
+      // Status
+      let status = 'grey', statusTxt = 'Non démarré';
+      if(s.completed){ status='green'; statusTxt='Terminé ✓'; }
+      else if(startDate){
+        if(plannedEnd && new Date() > plannedEnd){ status='red'; statusTxt='En retard ⚠'; }
+        else { status='orange'; statusTxt='En cours'; }
+      }
+
+      // Delay indicator
+      let delayTxt = '—', delayClass = '';
+      if(plannedStart && startDate){
+        const delayDays = Math.round((startDate - plannedStart)/(1000*60*60*24));
+        if(delayDays > 0){ delayTxt=`+${delayDays}j de retard`; delayClass='bad'; }
+        else if(delayDays < 0){ delayTxt=`${Math.abs(delayDays)}j d'avance`; delayClass='good'; }
+        else { delayTxt='Dans les temps'; delayClass='good'; }
+      }
+
+      const opBarColor = opPct>=80?'var(--accent)':opPct>=50?'var(--yellow)':'#e05555';
+      const veBarColor = vePct>=80?'var(--accent)':vePct>=50?'var(--yellow)':'#e05555';
+
+      html += `
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <div>
+            <div class="kpi-card-title">${s.serie}</div>
+            <div class="kpi-card-ref">${s.projet} | OP: ${s.op}</div>
+          </div>
+          <div class="kpi-status ${status}">${statusTxt}</div>
+        </div>
+
+        <!-- Dates -->
+        <div class="kpi-dates">
+          <div class="kpi-date-box ${isAdmin?'editable':''}">
+            <label>📅 Début prévu</label>
+            <input type="date" value="${dash.plannedStart||''}" 
+              ${isAdmin?`onchange="updateDash(${s.id},'plannedStart',this.value)"`:' readonly'}
+              style="${!isAdmin?'pointer-events:none':''}">
+          </div>
+          <div class="kpi-date-box ${isAdmin?'editable':''}">
+            <label>🏁 Fin prévue</label>
+            <input type="date" value="${dash.plannedEnd||''}"
+              ${isAdmin?`onchange="updateDash(${s.id},'plannedEnd',this.value)"`:' readonly'}
+              style="${!isAdmin?'pointer-events:none':''}">
+          </div>
+          <div class="kpi-date-box">
+            <label>▶ Début réel</label>
+            <input type="date" value="${startDate?startDate.toISOString().slice(0,10):''}" readonly style="pointer-events:none">
+          </div>
+          <div class="kpi-date-box">
+            <label>✅ Fin réelle</label>
+            <input type="date" value="${endDate?endDate.toISOString().slice(0,10):''}" readonly style="pointer-events:none">
+          </div>
+        </div>
+
+        <!-- KPI rows -->
+        <div class="kpi-rows" style="margin-top:10px">
+          <div class="kpi-row">
+            <span class="kpi-label">⏱ Durée réelle</span>
+            <span class="kpi-value">${realDays!==null?(s.completed?realDays+'j':realDays+'j (en cours)'):'—'}</span>
+          </div>
+          <div class="kpi-row">
+            <span class="kpi-label">📐 Durée prévue</span>
+            <span class="kpi-value">${plannedDays!==null?plannedDays+'j':'—'}</span>
+          </div>
+          <div class="kpi-row">
+            <span class="kpi-label">🚦 Écart délai</span>
+            <span class="kpi-value ${delayClass}">${delayTxt}</span>
+          </div>
+        </div>
+
+        <!-- Quality bars -->
+        <div class="kpi-bar-wrap">
+          <div class="kpi-bar-label"><span>✋ Validation OP</span><span style="color:${opBarColor}">${opPct}%</span></div>
+          <div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${opPct}%;background:${opBarColor}"></div></div>
+        </div>
+        <div class="kpi-bar-wrap" style="margin-top:6px">
+          <div class="kpi-bar-label"><span>🔍 Validation VE</span><span style="color:${veBarColor}">${vePct}%</span></div>
+          <div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${vePct}%;background:${veBarColor}"></div></div>
+        </div>
+
+        <!-- Commentaire admin -->
+        <div style="margin-top:10px">
+          <textarea placeholder="Commentaire / notes..." 
+            style="width:100%;height:50px;font-size:12px;resize:none"
+            ${isAdmin?`onchange="updateDash(${s.id},'comment',this.value)"`:'readonly'}
+          >${dash.comment||''}</textarea>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  el.innerHTML = html;
+}
+
+async function updateDash(sessionId, field, value){
+  const key = String(sessionId);
+  if(!dashCache[key]) dashCache[key] = {};
+  dashCache[key][field] = value;
+  dashCache[key].sessionId = sessionId;
+  await saveDashData(sessionId, dashCache[key]);
 }
 
 // ===================== INIT =====================
