@@ -142,6 +142,34 @@ textarea{height:52px;resize:none;font-size:12px}
 .alert-warn{background:#f0a50015;border:1px solid #f0a50044;color:var(--yellow);padding:10px 13px;border-radius:8px;font-size:13px;margin-bottom:10px}
 
 /* DASHBOARD */
+
+/* NON-CONFORMITES */
+.nc-badge{background:#e0555522;border:1px solid #e0555544;color:#e05555;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700}
+.nc-modal{position:fixed;inset:0;background:#000a;z-index:999;display:flex;align-items:center;justify-content:center}
+.nc-modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:420px;width:90%;box-shadow:0 20px 60px #000a}
+.nc-modal-title{font-family:var(--font-title);font-size:20px;color:#e05555;margin-bottom:16px}
+.nc-select{width:100%;background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:10px;font-size:14px;margin-bottom:10px}
+
+/* GANTT */
+.gantt-wrap{overflow-x:auto;margin-top:8px}
+.gantt-table{min-width:600px;width:100%}
+.gantt-row{display:grid;gap:4px;align-items:center;padding:4px 0;border-bottom:1px solid #ffffff10}
+.gantt-label{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gantt-bar-wrap{position:relative;height:20px;background:#00364a;border-radius:4px;overflow:visible}
+.gantt-bar{position:absolute;height:100%;border-radius:4px;min-width:4px;display:flex;align-items:center;padding:0 6px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden}
+.gantt-today{position:absolute;top:-4px;bottom:-4px;width:2px;background:#e05555;z-index:2}
+
+/* CHARTS */
+.chart-wrap{background:#00364a;border-radius:8px;padding:12px;margin-top:8px}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:80px;padding-top:8px}
+.bar-chart-bar{flex:1;border-radius:4px 4px 0 0;min-height:4px;transition:.5s;position:relative;cursor:default}
+.bar-chart-bar:hover::after{content:attr(data-val);position:absolute;top:-20px;left:50%;transform:translateX(-50%);background:#000a;color:#fff;border-radius:4px;padding:2px 6px;font-size:10px;white-space:nowrap}
+.bar-chart-labels{display:flex;gap:6px;margin-top:4px}
+.bar-chart-label{flex:1;font-size:9px;color:var(--text3);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* EXPORT BUTTON */
+.export-btn{background:linear-gradient(135deg,#2aa99e,#0086c2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:var(--font)}
+
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:20px}
 .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden}
 .kpi-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
@@ -1559,6 +1587,7 @@ function startSession(){
         actions:it.actions.map(()=>false),
         opDone:false,opName:'',opDate:'',opComment:'',
         veDone:false,veName:'',veDate:'',veComment:'',
+        ncReason:'',firstPassResult:null,ncCount:0,
       })),
       snData:{},comment:'',
     }))
@@ -1689,6 +1718,16 @@ function renderStep(){
             <h4>🔍 Vérificateur</h4>
             <input type="text" value="${it.veName||session.ve||''}" oninput="saveVal(${currentStep},${idx},'veName',this.value)" placeholder="Nom VE">
             <textarea placeholder="Commentaire…" oninput="saveVal(${currentStep},${idx},'veComment',this.value)" style="margin-top:6px">${it.veComment||''}</textarea>
+            ${!it.opDone?'':`
+            <select onchange="saveVal(${currentStep},${idx},'ncReason',this.value)" style="margin-top:6px;width:100%;background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px;font-size:12px" ${it.veDone?'disabled':''}>
+              <option value="">-- Statut VE --</option>
+              <option value="ok" ${it.ncReason==='ok'?'selected':''}>✅ Conforme</option>
+              <option value="retouche" ${it.ncReason==='retouche'?'selected':''}>🔧 Non-conforme — Retouche</option>
+              <option value="piece" ${it.ncReason==='piece'?'selected':''}>📦 Non-conforme — Pièce manquante</option>
+              <option value="mesure" ${it.ncReason==='mesure'?'selected':''}>📏 Non-conforme — Hors tolérance</option>
+              <option value="autre" ${it.ncReason==='autre'?'selected':''}>⚠️ Non-conforme — Autre</option>
+            </select>`}
+            ${it.ncReason&&it.ncReason!=='ok'?`<span class="nc-badge" style="display:inline-block;margin-top:4px">NC: ${it.ncReason}</span>`:''}
             <button class="btn ${it.veDone?'btn-success':'btn-outline'} btn-full mt8 btn-sm" onclick="validateVE(${currentStep},${idx})" ${it.veDone?'disabled':(!it.opDone?'disabled':'')}>
               ${it.veDone?'✅ Validé VE — '+it.veDate:(it.opDone?'🔍 Valider (VE)':'⏳ Attente OP')}
             </button>
@@ -1747,6 +1786,10 @@ function validateOP(si,ii){
 function validateVE(si,ii){
   const it=session.steps[si].items[ii];
   if(!it.opDone)return;
+  // Track first-pass: was there a NC before?
+  if(!it.firstPassResult){
+    it.firstPassResult = (!it.ncReason || it.ncReason==='ok') ? 'pass' : 'fail';
+  }
   it.veDone=true;it.veDate=new Date().toLocaleDateString('fr-FR');
   if(!it.veName)it.veName=session.ve||'–';
   saveState();renderStep();
@@ -1818,17 +1861,12 @@ async function loadDashData(sessionId){
 let dashCache = {};
 let dashSelectedYear = null;
 let dashSelectedMonth = null;
-
 const MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 
 async function renderDashboard(){
   const el = document.getElementById('dashboardContent');
   el.innerHTML = '<div class="empty-state"><div class="spinner"></div><p style="margin-top:12px">Chargement...</p></div>';
-
-  if(!sessions.length){
-    el.innerHTML = '<div class="empty-state"><div class="emo">📊</div><p>Aucune checklist enregistrée</p></div>';
-    return;
-  }
+  if(!sessions.length){ el.innerHTML='<div class="empty-state"><div class="emo">📊</div><p>Aucune checklist enregistrée</p></div>'; return; }
 
   try {
     const snap = await window._fsGetDocs(window._fsCollection(window._db,'dashboard'));
@@ -1836,7 +1874,6 @@ async function renderDashboard(){
     snap.docs.forEach(d=>{ dashCache[d.id] = d.data(); });
   } catch(e){}
 
-  // Group by year then month
   const byYear = {};
   sessions.forEach(s=>{
     const d = s.started ? new Date(s.started) : new Date();
@@ -1850,121 +1887,344 @@ async function renderDashboard(){
   const years = Object.keys(byYear).sort((a,b)=>b-a);
   if(!dashSelectedYear || !byYear[dashSelectedYear]) dashSelectedYear = years[0];
   const months = Object.keys(byYear[dashSelectedYear]).sort((a,b)=>Number(a)-Number(b));
-  if(dashSelectedMonth === null || !byYear[dashSelectedYear][dashSelectedMonth]) dashSelectedMonth = months[months.length-1];
+  if(dashSelectedMonth===null || !byYear[dashSelectedYear][dashSelectedMonth]) dashSelectedMonth = months[months.length-1];
 
   const isAdmin = window._currentUser && window._currentUser.email === window._ADMIN_EMAIL;
+  const monthSessions = byYear[dashSelectedYear][dashSelectedMonth] || [];
 
-  // Year tabs
+  // === YEAR TABS ===
   let html = '<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">';
-  years.forEach(y=>{
-    const active = y === dashSelectedYear;
-    html += `<button onclick="selectDashYear('${y}')" class="btn ${active?'btn-primary':'btn-outline'}" style="min-width:80px">${y}</button>`;
-  });
+  years.forEach(y=>{ html += `<button onclick="selectDashYear('${y}')" class="btn ${y===dashSelectedYear?'btn-primary':'btn-outline'}" style="min-width:80px">${y}</button>`; });
   html += '</div>';
 
-  // Month tabs
+  // === MONTH TABS ===
   html += '<div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap">';
   months.forEach(m=>{
-    const active = m === dashSelectedMonth;
-    const count = byYear[dashSelectedYear][m].length;
-    html += `<button onclick="selectDashMonth('${m}')" class="btn btn-sm ${active?'btn-primary':'btn-outline'}" style="min-width:110px">
-      ${MOIS[Number(m)]} <span style="margin-left:4px;background:#ffffff22;border-radius:10px;padding:1px 6px;font-size:10px">${count}</span>
-    </button>`;
+    const cnt = byYear[dashSelectedYear][m].length;
+    html += `<button onclick="selectDashMonth('${m}')" class="btn btn-sm ${m===dashSelectedMonth?'btn-primary':'btn-outline'}" style="min-width:110px">${MOIS[Number(m)]} <span style="background:#ffffff22;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px">${cnt}</span></button>`;
   });
   html += '</div>';
 
-  // Month summary
-  const monthSessions = byYear[dashSelectedYear][dashSelectedMonth] || [];
+  // === MONTH SUMMARY KPIs ===
   const totalM = monthSessions.length;
   const doneM = monthSessions.filter(s=>s.completed).length;
   const inProgM = monthSessions.filter(s=>s.started && !s.completed).length;
+  const lateM = monthSessions.filter(s=>{
+    const dash = dashCache[String(s.id)]||{};
+    return s.started && !s.completed && dash.plannedEnd && new Date()>new Date(dash.plannedEnd);
+  }).length;
+
+  // First-pass rate across all sessions this month
+  let fpTotal=0, fpPass=0, ncTotal=0;
+  monthSessions.forEach(s=>{
+    s.steps.forEach(st=>st.items.forEach(it=>{
+      if(it.veDone){ fpTotal++; if(it.firstPassResult==='pass') fpPass++; }
+      if(it.ncReason && it.ncReason!=='ok' && it.ncReason!=='') ncTotal++;
+    }));
+  });
+  const fpRate = fpTotal ? Math.round(fpPass/fpTotal*100) : null;
   const avgQ = totalM ? Math.round(monthSessions.reduce((acc,s)=>{
-    const tot = s.steps.reduce((a,st)=>a+st.items.length,0);
-    const don = s.steps.reduce((a,st)=>a+st.items.filter(it=>it.opDone).length,0);
+    const tot=s.steps.reduce((a,st)=>a+st.items.length,0);
+    const don=s.steps.reduce((a,st)=>a+st.items.filter(it=>it.opDone).length,0);
     return acc+(tot?don/tot*100:0);
   },0)/totalM) : 0;
 
   html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px">
-    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🏭 Machines</span><span class="kpi-value" style="font-size:22px">${totalM}</span></div>
-    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">✅ Terminées</span><span class="kpi-value good" style="font-size:22px">${doneM}</span></div>
-    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🔄 En cours</span><span class="kpi-value warn" style="font-size:22px">${inProgM}</span></div>
-    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">⭐ Qualité moy.</span><span class="kpi-value ${avgQ>=80?'good':avgQ>=50?'warn':'bad'}" style="font-size:22px">${avgQ}%</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🏭 Machines</span><span class="kpi-value" style="font-size:24px">${totalM}</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">✅ Terminées</span><span class="kpi-value good" style="font-size:24px">${doneM}</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🔄 En cours</span><span class="kpi-value warn" style="font-size:24px">${inProgM}</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🚨 En retard</span><span class="kpi-value ${lateM>0?'bad':'good'}" style="font-size:24px">${lateM}</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">⭐ Qualité OP</span><span class="kpi-value ${avgQ>=80?'good':avgQ>=50?'warn':'bad'}" style="font-size:24px">${avgQ}%</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🎯 1er passage</span><span class="kpi-value ${fpRate===null?'':fpRate>=80?'good':fpRate>=60?'warn':'bad'}" style="font-size:24px">${fpRate!==null?fpRate+'%':'—'}</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">⚠️ Non-conf.</span><span class="kpi-value ${ncTotal>0?'bad':'good'}" style="font-size:24px">${ncTotal}</span></div>
   </div>`;
 
-  // Group by model
+  // === GANTT VIEW ===
+  html += renderGantt(monthSessions, isAdmin);
+
+  // === NC BREAKDOWN CHART ===
+  html += renderNCChart(monthSessions);
+
+  // === STEP TIME CHART (avg time per step across sessions) ===
+  html += renderStepTimeChart(monthSessions);
+
+  // === OPERATOR COMPARISON ===
+  html += renderOpComparison(monthSessions);
+
+  // === KPI CARDS per machine ===
   const byModel = {};
-  monthSessions.forEach(s=>{
-    const key = s.modelName || 'ENO 180 LTV3';
-    if(!byModel[key]) byModel[key] = [];
-    byModel[key].push(s);
-  });
+  monthSessions.forEach(s=>{ const k=s.modelName||'ENO 180 LTV3'; if(!byModel[k])byModel[k]=[]; byModel[k].push(s); });
 
   Object.entries(byModel).forEach(([modelName, modelSessions])=>{
     html += `<div class="dash-section-title">⚙️ ${modelName}</div><div class="kpi-grid">`;
     modelSessions.forEach(s=>{
-      const dash = dashCache[String(s.id)] || {};
-      const totalItems = s.steps.reduce((acc,st)=>acc+st.items.length,0);
-      const opDone = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.opDone).length,0);
-      const veDone = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.veDone).length,0);
-      const opPct = totalItems ? Math.round(opDone/totalItems*100) : 0;
-      const vePct = totalItems ? Math.round(veDone/totalItems*100) : 0;
-      const startDate = s.started ? new Date(s.started) : null;
-      const endDate = s.completed ? new Date(s.completed) : null;
-      const plannedStart = dash.plannedStart ? new Date(dash.plannedStart) : null;
-      const plannedEnd = dash.plannedEnd ? new Date(dash.plannedEnd) : null;
-      let realDays = null;
-      if(startDate && endDate) realDays = Math.round((endDate-startDate)/(1000*60*60*24));
-      else if(startDate) realDays = Math.round((new Date()-startDate)/(1000*60*60*24));
-      let plannedDays = null;
-      if(plannedStart && plannedEnd) plannedDays = Math.round((plannedEnd-plannedStart)/(1000*60*60*24));
-      let status='grey', statusTxt='Non démarré';
-      if(s.completed){ status='green'; statusTxt='Terminé ✓'; }
-      else if(startDate){ status = plannedEnd && new Date()>plannedEnd ? 'red' : 'orange'; statusTxt = status==='red' ? 'En retard ⚠' : 'En cours'; }
-      let delayTxt='—', delayClass='';
-      if(plannedStart && startDate){
-        const ddays = Math.round((startDate-plannedStart)/(1000*60*60*24));
-        if(ddays>0){ delayTxt='+'+ddays+'j de retard'; delayClass='bad'; }
-        else if(ddays<0){ delayTxt=Math.abs(ddays)+'j d\'avance'; delayClass='good'; }
-        else { delayTxt='Dans les temps'; delayClass='good'; }
-      }
-      const opC = opPct>=80?'var(--accent)':opPct>=50?'var(--yellow)':'#e05555';
-      const veC = vePct>=80?'var(--accent)':vePct>=50?'var(--yellow)':'#e05555';
-      html += `<div class="kpi-card">
-        <div class="kpi-card-header">
-          <div><div class="kpi-card-title">${s.serie}</div><div class="kpi-card-ref">${s.projet} | OP: ${s.op}</div></div>
-          <div class="kpi-status ${status}">${statusTxt}</div>
-        </div>
-        <div class="kpi-dates">
-          <div class="kpi-date-box ${isAdmin?'editable':''}"><label>📅 Début prévu</label><input type="date" value="${dash.plannedStart||''}" ${isAdmin?'onchange="updateDash('+s.id+',\'plannedStart\',this.value)"':' readonly'} style="${!isAdmin?'pointer-events:none':''}"></div>
-          <div class="kpi-date-box ${isAdmin?'editable':''}"><label>🏁 Fin prévue</label><input type="date" value="${dash.plannedEnd||''}" ${isAdmin?'onchange="updateDash('+s.id+',\'plannedEnd\',this.value)"':' readonly'} style="${!isAdmin?'pointer-events:none':''}"></div>
-          <div class="kpi-date-box"><label>▶ Début réel</label><input type="date" value="${startDate?startDate.toISOString().slice(0,10):''}" readonly style="pointer-events:none"></div>
-          <div class="kpi-date-box"><label>✅ Fin réelle</label><input type="date" value="${endDate?endDate.toISOString().slice(0,10):''}" readonly style="pointer-events:none"></div>
-        </div>
-        <div class="kpi-rows" style="margin-top:10px">
-          <div class="kpi-row"><span class="kpi-label">⏱ Durée réelle</span><span class="kpi-value">${realDays!==null?(s.completed?realDays+'j':realDays+'j (en cours)'):'—'}</span></div>
-          <div class="kpi-row"><span class="kpi-label">📐 Durée prévue</span><span class="kpi-value">${plannedDays!==null?plannedDays+'j':'—'}</span></div>
-          <div class="kpi-row"><span class="kpi-label">🚦 Écart délai</span><span class="kpi-value ${delayClass}">${delayTxt}</span></div>
-        </div>
-        <div class="kpi-bar-wrap"><div class="kpi-bar-label"><span>✋ OP</span><span style="color:${opC}">${opPct}%</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${opPct}%;background:${opC}"></div></div></div>
-        <div class="kpi-bar-wrap" style="margin-top:6px"><div class="kpi-bar-label"><span>🔍 VE</span><span style="color:${veC}">${vePct}%</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${vePct}%;background:${veC}"></div></div></div>
-        <div style="margin-top:10px"><textarea placeholder="Commentaire / notes..." style="width:100%;height:50px;font-size:12px;resize:none" ${isAdmin?'onchange="updateDash('+s.id+',\'comment\',this.value)"':' readonly'}>${dash.comment||''}</textarea></div>
-      </div>`;
+      html += renderKPICard(s, isAdmin);
     });
     html += '</div>';
   });
 
+  // Export button
+  html += `<div style="margin-top:20px;text-align:center">
+    <button class="export-btn" onclick="exportDashboard()">📥 Exporter rapport mensuel (CSV)</button>
+  </div>`;
+
   el.innerHTML = html;
 }
 
-function selectDashYear(year){
-  dashSelectedYear = String(year);
-  dashSelectedMonth = null;
-  renderDashboard();
+function renderGantt(sessions, isAdmin){
+  if(!sessions.length) return '';
+  // Find date range
+  let minDate = null, maxDate = null;
+  sessions.forEach(s=>{
+    const dash = dashCache[String(s.id)]||{};
+    const dates = [s.started, s.completed, dash.plannedStart, dash.plannedEnd].filter(Boolean).map(d=>new Date(d));
+    dates.forEach(d=>{ if(!minDate||d<minDate)minDate=d; if(!maxDate||d>maxDate)maxDate=d; });
+  });
+  if(!minDate) return '';
+  // Extend range slightly
+  minDate = new Date(minDate); minDate.setDate(minDate.getDate()-2);
+  maxDate = new Date(maxDate); maxDate.setDate(maxDate.getDate()+2);
+  const totalDays = Math.max(1, (maxDate-minDate)/(1000*60*60*24));
+  const today = new Date();
+  const todayPct = Math.min(100, Math.max(0, (today-minDate)/(maxDate-minDate)*100));
+
+  let html = '<div class="dash-section-title">📅 Vue Gantt</div>';
+  html += '<div class="gantt-wrap"><div class="gantt-table">';
+  // Header dates
+  html += '<div class="gantt-row" style="grid-template-columns:140px 1fr"><span></span><div style="position:relative;height:16px;background:#00364a;border-radius:4px">';
+  // Show month markers
+  let cur = new Date(minDate);
+  while(cur <= maxDate){
+    const pct = (cur-minDate)/(maxDate-minDate)*100;
+    html += `<span style="position:absolute;left:${pct}%;font-size:9px;color:var(--text3);transform:translateX(-50%)">${cur.getDate()}/${cur.getMonth()+1}</span>`;
+    cur.setDate(cur.getDate()+7);
+  }
+  html += `<div class="gantt-today" style="left:${todayPct}%" title="Aujourd'hui"></div>`;
+  html += '</div></div>';
+
+  sessions.forEach(s=>{
+    const dash = dashCache[String(s.id)]||{};
+    const startD = s.started ? new Date(s.started) : null;
+    const endD = s.completed ? new Date(s.completed) : (startD ? new Date() : null);
+    const planS = dash.plannedStart ? new Date(dash.plannedStart) : null;
+    const planE = dash.plannedEnd ? new Date(dash.plannedEnd) : null;
+
+    html += `<div class="gantt-row" style="grid-template-columns:140px 1fr">
+      <span class="gantt-label" title="${s.serie}">${s.serie}</span>
+      <div class="gantt-bar-wrap">`;
+
+    // Planned bar (ghost)
+    if(planS && planE){
+      const l = Math.max(0,(planS-minDate)/(maxDate-minDate)*100);
+      const w = Math.max(1,(planE-planS)/(maxDate-minDate)*100);
+      html += `<div class="gantt-bar" style="left:${l}%;width:${w}%;background:#0086c244;border:1px dashed #0086c2">Prévu</div>`;
+    }
+    // Real bar
+    if(startD && endD){
+      const l = Math.max(0,(startD-minDate)/(maxDate-minDate)*100);
+      const w = Math.max(1,(endD-startD)/(maxDate-minDate)*100);
+      const color = s.completed ? 'var(--accent)' : (planE && today > planE ? '#e05555' : 'var(--accent2)');
+      html += `<div class="gantt-bar" style="left:${l}%;width:${w}%;background:${color}">${s.completed?'✓':''}</div>`;
+    }
+    html += `<div class="gantt-today" style="left:${todayPct}%"></div>`;
+    html += '</div></div>';
+  });
+  html += '</div></div>';
+  return html;
 }
 
-function selectDashMonth(month){
-  dashSelectedMonth = String(month);
-  renderDashboard();
+function renderNCChart(sessions){
+  // Count NC by reason
+  const reasons = {retouche:0, piece:0, mesure:0, autre:0};
+  sessions.forEach(s=>s.steps.forEach(st=>st.items.forEach(it=>{
+    if(it.ncReason && reasons[it.ncReason]!==undefined) reasons[it.ncReason]++;
+  })));
+  const total = Object.values(reasons).reduce((a,b)=>a+b,0);
+  if(!total) return '';
+
+  const labels = {retouche:'Retouche', piece:'Pièce manq.', mesure:'Hors tol.', autre:'Autre'};
+  const colors = {retouche:'#e05555', piece:'#f0a500', mesure:'#0086c2', autre:'#7ab8cc'};
+  const max = Math.max(...Object.values(reasons), 1);
+
+  let html = '<div class="dash-section-title">⚠️ Non-conformités par type</div>';
+  html += '<div class="chart-wrap"><div class="bar-chart">';
+  Object.entries(reasons).forEach(([k,v])=>{
+    const h = Math.round(v/max*100);
+    html += `<div class="bar-chart-bar" style="height:${h}%;background:${colors[k]}" data-val="${v}"></div>`;
+  });
+  html += '</div><div class="bar-chart-labels">';
+  Object.entries(reasons).forEach(([k,v])=>{
+    html += `<div class="bar-chart-label">${labels[k]}<br><strong style="color:#fff">${v}</strong></div>`;
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function renderStepTimeChart(sessions){
+  // For sessions with start/end, estimate time per step (evenly distributed)
+  const stepTimes = {};
+  sessions.forEach(s=>{
+    if(!s.started || !s.completed) return;
+    const totalTime = (new Date(s.completed)-new Date(s.started))/(1000*60*60); // hours
+    const nSteps = s.steps.length;
+    const timePerStep = totalTime/nSteps;
+    s.steps.forEach((st,i)=>{
+      const name = ACTIVE_STEPS[i]?.name || st.id;
+      if(!stepTimes[name]) stepTimes[name] = [];
+      stepTimes[name].push(timePerStep);
+    });
+  });
+  const entries = Object.entries(stepTimes);
+  if(!entries.length) return '';
+  const avgs = entries.map(([n,v])=>({name:n, avg:Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10}));
+  const maxAvg = Math.max(...avgs.map(a=>a.avg), 1);
+
+  let html = '<div class="dash-section-title">⏱ Temps moyen estimé par étape (heures)</div>';
+  html += '<div class="chart-wrap"><div class="bar-chart">';
+  avgs.forEach(a=>{
+    const h = Math.round(a.avg/maxAvg*100);
+    html += `<div class="bar-chart-bar" style="height:${h}%;background:var(--accent2)" data-val="${a.avg}h"></div>`;
+  });
+  html += '</div><div class="bar-chart-labels">';
+  avgs.forEach(a=>{
+    const short = a.name.length>10?a.name.slice(0,10)+'…':a.name;
+    html += `<div class="bar-chart-label">${short}<br><strong style="color:#fff">${a.avg}h</strong></div>`;
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function renderOpComparison(sessions){
+  // Group by operator
+  const ops = {};
+  sessions.forEach(s=>{
+    const op = s.op||'—';
+    if(!ops[op]) ops[op] = {sessions:0, opItems:0, veItems:0, totalItems:0, ncCount:0, fpPass:0, fpTotal:0};
+    ops[op].sessions++;
+    s.steps.forEach(st=>st.items.forEach(it=>{
+      ops[op].totalItems++;
+      if(it.opDone) ops[op].opItems++;
+      if(it.veDone) ops[op].veItems++;
+      if(it.ncReason && it.ncReason!=='ok' && it.ncReason!=='') ops[op].ncCount++;
+      if(it.firstPassResult){ ops[op].fpTotal++; if(it.firstPassResult==='pass') ops[op].fpPass++; }
+    }));
+  });
+  const entries = Object.entries(ops);
+  if(entries.length < 2) return '';
+
+  let html = '<div class="dash-section-title">👤 Comparaison opérateurs</div>';
+  html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+  html += '<thead><tr style="background:#00364a">';
+  ['Opérateur','Machines','Qualité OP','Qualité VE','1er passage','Non-conf.'].forEach(h=>{
+    html += `<th style="padding:8px;text-align:left;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:1px">${h}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+  entries.forEach(([op, d])=>{
+    const opPct = d.totalItems ? Math.round(d.opItems/d.totalItems*100) : 0;
+    const vePct = d.totalItems ? Math.round(d.veItems/d.totalItems*100) : 0;
+    const fpPct = d.fpTotal ? Math.round(d.fpPass/d.fpTotal*100) : null;
+    html += `<tr style="border-bottom:1px solid #ffffff10">
+      <td style="padding:8px;font-weight:600">${op}</td>
+      <td style="padding:8px">${d.sessions}</td>
+      <td style="padding:8px;color:${opPct>=80?'var(--accent)':opPct>=50?'var(--yellow)':'#e05555'}">${opPct}%</td>
+      <td style="padding:8px;color:${vePct>=80?'var(--accent)':vePct>=50?'var(--yellow)':'#e05555'}">${vePct}%</td>
+      <td style="padding:8px;color:${fpPct===null?'var(--text3)':fpPct>=80?'var(--accent)':fpPct>=60?'var(--yellow)':'#e05555'}">${fpPct!==null?fpPct+'%':'—'}</td>
+      <td style="padding:8px;color:${d.ncCount>0?'#e05555':'var(--accent)'}">${d.ncCount}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function renderKPICard(s, isAdmin){
+  const dash = dashCache[String(s.id)]||{};
+  const totalItems = s.steps.reduce((acc,st)=>acc+st.items.length,0);
+  const opDone = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.opDone).length,0);
+  const veDone = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.veDone).length,0);
+  const ncCount = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.ncReason&&it.ncReason!=='ok'&&it.ncReason!=='').length,0);
+  const fpItems = s.steps.flatMap(st=>st.items.filter(it=>it.firstPassResult));
+  const fpRate = fpItems.length ? Math.round(fpItems.filter(it=>it.firstPassResult==='pass').length/fpItems.length*100) : null;
+  const opPct = totalItems ? Math.round(opDone/totalItems*100) : 0;
+  const vePct = totalItems ? Math.round(veDone/totalItems*100) : 0;
+  const startDate = s.started ? new Date(s.started) : null;
+  const endDate = s.completed ? new Date(s.completed) : null;
+  const plannedStart = dash.plannedStart ? new Date(dash.plannedStart) : null;
+  const plannedEnd = dash.plannedEnd ? new Date(dash.plannedEnd) : null;
+  let realDays = null;
+  if(startDate && endDate) realDays = Math.round((endDate-startDate)/(1000*60*60*24));
+  else if(startDate) realDays = Math.round((new Date()-startDate)/(1000*60*60*24));
+  let plannedDays = null;
+  if(plannedStart && plannedEnd) plannedDays = Math.round((plannedEnd-plannedStart)/(1000*60*60*24));
+  let status='grey', statusTxt='Non démarré';
+  if(s.completed){ status='green'; statusTxt='Terminé ✓'; }
+  else if(startDate){ status = plannedEnd && new Date()>plannedEnd ? 'red':'orange'; statusTxt = status==='red'?'En retard ⚠':'En cours'; }
+  let delayTxt='—', delayClass='';
+  if(plannedStart && startDate){
+    const ddays = Math.round((startDate-plannedStart)/(1000*60*60*24));
+    if(ddays>0){ delayTxt='+'+ddays+'j retard'; delayClass='bad'; }
+    else if(ddays<0){ delayTxt=Math.abs(ddays)+'j avance'; delayClass='good'; }
+    else { delayTxt='Dans les temps'; delayClass='good'; }
+  }
+  const opC = opPct>=80?'var(--accent)':opPct>=50?'var(--yellow)':'#e05555';
+  const veC = vePct>=80?'var(--accent)':vePct>=50?'var(--yellow)':'#e05555';
+
+  return `<div class="kpi-card">
+    <div class="kpi-card-header">
+      <div><div class="kpi-card-title">${s.serie}</div><div class="kpi-card-ref">${s.projet} | OP: ${s.op}</div></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div class="kpi-status ${status}">${statusTxt}</div>
+        ${ncCount>0?`<span class="nc-badge">${ncCount} NC</span>`:''}
+      </div>
+    </div>
+    <div class="kpi-dates">
+      <div class="kpi-date-box ${isAdmin?'editable':''}"><label>📅 Début prévu</label><input type="date" value="${dash.plannedStart||''}" ${isAdmin?'onchange="updateDash('+s.id+',\'plannedStart\',this.value)"':' readonly'} style="${!isAdmin?'pointer-events:none':''}"></div>
+      <div class="kpi-date-box ${isAdmin?'editable':''}"><label>🏁 Fin prévue</label><input type="date" value="${dash.plannedEnd||''}" ${isAdmin?'onchange="updateDash('+s.id+',\'plannedEnd\',this.value)"':' readonly'} style="${!isAdmin?'pointer-events:none':''}"></div>
+      <div class="kpi-date-box"><label>▶ Début réel</label><input type="date" value="${startDate?startDate.toISOString().slice(0,10):''}" readonly style="pointer-events:none"></div>
+      <div class="kpi-date-box"><label>✅ Fin réelle</label><input type="date" value="${endDate?endDate.toISOString().slice(0,10):''}" readonly style="pointer-events:none"></div>
+    </div>
+    <div class="kpi-rows" style="margin-top:10px">
+      <div class="kpi-row"><span class="kpi-label">⏱ Durée réelle</span><span class="kpi-value">${realDays!==null?(s.completed?realDays+'j':realDays+'j (en cours)'):'—'}</span></div>
+      <div class="kpi-row"><span class="kpi-label">📐 Durée prévue</span><span class="kpi-value">${plannedDays!==null?plannedDays+'j':'—'}</span></div>
+      <div class="kpi-row"><span class="kpi-label">🚦 Écart délai</span><span class="kpi-value ${delayClass}">${delayTxt}</span></div>
+      <div class="kpi-row"><span class="kpi-label">🎯 1er passage</span><span class="kpi-value ${fpRate===null?'':fpRate>=80?'good':fpRate>=60?'warn':'bad'}">${fpRate!==null?fpRate+'%':'—'}</span></div>
+      <div class="kpi-row"><span class="kpi-label">⚠️ Non-conf.</span><span class="kpi-value ${ncCount>0?'bad':'good'}">${ncCount}</span></div>
+    </div>
+    <div class="kpi-bar-wrap"><div class="kpi-bar-label"><span>✋ OP</span><span style="color:${opC}">${opPct}%</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${opPct}%;background:${opC}"></div></div></div>
+    <div class="kpi-bar-wrap" style="margin-top:6px"><div class="kpi-bar-label"><span>🔍 VE</span><span style="color:${veC}">${vePct}%</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${vePct}%;background:${veC}"></div></div></div>
+    <div style="margin-top:10px"><textarea placeholder="Commentaire / notes..." style="width:100%;height:50px;font-size:12px;resize:none" ${isAdmin?'onchange="updateDash('+s.id+',\'comment\',this.value)"':' readonly'}>${dash.comment||''}</textarea></div>
+  </div>`;
+}
+
+function selectDashYear(year){ dashSelectedYear=String(year); dashSelectedMonth=null; renderDashboard(); }
+function selectDashMonth(month){ dashSelectedMonth=String(month); renderDashboard(); }
+
+function exportDashboard(){
+  const monthSessions = sessions.filter(s=>{
+    if(!dashSelectedYear || !dashSelectedMonth) return false;
+    const d = s.started ? new Date(s.started) : new Date();
+    return String(d.getFullYear())===dashSelectedYear && String(d.getMonth())===dashSelectedMonth;
+  });
+  let csv = 'Série,Projet,Gamme,Opérateur,Date début,Date fin,Durée (j),Qualité OP (%),Qualité VE (%),1er passage (%),Non-conformités,Statut\n';
+  monthSessions.forEach(s=>{
+    const dash = dashCache[String(s.id)]||{};
+    const tot = s.steps.reduce((a,st)=>a+st.items.length,0);
+    const op = s.steps.reduce((a,st)=>a+st.items.filter(it=>it.opDone).length,0);
+    const ve = s.steps.reduce((a,st)=>a+st.items.filter(it=>it.veDone).length,0);
+    const nc = s.steps.reduce((a,st)=>a+st.items.filter(it=>it.ncReason&&it.ncReason!=='ok'&&it.ncReason!=='').length,0);
+    const fp = s.steps.flatMap(st=>st.items.filter(it=>it.firstPassResult));
+    const fpR = fp.length ? Math.round(fp.filter(it=>it.firstPassResult==='pass').length/fp.length*100) : '';
+    const start = s.started ? new Date(s.started).toLocaleDateString('fr-FR') : '';
+    const end = s.completed ? new Date(s.completed).toLocaleDateString('fr-FR') : '';
+    let days = '';
+    if(s.started){ const d = s.completed ? (new Date(s.completed)-new Date(s.started)) : (new Date()-new Date(s.started)); days = Math.round(d/(1000*60*60*24)); }
+    const status = s.completed?'Terminé':s.started?'En cours':'Non démarré';
+    csv += `"${s.serie}","${s.projet}","${s.modelName||''}","${s.op}","${start}","${end}","${days}","${tot?Math.round(op/tot*100):''}","${tot?Math.round(ve/tot*100):''}","${fpR}","${nc}","${status}"\n`;
+  });
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `enogia_kpi_${MOIS[Number(dashSelectedMonth)]}_${dashSelectedYear}.csv`;
+  a.click();
 }
 async function updateDash(sessionId, field, value){
   const key = String(sessionId);
