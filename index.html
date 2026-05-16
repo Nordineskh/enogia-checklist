@@ -1973,68 +1973,111 @@ async function renderDashboard(){
 
 function renderGantt(sessions, isAdmin){
   if(!sessions.length) return '';
-  // Find date range
+
+  // Find date range across planned + real dates
   let minDate = null, maxDate = null;
   sessions.forEach(s=>{
     const dash = dashCache[String(s.id)]||{};
-    const dates = [s.started, s.completed, dash.plannedStart, dash.plannedEnd].filter(Boolean).map(d=>new Date(d));
-    dates.forEach(d=>{ if(!minDate||d<minDate)minDate=d; if(!maxDate||d>maxDate)maxDate=d; });
+    [s.started, s.completed, dash.plannedStart, dash.plannedEnd].filter(Boolean).forEach(d=>{
+      const dt = new Date(d);
+      if(!minDate||dt<minDate) minDate=dt;
+      if(!maxDate||dt>maxDate) maxDate=dt;
+    });
   });
   if(!minDate) return '';
-  // Extend range slightly
-  minDate = new Date(minDate); minDate.setDate(minDate.getDate()-2);
-  maxDate = new Date(maxDate); maxDate.setDate(maxDate.getDate()+2);
-  const totalDays = Math.max(1, (maxDate-minDate)/(1000*60*60*24));
-  const today = new Date();
-  const todayPct = Math.min(100, Math.max(0, (today-minDate)/(maxDate-minDate)*100));
 
-  let html = '<div class="dash-section-title">📅 Vue Gantt</div>';
-  html += '<div class="gantt-wrap"><div class="gantt-table">';
-  // Header dates
-  html += '<div class="gantt-row" style="grid-template-columns:140px 1fr"><span></span><div style="position:relative;height:16px;background:#00364a;border-radius:4px">';
-  // Show month markers
+  minDate = new Date(minDate); minDate.setDate(minDate.getDate()-3);
+  maxDate = new Date(maxDate); maxDate.setDate(maxDate.getDate()+3);
+  const spanMs = maxDate - minDate;
+  const today = new Date();
+  const todayPct = Math.min(100, Math.max(0, (today-minDate)/spanMs*100));
+
+  // Build day ticks (every 7 days)
+  const ticks = [];
   let cur = new Date(minDate);
   while(cur <= maxDate){
-    const pct = (cur-minDate)/(maxDate-minDate)*100;
-    html += `<span style="position:absolute;left:${pct}%;font-size:9px;color:var(--text3);transform:translateX(-50%)">${cur.getDate()}/${cur.getMonth()+1}</span>`;
+    ticks.push({date:new Date(cur), pct:(cur-minDate)/spanMs*100});
     cur.setDate(cur.getDate()+7);
   }
-  html += `<div class="gantt-today" style="left:${todayPct}%" title="Aujourd'hui"></div>`;
-  html += '</div></div>';
 
-  sessions.forEach(s=>{
+  let html = '<div class="dash-section-title">📅 Planning Gantt</div>';
+  html += '<div class="gantt-wrap">';
+
+  // Legend
+  html += `<div style="display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap;font-size:11px;color:var(--text2)">
+    <span><span style="display:inline-block;width:24px;height:8px;background:#0086c244;border:1px dashed #0086c2;border-radius:2px;vertical-align:middle;margin-right:4px"></span>Planifié</span>
+    <span><span style="display:inline-block;width:24px;height:8px;background:var(--accent2);border-radius:2px;vertical-align:middle;margin-right:4px"></span>En cours</span>
+    <span><span style="display:inline-block;width:24px;height:8px;background:var(--accent);border-radius:2px;vertical-align:middle;margin-right:4px"></span>Terminé</span>
+    <span><span style="display:inline-block;width:24px;height:8px;background:#e05555;border-radius:2px;vertical-align:middle;margin-right:4px"></span>En retard</span>
+    <span><span style="display:inline-block;width:2px;height:12px;background:#e05555;vertical-align:middle;margin-right:4px"></span>Aujourd'hui</span>
+  </div>`;
+
+  // Container
+  html += '<div style="position:relative">';
+
+  // Timeline axis
+  html += '<div style="display:flex;margin-left:150px;margin-bottom:4px;position:relative;height:18px">';
+  ticks.forEach(t=>{
+    html += `<span style="position:absolute;left:${t.pct}%;transform:translateX(-50%);font-size:9px;color:var(--text3);white-space:nowrap">${t.date.getDate()}/${t.date.getMonth()+1}</span>`;
+  });
+  html += '</div>';
+
+  // Rows
+  sessions.forEach((s,idx)=>{
     const dash = dashCache[String(s.id)]||{};
     const startD = s.started ? new Date(s.started) : null;
     const endD = s.completed ? new Date(s.completed) : (startD ? new Date() : null);
     const planS = dash.plannedStart ? new Date(dash.plannedStart) : null;
     const planE = dash.plannedEnd ? new Date(dash.plannedEnd) : null;
+    const isLate = startD && !s.completed && planE && today > planE;
+    const rowBg = idx%2===0 ? '#00364a22' : 'transparent';
 
-    html += `<div class="gantt-row" style="grid-template-columns:140px 1fr">
-      <span class="gantt-label" title="${s.serie}">${s.serie}</span>
-      <div class="gantt-bar-wrap">`;
+    html += `<div style="display:flex;align-items:center;margin-bottom:6px;background:${rowBg};border-radius:4px;padding:4px 0">`;
+    // Label
+    html += `<div style="width:150px;flex-shrink:0;padding-right:10px">
+      <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${s.serie}">${s.serie}</div>
+      <div style="font-size:10px;color:var(--text3)">${s.op}</div>
+    </div>`;
 
-    // Planned bar (ghost)
+    // Bar area
+    html += '<div style="flex:1;position:relative;height:32px">';
+
+    // Grid lines at ticks
+    ticks.forEach(t=>{
+      html += `<div style="position:absolute;left:${t.pct}%;top:0;bottom:0;width:1px;background:#ffffff08"></div>`;
+    });
+
+    // Today line
+    html += `<div style="position:absolute;left:${todayPct}%;top:-2px;bottom:-2px;width:2px;background:#e05555;z-index:3;border-radius:1px"></div>`;
+
+    // Planned bar
     if(planS && planE){
-      const l = Math.max(0,(planS-minDate)/(maxDate-minDate)*100);
-      const w = Math.max(1,(planE-planS)/(maxDate-minDate)*100);
-      html += `<div class="gantt-bar" style="left:${l}%;width:${w}%;background:#0086c244;border:1px dashed #0086c2">Prévu</div>`;
+      const l = Math.max(0,(planS-minDate)/spanMs*100);
+      const w = Math.max(0.5,(planE-planS)/spanMs*100);
+      html += `<div style="position:absolute;left:${l}%;width:${w}%;top:6px;height:20px;background:#0086c222;border:1px dashed #0086c2aa;border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:9px;color:#0086c2;overflow:hidden;white-space:nowrap">
+        📐 ${Math.round((planE-planS)/(1000*60*60*24))}j
+      </div>`;
     }
+
     // Real bar
     if(startD && endD){
-      const l = Math.max(0,(startD-minDate)/(maxDate-minDate)*100);
-      const w = Math.max(1,(endD-startD)/(maxDate-minDate)*100);
-      const color = s.completed ? 'var(--accent)' : (planE && today > planE ? '#e05555' : 'var(--accent2)');
-      html += `<div class="gantt-bar" style="left:${l}%;width:${w}%;background:${color}">${s.completed?'✓':''}</div>`;
+      const l = Math.max(0,(startD-minDate)/spanMs*100);
+      const w = Math.max(0.5,(endD-startD)/spanMs*100);
+      const color = s.completed ? 'var(--accent)' : isLate ? '#e05555' : 'var(--accent2)';
+      const realDays = Math.round((endD-startD)/(1000*60*60*24));
+      html += `<div style="position:absolute;left:${l}%;width:${w}%;top:8px;height:16px;background:${color};border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:9px;color:#fff;font-weight:700;overflow:hidden;white-space:nowrap;z-index:2">
+        ${s.completed?'✓':isLate?'⚠':'▶'} ${realDays}j
+      </div>`;
     }
-    html += `<div class="gantt-today" style="left:${todayPct}%"></div>`;
+
     html += '</div></div>';
   });
+
   html += '</div></div>';
   return html;
 }
 
 function renderNCChart(sessions){
-  // Count NC by reason
   const reasons = {retouche:0, piece:0, mesure:0, autre:0};
   sessions.forEach(s=>s.steps.forEach(st=>st.items.forEach(it=>{
     if(it.ncReason && reasons[it.ncReason]!==undefined) reasons[it.ncReason]++;
@@ -2061,36 +2104,48 @@ function renderNCChart(sessions){
 }
 
 function renderStepTimeChart(sessions){
-  // For sessions with start/end, estimate time per step (evenly distributed)
-  const stepTimes = {};
+  // Average montage time per machine MODEL (not per step)
+  const modelTimes = {};
   sessions.forEach(s=>{
     if(!s.started || !s.completed) return;
-    const totalTime = (new Date(s.completed)-new Date(s.started))/(1000*60*60); // hours
-    const nSteps = s.steps.length;
-    const timePerStep = totalTime/nSteps;
-    s.steps.forEach((st,i)=>{
-      const name = ACTIVE_STEPS[i]?.name || st.id;
-      if(!stepTimes[name]) stepTimes[name] = [];
-      stepTimes[name].push(timePerStep);
-    });
+    const model = s.modelName || 'ENO 180 LTV3';
+    const days = (new Date(s.completed)-new Date(s.started))/(1000*60*60*24);
+    if(!modelTimes[model]) modelTimes[model] = [];
+    modelTimes[model].push(days);
   });
-  const entries = Object.entries(stepTimes);
+  const entries = Object.entries(modelTimes);
   if(!entries.length) return '';
-  const avgs = entries.map(([n,v])=>({name:n, avg:Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10}));
+
+  const avgs = entries.map(([name,vals])=>({
+    name,
+    avg: Math.round(vals.reduce((a,b)=>a+b,0)/vals.length*10)/10,
+    min: Math.round(Math.min(...vals)*10)/10,
+    max: Math.round(Math.max(...vals)*10)/10,
+    count: vals.length
+  }));
   const maxAvg = Math.max(...avgs.map(a=>a.avg), 1);
 
-  let html = '<div class="dash-section-title">⏱ Temps moyen estimé par étape (heures)</div>';
-  html += '<div class="chart-wrap"><div class="bar-chart">';
+  let html = '<div class="dash-section-title">⏱ Temps moyen de montage par gamme</div>';
+  html += '<div class="chart-wrap">';
+
   avgs.forEach(a=>{
-    const h = Math.round(a.avg/maxAvg*100);
-    html += `<div class="bar-chart-bar" style="height:${h}%;background:var(--accent2)" data-val="${a.avg}h"></div>`;
+    const pct = Math.round(a.avg/maxAvg*100);
+    html += `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:13px;font-weight:600;color:var(--text)">${a.name}</span>
+        <span style="font-size:12px;color:var(--accent);font-weight:700">${a.avg}j moy. <span style="font-size:10px;color:var(--text3)">(${a.count} machine${a.count>1?'s':''})</span></span>
+      </div>
+      <div style="position:relative;height:20px;background:#003548;border-radius:4px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:4px;transition:.5s"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:3px">
+        <span>Min: ${a.min}j</span>
+        <span>Max: ${a.max}j</span>
+      </div>
+    </div>`;
   });
-  html += '</div><div class="bar-chart-labels">';
-  avgs.forEach(a=>{
-    const short = a.name.length>10?a.name.slice(0,10)+'…':a.name;
-    html += `<div class="bar-chart-label">${short}<br><strong style="color:#fff">${a.avg}h</strong></div>`;
-  });
-  html += '</div></div>';
+
+  html += '</div>';
   return html;
 }
 
