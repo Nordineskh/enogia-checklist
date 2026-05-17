@@ -215,28 +215,6 @@ textarea{height:52px;resize:none;font-size:12px}
 .model-card-coming{opacity:0.5;cursor:not-allowed}
 .model-card-coming:hover{transform:none;border-color:var(--border);box-shadow:none}
 
-
-/* TOAST */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--accent);border-radius:10px;padding:12px 22px;font-size:13px;color:var(--text);z-index:9999;box-shadow:0 8px 30px #000a;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap}
-.toast.show{opacity:1}
-.toast.warn{border-color:var(--yellow);color:var(--yellow)}
-/* OFFLINE */
-.offline-badge{background:#e0555522;border:1px solid #e0555544;color:#e05555;border-radius:20px;padding:3px 10px;font-size:11px;display:none;align-items:center;gap:4px}
-.offline-badge.show{display:inline-flex}
-/* TIMER */
-.timer-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.timer-display{font-family:var(--font-title);font-size:26px;color:var(--accent);letter-spacing:2px;min-width:90px}
-.timer-running .timer-display{color:var(--yellow)}
-.timer-btn{background:#00364a;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font)}
-.timer-btn:hover{border-color:var(--accent);color:var(--accent)}
-/* PHOTOS */
-.photo-grid{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.photo-thumb{width:58px;height:58px;border-radius:6px;object-fit:cover;border:1px solid var(--border);cursor:pointer}
-.photo-add{width:58px;height:58px;border-radius:6px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;background:#00364a;color:var(--text3)}
-.photo-add:hover{border-color:var(--accent);color:var(--accent)}
-/* QR */
-.qr-overlay{position:fixed;inset:0;background:#000c;z-index:1000;display:flex;align-items:center;justify-content:center}
-.qr-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;text-align:center;max-width:300px;width:90%}
 </style>
 </head>
 <body>
@@ -268,8 +246,7 @@ textarea{height:52px;resize:none;font-size:12px}
     </div>
   </div>
   <div class="hdr-right">
-    <span class="badge live" id="onlineBadge">● EN LIGNE</span>
-    <span class="offline-badge" id="offlineBadge">⚠ HORS LIGNE</span>
+    <span class="badge live">● EN LIGNE</span>
     <span class="badge" id="sessionBadge">–</span>
     <span class="badge" id="userEmail" style="color:var(--accent)"></span>
     <button class="btn btn-outline btn-sm" onclick="window._signOut()" style="padding:4px 10px;font-size:11px">⎋ Déconnexion</button>
@@ -318,20 +295,6 @@ textarea{height:52px;resize:none;font-size:12px}
     <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
   </div>
   <div class="steps-nav" id="stepsNav"></div>
-
-  <div class="timer-bar" id="timerBar">
-    <div>
-      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">⏱ Chronomètre étape</div>
-      <div class="timer-display" id="timerDisplay">00:00:00</div>
-    </div>
-    <div style="display:flex;gap:6px">
-      <button class="timer-btn" id="timerStartBtn" onclick="timerStart()">▶ Start</button>
-      <button class="timer-btn" id="timerStopBtn" onclick="timerStop()" style="display:none">⏸ Pause</button>
-      <button class="timer-btn" onclick="timerReset()">↺ Reset</button>
-    </div>
-    <div style="font-size:10px;color:var(--text3);flex:1;min-width:0" id="timerHist"></div>
-    <button class="timer-btn" onclick="showQR()">📱 QR</button>
-  </div>
 
   <div class="step-header" id="stepHdr"></div>
 
@@ -409,7 +372,6 @@ textarea{height:52px;resize:none;font-size:12px}
 
 <!-- Three.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <!-- Firebase CDN -->
 <script type="module">
@@ -1281,48 +1243,29 @@ async function saveState(){
   // Update local array
   const idx = sessions.findIndex(s=>s.id===session.id);
   if(idx>=0) sessions[idx]=session; else sessions.unshift(session);
-  // Save offline first
-  try{localStorage.setItem('enogia_offline',JSON.stringify(sessions));}catch(e){}
-  // Then Firebase
-  if(navigator.onLine){
-    try{
-      await window._fsSetDoc(window._fsDoc(window._db,'sessions',String(session.id)),session);
-    }catch(e){console.warn('Firebase error - offline only');}
-  }
+  // Save to Firestore
+  try {
+    const db = window._db;
+    if(!db) return;
+    await window._fsSetDoc(window._fsDoc(db,'sessions', String(session.id)), session);
+  } catch(e){ console.warn('Firebase save error:', e); }
 }
 
 async function loadSessions(){
-  // Offline first
-  try{const loc=localStorage.getItem('enogia_offline');if(loc)sessions=JSON.parse(loc);}catch(e){}
-  if(!navigator.onLine)return;
-  try{
-    const q=window._fsQuery(window._fsCollection(window._db,'sessions'),window._fsOrderBy('started','desc'));
-    const snap=await window._fsGetDocs(q);
-    const fb=snap.docs.map(d=>d.data());
-    if(fb.length){sessions=fb;try{localStorage.setItem('enogia_offline',JSON.stringify(sessions));}catch(e){}}
-  }catch(e){console.warn('Firebase load error - using cache');}
+  try {
+    const db = window._db;
+    if(!db) return;
+    const q = window._fsQuery(window._fsCollection(db,'sessions'), window._fsOrderBy('started','desc'));
+    const snap = await window._fsGetDocs(q);
+    sessions = snap.docs.map(d=>d.data());
+  } catch(e){ console.warn('Firebase load error:', e); sessions=[]; }
 }
 
 // Init when Firebase is ready
 function initApp(){
-  // Offline detection
-  window.addEventListener('online',()=>{
-    document.getElementById('offlineBadge').classList.remove('show');
-    document.getElementById('onlineBadge').style.display='';
-    showToast('✅ Connexion rétablie');
-    loadSessions().then(()=>renderHistory());
-  });
-  window.addEventListener('offline',()=>{
-    document.getElementById('offlineBadge').classList.add('show');
-    document.getElementById('onlineBadge').style.display='none';
-    showToast('⚠️ Hors ligne — données sauvegardées localement','warn');
-  });
   loadSessions().then(()=>{
     renderHistory();
     renderModelGrid();
-    // QR auto-load
-    const sid=new URLSearchParams(window.location.search).get('session');
-    if(sid){const s=sessions.find(x=>String(x.id)===sid);if(s)loadSession(s.id);}
   });
 }
 if(window._firebaseReady){ initApp(); }
@@ -1644,14 +1587,14 @@ function startSession(){
         actions:it.actions.map(()=>false),
         opDone:false,opName:'',opDate:'',opComment:'',
         veDone:false,veName:'',veDate:'',veComment:'',
-        ncReason:'',firstPassResult:null,ncCount:0,photos:[],
+        ncReason:'',firstPassResult:null,ncCount:0,
       })),
-      snData:{},comment:'',timerSeconds:0,
+      snData:{},comment:'',
     }))
   };
   sessions.unshift(session);
   saveState(); // async, fire-and-forget
-  currentStep=0;stepModels={};stepTimerLog={};
+  currentStep=0;stepModels={};
   showScreen('scChecklist');
   renderStep();
 }
@@ -1785,11 +1728,6 @@ function renderStep(){
               <option value="autre" ${it.ncReason==='autre'?'selected':''}>⚠️ Non-conforme — Autre</option>
             </select>`}
             ${it.ncReason&&it.ncReason!=='ok'?`<span class="nc-badge" style="display:inline-block;margin-top:4px">NC: ${it.ncReason}</span>`:''}
-            ${it.opDone?`<div style="margin-top:8px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">📸 Photos NC</div>
-              <div class="photo-grid">
-                ${(it.photos||[]).map(p=>`<img src="${p}" class="photo-thumb" onclick="viewPhoto('${p}')">`).join('')}
-                <label class="photo-add" title="Ajouter photo"><input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhoto(${currentStep},${idx},this)">＋</label>
-              </div></div>`:''}
             <button class="btn ${it.veDone?'btn-success':'btn-outline'} btn-full mt8 btn-sm" onclick="validateVE(${currentStep},${idx})" ${it.veDone?'disabled':(!it.opDone?'disabled':'')}>
               ${it.veDone?'✅ Validé VE — '+it.veDate:(it.opDone?'🔍 Valider (VE)':'⏳ Attente OP')}
             </button>
@@ -1826,7 +1764,6 @@ function renderStep(){
 
   // 3D viewer
   setTimeout(()=>{resizeRenderer();restoreModel();},50);
-  restoreTimer();
 }
 
 function toggleItem(id){document.getElementById(id).classList.toggle('open');}
@@ -1859,7 +1796,6 @@ function validateVE(si,ii){
 }
 function jumpStep(i){currentStep=i;session.currentStep=i;saveState();renderStep();window.scrollTo(0,0);}
 function navStep(dir){
-  timerStop();
   const next=currentStep+dir;
   if(next<0)return;
   if(next>=ACTIVE_STEPS.length){showReport();return;}
@@ -1868,7 +1804,6 @@ function navStep(dir){
 
 // ===================== REPORT =====================
 function showReport(){
-  timerStop();
   session.completed=new Date().toISOString();saveState();
   const prog=calcProgress(session);
   document.getElementById('reportContent').innerHTML=`
@@ -2352,146 +2287,6 @@ async function updateDash(sessionId, field, value){
   dashCache[key][field] = value;
   dashCache[key].sessionId = sessionId;
   await saveDashData(sessionId, dashCache[key]);
-}
-
-
-// ===================== TOAST =====================
-function showToast(msg,type=''){
-  let t=document.getElementById('_toast');
-  if(!t){t=document.createElement('div');t.id='_toast';t.className='toast';document.body.appendChild(t);}
-  t.textContent=msg;t.className='toast show'+(type?' '+type:'');
-  clearTimeout(t._t);t._t=setTimeout(()=>{t.className='toast';},3200);
-}
-
-// ===================== TIMER =====================
-let timerInterval=null,timerRunning=false,stepTimerLog={};
-
-function timerStart(){
-  if(timerRunning)return;
-  timerRunning=true;
-  if(!stepTimerLog[currentStep])stepTimerLog[currentStep]={seconds:0};
-  const base=Date.now()-stepTimerLog[currentStep].seconds*1000;
-  document.getElementById('timerStartBtn').style.display='none';
-  document.getElementById('timerStopBtn').style.display='';
-  document.getElementById('timerBar').classList.add('timer-running');
-  timerInterval=setInterval(()=>{
-    stepTimerLog[currentStep].seconds=Math.floor((Date.now()-base)/1000);
-    _timerDraw();
-  },1000);
-}
-
-function timerStop(){
-  if(!timerRunning)return;
-  timerRunning=false;
-  clearInterval(timerInterval);
-  const sb=document.getElementById('timerStartBtn');
-  const pb=document.getElementById('timerStopBtn');
-  const bar=document.getElementById('timerBar');
-  if(sb)sb.style.display='';
-  if(pb)pb.style.display='none';
-  if(bar)bar.classList.remove('timer-running');
-  if(session&&stepTimerLog[currentStep]){
-    session.steps[currentStep].timerSeconds=stepTimerLog[currentStep].seconds;
-    saveState();
-  }
-}
-
-function timerReset(){
-  timerStop();
-  if(stepTimerLog[currentStep])stepTimerLog[currentStep].seconds=0;
-  _timerDraw();
-}
-
-function _timerDraw(){
-  const s=stepTimerLog[currentStep]?stepTimerLog[currentStep].seconds:0;
-  const el=document.getElementById('timerDisplay');
-  if(el)el.textContent=_fmt(s);
-  const hist=Object.entries(stepTimerLog)
-    .filter(([k])=>Number(k)!==currentStep&&stepTimerLog[k].seconds>0)
-    .map(([k,v])=>'Ét.'+(Number(k)+1)+': '+_fmt(v.seconds)).join(' | ');
-  const hel=document.getElementById('timerHist');
-  if(hel)hel.textContent=hist?'Autres: '+hist:'';
-}
-
-function _fmt(s){return[Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,'0')).join(':');}
-
-function restoreTimer(){
-  const saved=session&&session.steps[currentStep]?session.steps[currentStep].timerSeconds:0;
-  if(saved&&!stepTimerLog[currentStep])stepTimerLog[currentStep]={seconds:saved};
-  _timerDraw();
-  const sb=document.getElementById('timerStartBtn');
-  const pb=document.getElementById('timerStopBtn');
-  const bar=document.getElementById('timerBar');
-  if(sb)sb.style.display='';
-  if(pb)pb.style.display='none';
-  timerRunning=false;
-  clearInterval(timerInterval);
-  if(bar)bar.classList.remove('timer-running');
-}
-
-// ===================== PHOTOS =====================
-function addPhoto(si,ii,input){
-  const file=input.files[0];if(!file)return;
-  const img=new Image();
-  img.onload=()=>{
-    const c=document.createElement('canvas');
-    let w=img.width,h=img.height;
-    if(w>800){h=Math.round(h*800/w);w=800;}
-    if(h>600){w=Math.round(w*600/h);h=600;}
-    c.width=w;c.height=h;
-    c.getContext('2d').drawImage(img,0,0,w,h);
-    const b64=c.toDataURL('image/jpeg',0.75);
-    if(!session.steps[si].items[ii].photos)session.steps[si].items[ii].photos=[];
-    session.steps[si].items[ii].photos.push(b64);
-    saveState();renderStep();
-    setTimeout(()=>{const b=document.getElementById('body_'+ACTIVE_STEPS[si].items[ii].id);if(b)b.classList.add('open');},100);
-    showToast('📸 Photo ajoutée !');
-  };
-  img.src=URL.createObjectURL(file);
-}
-
-function viewPhoto(src){
-  const m=document.createElement('div');
-  m.style.cssText='position:fixed;inset:0;background:#000d;z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer';
-  m.innerHTML='<img src="'+src+'" style="max-width:95vw;max-height:90vh;border-radius:8px">';
-  m.onclick=()=>document.body.removeChild(m);
-  document.body.appendChild(m);
-}
-
-// ===================== QR CODE =====================
-function showQR(){
-  if(!session)return;
-  const old=document.getElementById('_qrModal');if(old)document.body.removeChild(old);
-  const url=location.origin+location.pathname+'?session='+session.id;
-  const m=document.createElement('div');
-  m.id='_qrModal';m.className='qr-overlay';
-  m.innerHTML='<div class="qr-box">'+
-    '<div style="font-family:var(--font-title);font-size:20px;color:var(--accent);margin-bottom:4px">📱 QR Code</div>'+
-    '<div style="font-size:12px;color:var(--text3);margin-bottom:14px">'+session.serie+' — '+session.projet+'</div>'+
-    '<div id="_qrcode" style="background:#fff;border-radius:8px;padding:8px;display:inline-block"></div>'+
-    '<div style="font-size:9px;color:var(--text3);margin-top:8px;word-break:break-all">'+url+'</div>'+
-    '<div style="margin-top:14px;display:flex;gap:8px;justify-content:center">'+
-      '<button onclick="printQR()" class="btn btn-outline btn-sm">🖨 Imprimer</button>'+
-      '<button onclick="document.body.removeChild(document.getElementById('_qrModal'))" class="btn btn-outline btn-sm">✕ Fermer</button>'+
-    '</div></div>';
-  document.body.appendChild(m);
-  setTimeout(()=>{
-    if(typeof QRCode!=='undefined')
-      new QRCode(document.getElementById('_qrcode'),{text:url,width:200,height:200,colorDark:'#00455a',colorLight:'#ffffff'});
-  },80);
-}
-
-function printQR(){
-  const url=location.origin+location.pathname+'?session='+session.id;
-  const w=window.open('');
-  w.document.write('<html><body style="text-align:center;padding:40px;font-family:sans-serif">'+
-    '<h2 style="color:#00455a">ENOGIA — Checklist Montage</h2>'+
-    '<p><strong>'+session.serie+'</strong> — '+session.projet+'</p>'+
-    '<p>Opérateur: '+session.op+' | '+session.date+'</p>'+
-    '<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(url)+'" style="border:8px solid #fff;border-radius:8px">'+
-    '<p style="font-size:11px;color:#888;margin-top:16px">Scannez pour accéder à la checklist</p>'+
-    '</body></html>');
-  w.document.close();setTimeout(()=>w.print(),300);
 }
 
 // ===================== INIT =====================
