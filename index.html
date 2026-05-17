@@ -215,6 +215,18 @@ textarea{height:52px;resize:none;font-size:12px}
 .model-card-coming{opacity:0.5;cursor:not-allowed}
 .model-card-coming:hover{transform:none;border-color:var(--border);box-shadow:none}
 
+
+/* TIMER */
+.timer-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.timer-display{font-family:var(--font-title);font-size:26px;color:var(--accent);letter-spacing:2px;min-width:90px}
+.timer-running .timer-display{color:var(--yellow)}
+.tbtn{background:#00364a;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font)}
+.tbtn:hover{border-color:var(--accent);color:var(--accent)}
+/* PHOTOS */
+.photo-grid{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.photo-thumb{width:58px;height:58px;border-radius:6px;object-fit:cover;border:1px solid var(--border);cursor:pointer}
+.photo-add{width:58px;height:58px;border-radius:6px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;background:#00364a;color:var(--text3)}
+.photo-add:hover{border-color:var(--accent);color:var(--accent)}
 </style>
 </head>
 <body>
@@ -295,6 +307,19 @@ textarea{height:52px;resize:none;font-size:12px}
     <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
   </div>
   <div class="steps-nav" id="stepsNav"></div>
+
+  <div class="timer-bar" id="timerBar">
+    <div>
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">⏱ Chronomètre étape</div>
+      <div class="timer-display" id="timerDisplay">00:00:00</div>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="tbtn" id="timerStartBtn" onclick="timerStart()">▶ Start</button>
+      <button class="tbtn" id="timerStopBtn" onclick="timerStop()" style="display:none">⏸ Pause</button>
+      <button class="tbtn" onclick="timerReset()">↺ Reset</button>
+    </div>
+    <div style="font-size:10px;color:var(--text3);flex:1" id="timerHist"></div>
+  </div>
 
   <div class="step-header" id="stepHdr"></div>
 
@@ -1587,14 +1612,14 @@ function startSession(){
         actions:it.actions.map(()=>false),
         opDone:false,opName:'',opDate:'',opComment:'',
         veDone:false,veName:'',veDate:'',veComment:'',
-        ncReason:'',firstPassResult:null,ncCount:0,
+        ncReason:'',firstPassResult:null,ncCount:0,photos:[],
       })),
       snData:{},comment:'',
     }))
   };
   sessions.unshift(session);
   saveState(); // async, fire-and-forget
-  currentStep=0;stepModels={};
+  currentStep=0;stepModels={};stepTimerLog={};
   showScreen('scChecklist');
   renderStep();
 }
@@ -1728,6 +1753,13 @@ function renderStep(){
               <option value="autre" ${it.ncReason==='autre'?'selected':''}>⚠️ Non-conforme — Autre</option>
             </select>`}
             ${it.ncReason&&it.ncReason!=='ok'?`<span class="nc-badge" style="display:inline-block;margin-top:4px">NC: ${it.ncReason}</span>`:''}
+            ${it.opDone?`<div style="margin-top:8px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:4px">📸 Photos NC</div>
+              <div class="photo-grid">
+                ${(it.photos||[]).map(p=>`<img src="${p}" class="photo-thumb" onclick="viewPhoto('${p}')">`).join('')}
+                <label class="photo-add"><input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhoto(${currentStep},${idx},this)">＋</label>
+              </div>
+            </div>`:''}
             <button class="btn ${it.veDone?'btn-success':'btn-outline'} btn-full mt8 btn-sm" onclick="validateVE(${currentStep},${idx})" ${it.veDone?'disabled':(!it.opDone?'disabled':'')}>
               ${it.veDone?'✅ Validé VE — '+it.veDate:(it.opDone?'🔍 Valider (VE)':'⏳ Attente OP')}
             </button>
@@ -1764,6 +1796,7 @@ function renderStep(){
 
   // 3D viewer
   setTimeout(()=>{resizeRenderer();restoreModel();},50);
+  restoreTimer();
 }
 
 function toggleItem(id){document.getElementById(id).classList.toggle('open');}
@@ -1796,6 +1829,7 @@ function validateVE(si,ii){
 }
 function jumpStep(i){currentStep=i;session.currentStep=i;saveState();renderStep();window.scrollTo(0,0);}
 function navStep(dir){
+  timerStop();
   const next=currentStep+dir;
   if(next<0)return;
   if(next>=ACTIVE_STEPS.length){showReport();return;}
@@ -1804,6 +1838,7 @@ function navStep(dir){
 
 // ===================== REPORT =====================
 function showReport(){
+  timerStop();
   session.completed=new Date().toISOString();saveState();
   const prog=calcProgress(session);
   document.getElementById('reportContent').innerHTML=`
@@ -2287,6 +2322,108 @@ async function updateDash(sessionId, field, value){
   dashCache[key][field] = value;
   dashCache[key].sessionId = sessionId;
   await saveDashData(sessionId, dashCache[key]);
+}
+
+
+// ===================== TIMER =====================
+let timerInterval=null, timerRunning=false, stepTimerLog={};
+
+function timerStart(){
+  if(timerRunning) return;
+  timerRunning=true;
+  if(!stepTimerLog[currentStep]) stepTimerLog[currentStep]={seconds:0};
+  const base=Date.now()-stepTimerLog[currentStep].seconds*1000;
+  document.getElementById('timerStartBtn').style.display='none';
+  document.getElementById('timerStopBtn').style.display='';
+  document.getElementById('timerBar').classList.add('timer-running');
+  timerInterval=setInterval(()=>{
+    stepTimerLog[currentStep].seconds=Math.floor((Date.now()-base)/1000);
+    _timerDraw();
+  },1000);
+}
+
+function timerStop(){
+  if(!timerRunning) return;
+  timerRunning=false;
+  clearInterval(timerInterval);
+  const s=document.getElementById('timerStartBtn');
+  const p=document.getElementById('timerStopBtn');
+  const b=document.getElementById('timerBar');
+  if(s) s.style.display='';
+  if(p) p.style.display='none';
+  if(b) b.classList.remove('timer-running');
+  if(session && stepTimerLog[currentStep]){
+    session.steps[currentStep].timerSeconds=stepTimerLog[currentStep].seconds;
+    saveState();
+  }
+}
+
+function timerReset(){
+  timerStop();
+  if(stepTimerLog[currentStep]) stepTimerLog[currentStep].seconds=0;
+  _timerDraw();
+}
+
+function _timerDraw(){
+  const sec=stepTimerLog[currentStep]?stepTimerLog[currentStep].seconds:0;
+  const el=document.getElementById('timerDisplay');
+  if(el) el.textContent=_fmt(sec);
+  const others=Object.entries(stepTimerLog)
+    .filter(([k])=>Number(k)!==currentStep && stepTimerLog[k].seconds>0)
+    .map(([k,v])=>'Ét.'+(Number(k)+1)+': '+_fmt(v.seconds)).join(' | ');
+  const hel=document.getElementById('timerHist');
+  if(hel) hel.textContent=others?'Autres: '+others:'';
+}
+
+function _fmt(s){
+  return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,'0')).join(':');
+}
+
+function restoreTimer(){
+  const saved=session&&session.steps[currentStep]?session.steps[currentStep].timerSeconds:0;
+  if(saved && !stepTimerLog[currentStep]) stepTimerLog[currentStep]={seconds:saved};
+  _timerDraw();
+  const s=document.getElementById('timerStartBtn');
+  const p=document.getElementById('timerStopBtn');
+  const b=document.getElementById('timerBar');
+  if(s) s.style.display='';
+  if(p) p.style.display='none';
+  timerRunning=false;
+  clearInterval(timerInterval);
+  if(b) b.classList.remove('timer-running');
+}
+
+// ===================== PHOTOS NC =====================
+function addPhoto(si,ii,input){
+  const file=input.files[0];
+  if(!file) return;
+  const img=new Image();
+  img.onload=()=>{
+    const c=document.createElement('canvas');
+    let w=img.width, h=img.height;
+    if(w>800){h=Math.round(h*800/w);w=800;}
+    if(h>600){w=Math.round(w*600/h);h=600;}
+    c.width=w; c.height=h;
+    c.getContext('2d').drawImage(img,0,0,w,h);
+    const b64=c.toDataURL('image/jpeg',0.75);
+    if(!session.steps[si].items[ii].photos) session.steps[si].items[ii].photos=[];
+    session.steps[si].items[ii].photos.push(b64);
+    saveState();
+    renderStep();
+    setTimeout(()=>{
+      const body=document.getElementById('body_'+ACTIVE_STEPS[si].items[ii].id);
+      if(body) body.classList.add('open');
+    },100);
+  };
+  img.src=URL.createObjectURL(file);
+}
+
+function viewPhoto(src){
+  const m=document.createElement('div');
+  m.style.cssText='position:fixed;inset:0;background:#000d;z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer';
+  m.innerHTML='<img src="'+src+'" style="max-width:95vw;max-height:90vh;border-radius:8px">';
+  m.onclick=()=>document.body.removeChild(m);
+  document.body.appendChild(m);
 }
 
 // ===================== INIT =====================
