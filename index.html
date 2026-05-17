@@ -141,6 +141,66 @@ textarea{height:52px;resize:none;font-size:12px}
 .empty-state .emo{font-size:48px;margin-bottom:12px}
 .alert-warn{background:#f0a50015;border:1px solid #f0a50044;color:var(--yellow);padding:10px 13px;border-radius:8px;font-size:13px;margin-bottom:10px}
 
+/* DASHBOARD */
+
+/* NON-CONFORMITES */
+.nc-badge{background:#e0555522;border:1px solid #e0555544;color:#e05555;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700}
+.nc-modal{position:fixed;inset:0;background:#000a;z-index:999;display:flex;align-items:center;justify-content:center}
+.nc-modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:420px;width:90%;box-shadow:0 20px 60px #000a}
+.nc-modal-title{font-family:var(--font-title);font-size:20px;color:#e05555;margin-bottom:16px}
+.nc-select{width:100%;background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:10px;font-size:14px;margin-bottom:10px}
+
+/* GANTT */
+.gantt-wrap{overflow-x:auto;margin-top:8px}
+.gantt-table{min-width:600px;width:100%}
+.gantt-row{display:grid;gap:4px;align-items:center;padding:4px 0;border-bottom:1px solid #ffffff10}
+.gantt-label{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gantt-bar-wrap{position:relative;height:20px;background:#00364a;border-radius:4px;overflow:visible}
+.gantt-bar{position:absolute;height:100%;border-radius:4px;min-width:4px;display:flex;align-items:center;padding:0 6px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden}
+.gantt-today{position:absolute;top:-4px;bottom:-4px;width:2px;background:#e05555;z-index:2}
+
+/* CHARTS */
+.chart-wrap{background:#00364a;border-radius:8px;padding:12px;margin-top:8px}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:80px;padding-top:8px}
+.bar-chart-bar{flex:1;border-radius:4px 4px 0 0;min-height:4px;transition:.5s;position:relative;cursor:default}
+.bar-chart-bar:hover::after{content:attr(data-val);position:absolute;top:-20px;left:50%;transform:translateX(-50%);background:#000a;color:#fff;border-radius:4px;padding:2px 6px;font-size:10px;white-space:nowrap}
+.bar-chart-labels{display:flex;gap:6px;margin-top:4px}
+.bar-chart-label{flex:1;font-size:9px;color:var(--text3);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* EXPORT BUTTON */
+.export-btn{background:linear-gradient(135deg,#2aa99e,#0086c2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:var(--font)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:20px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden}
+.kpi-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.kpi-card-title{font-family:var(--font-title);font-size:18px;color:var(--accent);letter-spacing:1px}
+.kpi-card-ref{font-size:11px;color:var(--text3);margin-top:2px}
+.kpi-status{border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700}
+.kpi-status.green{background:#2aa99e22;color:var(--accent);border:1px solid #2aa99e44}
+.kpi-status.orange{background:#f0a50022;color:var(--yellow);border:1px solid #f0a50044}
+.kpi-status.red{background:#e0555522;color:#e05555;border:1px solid #e0555544}
+.kpi-status.grey{background:#ffffff15;color:var(--text3);border:1px solid var(--border)}
+.kpi-rows{display:flex;flex-direction:column;gap:8px}
+.kpi-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#00364a;border-radius:6px}
+.kpi-label{font-size:12px;color:var(--text2)}
+.kpi-value{font-size:13px;font-weight:600;color:var(--text)}
+.kpi-value.good{color:var(--accent)}
+.kpi-value.warn{color:var(--yellow)}
+.kpi-value.bad{color:#e05555}
+.kpi-bar-wrap{margin-top:10px}
+.kpi-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:4px}
+.kpi-bar-track{height:8px;background:#00364a;border-radius:4px;overflow:hidden}
+.kpi-bar-fill{height:100%;border-radius:4px;transition:.5s}
+.kpi-dates{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.kpi-date-box{background:#00364a;border-radius:6px;padding:8px;text-align:center}
+.kpi-date-box label{display:block;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.kpi-date-box input[type=date]{background:transparent;border:none;color:var(--text);font-size:12px;width:100%;text-align:center;cursor:pointer}
+.kpi-date-box input[type=date]:focus{outline:none}
+.kpi-date-box.editable{border:1px solid var(--border)}
+.kpi-date-box.editable:hover{border-color:var(--accent)}
+.dash-section-title{font-family:var(--font-title);font-size:14px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+.dash-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
 /* MODEL SELECTOR */
 .model-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:16px}
 .model-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
@@ -156,8 +216,6 @@ textarea{height:52px;resize:none;font-size:12px}
 .model-card-coming:hover{transform:none;border-color:var(--border);box-shadow:none}
 
 
-/* ADMIN DELETE */
-.btn-danger{background:#e0555522;border:1px solid #e0555544;color:#e05555;border-radius:var(--radius);padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font)}
 /* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--accent);border-radius:10px;padding:12px 22px;font-size:13px;color:var(--text);z-index:9999;box-shadow:0 8px 30px #000a;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
@@ -171,50 +229,14 @@ textarea{height:52px;resize:none;font-size:12px}
 .timer-running .timer-display{color:var(--yellow)}
 .timer-btn{background:#00364a;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font)}
 .timer-btn:hover{border-color:var(--accent);color:var(--accent)}
-.timer-hist{font-size:10px;color:var(--text3);flex:1;min-width:0}
-/* NC */
-.nc-badge{background:#e0555522;border:1px solid #e0555544;color:#e05555;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700}
+/* PHOTOS */
 .photo-grid{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .photo-thumb{width:58px;height:58px;border-radius:6px;object-fit:cover;border:1px solid var(--border);cursor:pointer}
-.photo-add{width:58px;height:58px;border-radius:6px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;background:#00364a;color:var(--text3);flex-shrink:0}
+.photo-add{width:58px;height:58px;border-radius:6px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;background:#00364a;color:var(--text3)}
 .photo-add:hover{border-color:var(--accent);color:var(--accent)}
 /* QR */
 .qr-overlay{position:fixed;inset:0;background:#000c;z-index:1000;display:flex;align-items:center;justify-content:center}
 .qr-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;text-align:center;max-width:300px;width:90%}
-/* DASHBOARD */
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:20px}
-.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
-.kpi-card-title{font-family:var(--font-title);font-size:18px;color:var(--accent);letter-spacing:1px}
-.kpi-card-ref{font-size:11px;color:var(--text3);margin-top:2px}
-.kpi-status{border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700}
-.kpi-status.green{background:#2aa99e22;color:var(--accent);border:1px solid #2aa99e44}
-.kpi-status.orange{background:#f0a50022;color:var(--yellow);border:1px solid #f0a50044}
-.kpi-status.red{background:#e0555522;color:#e05555;border:1px solid #e0555544}
-.kpi-status.grey{background:#ffffff15;color:var(--text3);border:1px solid var(--border)}
-.kpi-rows{display:flex;flex-direction:column;gap:6px;margin-top:10px}
-.kpi-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#00364a;border-radius:6px}
-.kpi-label{font-size:12px;color:var(--text2)}
-.kpi-value{font-size:13px;font-weight:600}
-.kpi-value.good{color:var(--accent)}
-.kpi-value.warn{color:var(--yellow)}
-.kpi-value.bad{color:#e05555}
-.kpi-bar-wrap{margin-top:8px}
-.kpi-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:3px}
-.kpi-bar-track{height:7px;background:#00364a;border-radius:4px;overflow:hidden}
-.kpi-bar-fill{height:100%;border-radius:4px;transition:.5s}
-.kpi-dates{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
-.kpi-date-box{background:#00364a;border-radius:6px;padding:8px;text-align:center}
-.kpi-date-box label{display:block;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
-.kpi-date-box input[type=date]{background:transparent;border:none;color:var(--text);font-size:12px;width:100%;text-align:center}
-.kpi-date-box input[type=date]:focus{outline:none}
-.kpi-date-box.editable{border:1px solid var(--border)}
-.kpi-date-box.editable:hover{border-color:var(--accent)}
-.dash-title{font-family:var(--font-title);font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin:20px 0 10px;display:flex;align-items:center;gap:8px}
-.dash-title::after{content:'';flex:1;height:1px;background:var(--border)}
-.chart-wrap{background:#00364a;border-radius:8px;padding:14px;margin-top:8px}
-.nc-select{width:100%;background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px;font-size:12px;margin-top:6px}
-.export-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;cursor:pointer;font-family:var(--font);font-weight:600}
-
 </style>
 </head>
 <body>
@@ -299,16 +321,16 @@ textarea{height:52px;resize:none;font-size:12px}
 
   <div class="timer-bar" id="timerBar">
     <div>
-      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">⏱ Chronomètre</div>
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">⏱ Chronomètre étape</div>
       <div class="timer-display" id="timerDisplay">00:00:00</div>
     </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
+    <div style="display:flex;gap:6px">
       <button class="timer-btn" id="timerStartBtn" onclick="timerStart()">▶ Start</button>
       <button class="timer-btn" id="timerStopBtn" onclick="timerStop()" style="display:none">⏸ Pause</button>
       <button class="timer-btn" onclick="timerReset()">↺ Reset</button>
     </div>
-    <div class="timer-hist" id="timerHist"></div>
-    <button class="timer-btn" onclick="showQR()" style="margin-left:auto;flex-shrink:0">📱 QR</button>
+    <div style="font-size:10px;color:var(--text3);flex:1;min-width:0" id="timerHist"></div>
+    <button class="timer-btn" onclick="showQR()">📱 QR</button>
   </div>
 
   <div class="step-header" id="stepHdr"></div>
@@ -366,7 +388,10 @@ textarea{height:52px;resize:none;font-size:12px}
 <div class="screen" id="scDashboard">
   <div class="project-card" style="margin-bottom:16px">
     <div style="display:flex;align-items:center;justify-content:space-between">
-      <div><div class="project-title">📊 Tableau de bord</div><div class="project-sub">KPI par machine — Qualité, Délais, Temps</div></div>
+      <div>
+        <div class="project-title">📊 Tableau de bord</div>
+        <div class="project-sub">KPI par machine — Qualité, Délais, Temps de montage</div>
+      </div>
       <button class="btn btn-outline btn-sm" onclick="goHome()">↩ Retour</button>
     </div>
   </div>
@@ -428,6 +453,7 @@ textarea{height:52px;resize:none;font-size:12px}
   window._fsQuery = query;
   window._fsOrderBy = orderBy;
   window._fsDeleteDoc = deleteDoc;
+  window._ADMIN_EMAIL = 'nordine.sakhri@enogia.com';
 
   window._signIn = async () => {
     try {
@@ -455,10 +481,8 @@ textarea{height:52px;resize:none;font-size:12px}
       document.getElementById('appWrapper').style.display = 'block';
       document.getElementById('userEmail').textContent = user.displayName || user.email;
       document.getElementById('inOp').value = user.displayName || '';
-      document.getElementById('inOp').value = user.displayName || '';
       window._firebaseReady = true;
       document.dispatchEvent(new Event('firebaseReady'));
-      setTimeout(()=>{ if(typeof renderModelGrid==='function') renderModelGrid(); }, 150);
       // Render model grid now that DOM is visible
       setTimeout(()=>{ if(typeof renderModelGrid==='function') renderModelGrid(); }, 100);
     } else {
@@ -1254,55 +1278,51 @@ let stepModels={};
 // ---- Firebase helpers ----
 async function saveState(){
   if(!session) return;
+  // Update local array
   const idx = sessions.findIndex(s=>s.id===session.id);
   if(idx>=0) sessions[idx]=session; else sessions.unshift(session);
-  // Always save offline
-  try { localStorage.setItem('enogia_sessions', JSON.stringify(sessions)); } catch(e){}
+  // Save offline first
+  try{localStorage.setItem('enogia_offline',JSON.stringify(sessions));}catch(e){}
   // Then Firebase
   if(navigator.onLine){
-    try {
-      await window._fsSetDoc(window._fsDoc(window._db,'sessions',String(session.id)), session);
-    } catch(e){ console.warn('Firebase error - saved offline only'); }
+    try{
+      await window._fsSetDoc(window._fsDoc(window._db,'sessions',String(session.id)),session);
+    }catch(e){console.warn('Firebase error - offline only');}
   }
 }
 
 async function loadSessions(){
-  // Load offline first
-  try {
-    const local = localStorage.getItem('enogia_sessions');
-    if(local) sessions = JSON.parse(local);
-  } catch(e){}
-  // Try Firebase
-  if(navigator.onLine){
-    try {
-      const q = window._fsQuery(window._fsCollection(window._db,'sessions'), window._fsOrderBy('started','desc'));
-      const snap = await window._fsGetDocs(q);
-      const fb = snap.docs.map(d=>d.data());
-      if(fb.length) { sessions = fb; localStorage.setItem('enogia_sessions', JSON.stringify(sessions)); }
-    } catch(e){ console.warn('Firebase load error - using offline cache'); }
-  }
+  // Offline first
+  try{const loc=localStorage.getItem('enogia_offline');if(loc)sessions=JSON.parse(loc);}catch(e){}
+  if(!navigator.onLine)return;
+  try{
+    const q=window._fsQuery(window._fsCollection(window._db,'sessions'),window._fsOrderBy('started','desc'));
+    const snap=await window._fsGetDocs(q);
+    const fb=snap.docs.map(d=>d.data());
+    if(fb.length){sessions=fb;try{localStorage.setItem('enogia_offline',JSON.stringify(sessions));}catch(e){}}
+  }catch(e){console.warn('Firebase load error - using cache');}
 }
 
 // Init when Firebase is ready
 function initApp(){
   // Offline detection
-  window.addEventListener('online', ()=>{
+  window.addEventListener('online',()=>{
     document.getElementById('offlineBadge').classList.remove('show');
     document.getElementById('onlineBadge').style.display='';
-    showToast('✅ Connexion rétablie — synchronisation...');
+    showToast('✅ Connexion rétablie');
     loadSessions().then(()=>renderHistory());
   });
-  window.addEventListener('offline', ()=>{
+  window.addEventListener('offline',()=>{
     document.getElementById('offlineBadge').classList.add('show');
     document.getElementById('onlineBadge').style.display='none';
-    showToast('⚠️ Mode hors ligne — données sauvegardées localement','warn');
+    showToast('⚠️ Hors ligne — données sauvegardées localement','warn');
   });
   loadSessions().then(()=>{
     renderHistory();
     renderModelGrid();
-    // Auto-load session from QR code URL param
-    const sid = new URLSearchParams(window.location.search).get('session');
-    if(sid){ const s=sessions.find(x=>String(x.id)===sid); if(s) loadSession(s.id); }
+    // QR auto-load
+    const sid=new URLSearchParams(window.location.search).get('session');
+    if(sid){const s=sessions.find(x=>String(x.id)===sid);if(s)loadSession(s.id);}
   });
 }
 if(window._firebaseReady){ initApp(); }
@@ -1624,7 +1644,7 @@ function startSession(){
         actions:it.actions.map(()=>false),
         opDone:false,opName:'',opDate:'',opComment:'',
         veDone:false,veName:'',veDate:'',veComment:'',
-        ncReason:'',firstPassResult:null,photos:[],
+        ncReason:'',firstPassResult:null,ncCount:0,photos:[],
       })),
       snData:{},comment:'',timerSeconds:0,
     }))
@@ -1657,6 +1677,7 @@ function renderHistory(){
   if(!sessions.length){el.innerHTML=`<div class="empty-state"><div class="emo">📋</div><p>Aucun montage enregistré</p></div>`;return;}
   el.innerHTML=sessions.map(s=>{
     const p=calcProgress(s);
+    const isAdmin = window._currentUser && window._currentUser.email === window._ADMIN_EMAIL;
     return `<div class="hist-card">
       <div style="font-size:24px">⚙️</div>
       <div class="hist-info">
@@ -1665,7 +1686,7 @@ function renderHistory(){
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
         <button class="btn btn-outline btn-sm" onclick="loadSession(${s.id})">Reprendre</button>
-        ${window._currentUser&&window._currentUser.email==='nordine.sakhri@enogia.com'?`<button class="btn-danger" onclick="deleteSession(${s.id})">🗑</button>`:''}
+        ${isAdmin ? `<button class="btn btn-sm" style="background:#e0555522;border:1px solid #e0555544;color:#e05555" onclick="deleteSession(${s.id})">🗑</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -1675,6 +1696,17 @@ function calcProgress(s){
   let total=0,done=0;
   s.steps.forEach(st=>st.items.forEach(it=>{total++;if(it.opDone)done++;}));
   return{pct:total?Math.round(done/total*100):0,done,total};
+}
+
+async function deleteSession(id){
+  if(!confirm('Supprimer définitivement cette checklist ?')) return;
+  try {
+    await window._fsDeleteDoc(window._fsDoc(window._db, 'sessions', String(id)));
+    sessions = sessions.filter(s => s.id !== id);
+    renderHistory();
+  } catch(e) {
+    alert('Erreur lors de la suppression : ' + e.message);
+  }
 }
 
 // ===================== STEP RENDER =====================
@@ -1743,19 +1775,20 @@ function renderStep(){
             <h4>🔍 Vérificateur</h4>
             <input type="text" value="${it.veName||session.ve||''}" oninput="saveVal(${currentStep},${idx},'veName',this.value)" placeholder="Nom VE">
             <textarea placeholder="Commentaire…" oninput="saveVal(${currentStep},${idx},'veComment',this.value)" style="margin-top:6px">${it.veComment||''}</textarea>
-            ${it.opDone?`<select class="nc-select" onchange="saveVal(${currentStep},${idx},'ncReason',this.value)" ${it.veDone?'disabled':''}>
+            ${!it.opDone?'':`
+            <select onchange="saveVal(${currentStep},${idx},'ncReason',this.value)" style="margin-top:6px;width:100%;background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px;font-size:12px" ${it.veDone?'disabled':''}>
               <option value="">-- Statut VE --</option>
               <option value="ok" ${it.ncReason==='ok'?'selected':''}>✅ Conforme</option>
-              <option value="retouche" ${it.ncReason==='retouche'?'selected':''}>🔧 Retouche</option>
-              <option value="piece" ${it.ncReason==='piece'?'selected':''}>📦 Pièce manquante</option>
-              <option value="mesure" ${it.ncReason==='mesure'?'selected':''}>📏 Hors tolérance</option>
-              <option value="autre" ${it.ncReason==='autre'?'selected':''}>⚠️ Autre</option>
-            </select>`:''}
+              <option value="retouche" ${it.ncReason==='retouche'?'selected':''}>🔧 Non-conforme — Retouche</option>
+              <option value="piece" ${it.ncReason==='piece'?'selected':''}>📦 Non-conforme — Pièce manquante</option>
+              <option value="mesure" ${it.ncReason==='mesure'?'selected':''}>📏 Non-conforme — Hors tolérance</option>
+              <option value="autre" ${it.ncReason==='autre'?'selected':''}>⚠️ Non-conforme — Autre</option>
+            </select>`}
             ${it.ncReason&&it.ncReason!=='ok'?`<span class="nc-badge" style="display:inline-block;margin-top:4px">NC: ${it.ncReason}</span>`:''}
-            ${it.opDone?`<div style="margin-top:6px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">📸 Photos NC</div>
+            ${it.opDone?`<div style="margin-top:8px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">📸 Photos NC</div>
               <div class="photo-grid">
-                ${(it.photos||[]).map((p,pi)=>`<img src="${p}" class="photo-thumb" onclick="viewPhoto('${p}')">`).join('')}
-                <label class="photo-add"><input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhoto(${currentStep},${idx},this)">＋</label>
+                ${(it.photos||[]).map(p=>`<img src="${p}" class="photo-thumb" onclick="viewPhoto('${p}')">`).join('')}
+                <label class="photo-add" title="Ajouter photo"><input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhoto(${currentStep},${idx},this)">＋</label>
               </div></div>`:''}
             <button class="btn ${it.veDone?'btn-success':'btn-outline'} btn-full mt8 btn-sm" onclick="validateVE(${currentStep},${idx})" ${it.veDone?'disabled':(!it.opDone?'disabled':'')}>
               ${it.veDone?'✅ Validé VE — '+it.veDate:(it.opDone?'🔍 Valider (VE)':'⏳ Attente OP')}
@@ -1793,7 +1826,6 @@ function renderStep(){
 
   // 3D viewer
   setTimeout(()=>{resizeRenderer();restoreModel();},50);
-  // Timer
   restoreTimer();
 }
 
@@ -1817,11 +1849,13 @@ function validateOP(si,ii){
 function validateVE(si,ii){
   const it=session.steps[si].items[ii];
   if(!it.opDone)return;
-  if(!it.firstPassResult) it.firstPassResult=(!it.ncReason||it.ncReason==='ok')?'pass':'fail';
+  // Track first-pass: was there a NC before?
+  if(!it.firstPassResult){
+    it.firstPassResult = (!it.ncReason || it.ncReason==='ok') ? 'pass' : 'fail';
+  }
   it.veDone=true;it.veDate=new Date().toLocaleDateString('fr-FR');
   if(!it.veName)it.veName=session.ve||'–';
   saveState();renderStep();
-  if(it.ncReason&&it.ncReason!=='ok') showToast('⚠️ NC enregistrée : '+it.ncReason,'warn');
 }
 function jumpStep(i){currentStep=i;session.currentStep=i;saveState();renderStep();window.scrollTo(0,0);}
 function navStep(dir){
@@ -1866,32 +1900,483 @@ function showReport(){
   showScreen('scReport');
 }
 
+// ===================== DASHBOARD =====================
+function showDashboard(){
+  showScreen('scDashboard');
+  renderDashboard();
+}
+
+function getDashboardKey(s){ return 'dash_'+s.id; }
+
+async function saveDashData(sessionId, data){
+  try {
+    await window._fsSetDoc(window._fsDoc(window._db,'dashboard', String(sessionId)), data);
+  } catch(e){ console.warn('Dashboard save error:', e); }
+}
+
+async function loadDashData(sessionId){
+  try {
+    const snap = await window._fsGetDocs(window._fsQuery(window._fsCollection(window._db,'dashboard')));
+    const found = snap.docs.find(d=>d.id===String(sessionId));
+    return found ? found.data() : {};
+  } catch(e){ return {}; }
+}
+
+// Cache des données dashboard
+let dashCache = {};
+let dashSelectedYear = null;
+let dashSelectedMonth = null;
+const MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+
+async function renderDashboard(){
+  const el = document.getElementById('dashboardContent');
+  el.innerHTML = '<div class="empty-state"><div class="spinner"></div><p style="margin-top:12px">Chargement...</p></div>';
+  if(!sessions.length){ el.innerHTML='<div class="empty-state"><div class="emo">📊</div><p>Aucune checklist enregistrée</p></div>'; return; }
+
+  try {
+    const snap = await window._fsGetDocs(window._fsCollection(window._db,'dashboard'));
+    dashCache = {};
+    snap.docs.forEach(d=>{ dashCache[d.id] = d.data(); });
+  } catch(e){}
+
+  const byYear = {};
+  sessions.forEach(s=>{
+    const d = s.started ? new Date(s.started) : new Date();
+    const year = String(d.getFullYear());
+    const month = String(d.getMonth());
+    if(!byYear[year]) byYear[year] = {};
+    if(!byYear[year][month]) byYear[year][month] = [];
+    byYear[year][month].push(s);
+  });
+
+  const years = Object.keys(byYear).sort((a,b)=>b-a);
+  if(!dashSelectedYear || !byYear[dashSelectedYear]) dashSelectedYear = years[0];
+  const months = Object.keys(byYear[dashSelectedYear]).sort((a,b)=>Number(a)-Number(b));
+  if(dashSelectedMonth===null || !byYear[dashSelectedYear][dashSelectedMonth]) dashSelectedMonth = months[months.length-1];
+
+  const isAdmin = window._currentUser && window._currentUser.email === window._ADMIN_EMAIL;
+  const monthSessions = byYear[dashSelectedYear][dashSelectedMonth] || [];
+
+  // === YEAR TABS ===
+  let html = '<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">';
+  years.forEach(y=>{ html += `<button onclick="selectDashYear('${y}')" class="btn ${y===dashSelectedYear?'btn-primary':'btn-outline'}" style="min-width:80px">${y}</button>`; });
+  html += '</div>';
+
+  // === MONTH TABS ===
+  html += '<div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap">';
+  months.forEach(m=>{
+    const cnt = byYear[dashSelectedYear][m].length;
+    html += `<button onclick="selectDashMonth('${m}')" class="btn btn-sm ${m===dashSelectedMonth?'btn-primary':'btn-outline'}" style="min-width:110px">${MOIS[Number(m)]} <span style="background:#ffffff22;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px">${cnt}</span></button>`;
+  });
+  html += '</div>';
+
+  // === MONTH SUMMARY KPIs ===
+  const totalM = monthSessions.length;
+  const doneM = monthSessions.filter(s=>s.completed).length;
+  const inProgM = monthSessions.filter(s=>s.started && !s.completed).length;
+  const lateM = monthSessions.filter(s=>{
+    const dash = dashCache[String(s.id)]||{};
+    return s.started && !s.completed && dash.plannedEnd && new Date()>new Date(dash.plannedEnd);
+  }).length;
+
+  // First-pass rate across all sessions this month
+  let fpTotal=0, fpPass=0, ncTotal=0;
+  monthSessions.forEach(s=>{
+    s.steps.forEach(st=>st.items.forEach(it=>{
+      if(it.veDone){ fpTotal++; if(it.firstPassResult==='pass') fpPass++; }
+      if(it.ncReason && it.ncReason!=='ok' && it.ncReason!=='') ncTotal++;
+    }));
+  });
+  const fpRate = fpTotal ? Math.round(fpPass/fpTotal*100) : null;
+  const avgQ = totalM ? Math.round(monthSessions.reduce((acc,s)=>{
+    const tot=s.steps.reduce((a,st)=>a+st.items.length,0);
+    const don=s.steps.reduce((a,st)=>a+st.items.filter(it=>it.opDone).length,0);
+    return acc+(tot?don/tot*100:0);
+  },0)/totalM) : 0;
+
+  html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px">
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🏭 Machines</span><span class="kpi-value" style="font-size:24px">${totalM}</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">✅ Terminées</span><span class="kpi-value good" style="font-size:24px">${doneM}</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🔄 En cours</span><span class="kpi-value warn" style="font-size:24px">${inProgM}</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🚨 En retard</span><span class="kpi-value ${lateM>0?'bad':'good'}" style="font-size:24px">${lateM}</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">⭐ Qualité OP</span><span class="kpi-value ${avgQ>=80?'good':avgQ>=50?'warn':'bad'}" style="font-size:24px">${avgQ}%</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🎯 1er passage</span><span class="kpi-value ${fpRate===null?'':fpRate>=80?'good':fpRate>=60?'warn':'bad'}" style="font-size:24px">${fpRate!==null?fpRate+'%':'—'}</span></div>
+    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">⚠️ Non-conf.</span><span class="kpi-value ${ncTotal>0?'bad':'good'}" style="font-size:24px">${ncTotal}</span></div>
+  </div>`;
+
+  // === GANTT VIEW ===
+  html += renderGantt(monthSessions, isAdmin);
+
+  // === NC BREAKDOWN CHART ===
+  html += renderNCChart(monthSessions);
+
+  // === STEP TIME CHART (avg time per step across sessions) ===
+  html += renderStepTimeChart(monthSessions);
+
+  // === OPERATOR COMPARISON ===
+  html += renderOpComparison(monthSessions);
+
+  // === KPI CARDS per machine ===
+  const byModel = {};
+  monthSessions.forEach(s=>{ const k=s.modelName||'ENO 180 LTV3'; if(!byModel[k])byModel[k]=[]; byModel[k].push(s); });
+
+  Object.entries(byModel).forEach(([modelName, modelSessions])=>{
+    html += `<div class="dash-section-title">⚙️ ${modelName}</div><div class="kpi-grid">`;
+    modelSessions.forEach(s=>{
+      html += renderKPICard(s, isAdmin);
+    });
+    html += '</div>';
+  });
+
+  // Export button
+  html += `<div style="margin-top:20px;text-align:center">
+    <button class="export-btn" onclick="exportDashboard()">📥 Exporter rapport mensuel (CSV)</button>
+  </div>`;
+
+  el.innerHTML = html;
+}
+
+function renderGantt(sessions, isAdmin){
+  if(!sessions.length) return '';
+
+  // Find date range across planned + real dates
+  let minDate = null, maxDate = null;
+  sessions.forEach(s=>{
+    const dash = dashCache[String(s.id)]||{};
+    [s.started, s.completed, dash.plannedStart, dash.plannedEnd].filter(Boolean).forEach(d=>{
+      const dt = new Date(d);
+      if(!minDate||dt<minDate) minDate=dt;
+      if(!maxDate||dt>maxDate) maxDate=dt;
+    });
+  });
+  if(!minDate) return '';
+
+  minDate = new Date(minDate); minDate.setDate(minDate.getDate()-3);
+  maxDate = new Date(maxDate); maxDate.setDate(maxDate.getDate()+3);
+  const spanMs = maxDate - minDate;
+  const today = new Date();
+  const todayPct = Math.min(100, Math.max(0, (today-minDate)/spanMs*100));
+
+  // Build day ticks (every 7 days)
+  const ticks = [];
+  let cur = new Date(minDate);
+  while(cur <= maxDate){
+    ticks.push({date:new Date(cur), pct:(cur-minDate)/spanMs*100});
+    cur.setDate(cur.getDate()+7);
+  }
+
+  let html = '<div class="dash-section-title">📅 Planning Gantt</div>';
+  html += '<div class="gantt-wrap">';
+
+  // Legend
+  html += `<div style="display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap;font-size:11px;color:var(--text2)">
+    <span><span style="display:inline-block;width:24px;height:8px;background:#0086c244;border:1px dashed #0086c2;border-radius:2px;vertical-align:middle;margin-right:4px"></span>Planifié</span>
+    <span><span style="display:inline-block;width:24px;height:8px;background:var(--accent2);border-radius:2px;vertical-align:middle;margin-right:4px"></span>En cours</span>
+    <span><span style="display:inline-block;width:24px;height:8px;background:var(--accent);border-radius:2px;vertical-align:middle;margin-right:4px"></span>Terminé</span>
+    <span><span style="display:inline-block;width:24px;height:8px;background:#e05555;border-radius:2px;vertical-align:middle;margin-right:4px"></span>En retard</span>
+    <span><span style="display:inline-block;width:2px;height:12px;background:#e05555;vertical-align:middle;margin-right:4px"></span>Aujourd'hui</span>
+  </div>`;
+
+  // Container
+  html += '<div style="position:relative">';
+
+  // Timeline axis
+  html += '<div style="display:flex;margin-left:150px;margin-bottom:4px;position:relative;height:18px">';
+  ticks.forEach(t=>{
+    html += `<span style="position:absolute;left:${t.pct}%;transform:translateX(-50%);font-size:9px;color:var(--text3);white-space:nowrap">${t.date.getDate()}/${t.date.getMonth()+1}</span>`;
+  });
+  html += '</div>';
+
+  // Rows
+  sessions.forEach((s,idx)=>{
+    const dash = dashCache[String(s.id)]||{};
+    const startD = s.started ? new Date(s.started) : null;
+    const endD = s.completed ? new Date(s.completed) : (startD ? new Date() : null);
+    const planS = dash.plannedStart ? new Date(dash.plannedStart) : null;
+    const planE = dash.plannedEnd ? new Date(dash.plannedEnd) : null;
+    const isLate = startD && !s.completed && planE && today > planE;
+    const rowBg = idx%2===0 ? '#00364a22' : 'transparent';
+
+    html += `<div style="display:flex;align-items:center;margin-bottom:6px;background:${rowBg};border-radius:4px;padding:4px 0">`;
+    // Label
+    html += `<div style="width:150px;flex-shrink:0;padding-right:10px">
+      <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${s.serie}">${s.serie}</div>
+      <div style="font-size:10px;color:var(--text3)">${s.op}</div>
+    </div>`;
+
+    // Bar area
+    html += '<div style="flex:1;position:relative;height:32px">';
+
+    // Grid lines at ticks
+    ticks.forEach(t=>{
+      html += `<div style="position:absolute;left:${t.pct}%;top:0;bottom:0;width:1px;background:#ffffff08"></div>`;
+    });
+
+    // Today line
+    html += `<div style="position:absolute;left:${todayPct}%;top:-2px;bottom:-2px;width:2px;background:#e05555;z-index:3;border-radius:1px"></div>`;
+
+    // Planned bar
+    if(planS && planE){
+      const l = Math.max(0,(planS-minDate)/spanMs*100);
+      const w = Math.max(0.5,(planE-planS)/spanMs*100);
+      html += `<div style="position:absolute;left:${l}%;width:${w}%;top:6px;height:20px;background:#0086c222;border:1px dashed #0086c2aa;border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:9px;color:#0086c2;overflow:hidden;white-space:nowrap">
+        📐 ${Math.round((planE-planS)/(1000*60*60*24))}j
+      </div>`;
+    }
+
+    // Real bar
+    if(startD && endD){
+      const l = Math.max(0,(startD-minDate)/spanMs*100);
+      const w = Math.max(0.5,(endD-startD)/spanMs*100);
+      const color = s.completed ? 'var(--accent)' : isLate ? '#e05555' : 'var(--accent2)';
+      const realDays = Math.round((endD-startD)/(1000*60*60*24));
+      html += `<div style="position:absolute;left:${l}%;width:${w}%;top:8px;height:16px;background:${color};border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:9px;color:#fff;font-weight:700;overflow:hidden;white-space:nowrap;z-index:2">
+        ${s.completed?'✓':isLate?'⚠':'▶'} ${realDays}j
+      </div>`;
+    }
+
+    html += '</div></div>';
+  });
+
+  html += '</div></div>';
+  return html;
+}
+
+function renderNCChart(sessions){
+  const reasons = {retouche:0, piece:0, mesure:0, autre:0};
+  sessions.forEach(s=>s.steps.forEach(st=>st.items.forEach(it=>{
+    if(it.ncReason && reasons[it.ncReason]!==undefined) reasons[it.ncReason]++;
+  })));
+  const total = Object.values(reasons).reduce((a,b)=>a+b,0);
+  if(!total) return '';
+
+  const labels = {retouche:'Retouche', piece:'Pièce manq.', mesure:'Hors tol.', autre:'Autre'};
+  const colors = {retouche:'#e05555', piece:'#f0a500', mesure:'#0086c2', autre:'#7ab8cc'};
+  const max = Math.max(...Object.values(reasons), 1);
+
+  let html = '<div class="dash-section-title">⚠️ Non-conformités par type</div>';
+  html += '<div class="chart-wrap"><div class="bar-chart">';
+  Object.entries(reasons).forEach(([k,v])=>{
+    const h = Math.round(v/max*100);
+    html += `<div class="bar-chart-bar" style="height:${h}%;background:${colors[k]}" data-val="${v}"></div>`;
+  });
+  html += '</div><div class="bar-chart-labels">';
+  Object.entries(reasons).forEach(([k,v])=>{
+    html += `<div class="bar-chart-label">${labels[k]}<br><strong style="color:#fff">${v}</strong></div>`;
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function renderStepTimeChart(sessions){
+  // Average montage time per machine MODEL (not per step)
+  const modelTimes = {};
+  sessions.forEach(s=>{
+    if(!s.started || !s.completed) return;
+    const model = s.modelName || 'ENO 180 LTV3';
+    const days = (new Date(s.completed)-new Date(s.started))/(1000*60*60*24);
+    if(!modelTimes[model]) modelTimes[model] = [];
+    modelTimes[model].push(days);
+  });
+  const entries = Object.entries(modelTimes);
+  if(!entries.length) return '';
+
+  const avgs = entries.map(([name,vals])=>({
+    name,
+    avg: Math.round(vals.reduce((a,b)=>a+b,0)/vals.length*10)/10,
+    min: Math.round(Math.min(...vals)*10)/10,
+    max: Math.round(Math.max(...vals)*10)/10,
+    count: vals.length
+  }));
+  const maxAvg = Math.max(...avgs.map(a=>a.avg), 1);
+
+  let html = '<div class="dash-section-title">⏱ Temps moyen de montage par gamme</div>';
+  html += '<div class="chart-wrap">';
+
+  avgs.forEach(a=>{
+    const pct = Math.round(a.avg/maxAvg*100);
+    html += `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:13px;font-weight:600;color:var(--text)">${a.name}</span>
+        <span style="font-size:12px;color:var(--accent);font-weight:700">${a.avg}j moy. <span style="font-size:10px;color:var(--text3)">(${a.count} machine${a.count>1?'s':''})</span></span>
+      </div>
+      <div style="position:relative;height:20px;background:#003548;border-radius:4px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:4px;transition:.5s"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:3px">
+        <span>Min: ${a.min}j</span>
+        <span>Max: ${a.max}j</span>
+      </div>
+    </div>`;
+  });
+
+  html += '</div>';
+  return html;
+}
+
+function renderOpComparison(sessions){
+  // Group by operator
+  const ops = {};
+  sessions.forEach(s=>{
+    const op = s.op||'—';
+    if(!ops[op]) ops[op] = {sessions:0, opItems:0, veItems:0, totalItems:0, ncCount:0, fpPass:0, fpTotal:0};
+    ops[op].sessions++;
+    s.steps.forEach(st=>st.items.forEach(it=>{
+      ops[op].totalItems++;
+      if(it.opDone) ops[op].opItems++;
+      if(it.veDone) ops[op].veItems++;
+      if(it.ncReason && it.ncReason!=='ok' && it.ncReason!=='') ops[op].ncCount++;
+      if(it.firstPassResult){ ops[op].fpTotal++; if(it.firstPassResult==='pass') ops[op].fpPass++; }
+    }));
+  });
+  const entries = Object.entries(ops);
+  if(entries.length < 2) return '';
+
+  let html = '<div class="dash-section-title">👤 Comparaison opérateurs</div>';
+  html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+  html += '<thead><tr style="background:#00364a">';
+  ['Opérateur','Machines','Qualité OP','Qualité VE','1er passage','Non-conf.'].forEach(h=>{
+    html += `<th style="padding:8px;text-align:left;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:1px">${h}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+  entries.forEach(([op, d])=>{
+    const opPct = d.totalItems ? Math.round(d.opItems/d.totalItems*100) : 0;
+    const vePct = d.totalItems ? Math.round(d.veItems/d.totalItems*100) : 0;
+    const fpPct = d.fpTotal ? Math.round(d.fpPass/d.fpTotal*100) : null;
+    html += `<tr style="border-bottom:1px solid #ffffff10">
+      <td style="padding:8px;font-weight:600">${op}</td>
+      <td style="padding:8px">${d.sessions}</td>
+      <td style="padding:8px;color:${opPct>=80?'var(--accent)':opPct>=50?'var(--yellow)':'#e05555'}">${opPct}%</td>
+      <td style="padding:8px;color:${vePct>=80?'var(--accent)':vePct>=50?'var(--yellow)':'#e05555'}">${vePct}%</td>
+      <td style="padding:8px;color:${fpPct===null?'var(--text3)':fpPct>=80?'var(--accent)':fpPct>=60?'var(--yellow)':'#e05555'}">${fpPct!==null?fpPct+'%':'—'}</td>
+      <td style="padding:8px;color:${d.ncCount>0?'#e05555':'var(--accent)'}">${d.ncCount}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function renderKPICard(s, isAdmin){
+  const dash = dashCache[String(s.id)]||{};
+  const totalItems = s.steps.reduce((acc,st)=>acc+st.items.length,0);
+  const opDone = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.opDone).length,0);
+  const veDone = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.veDone).length,0);
+  const ncCount = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.ncReason&&it.ncReason!=='ok'&&it.ncReason!=='').length,0);
+  const fpItems = s.steps.flatMap(st=>st.items.filter(it=>it.firstPassResult));
+  const fpRate = fpItems.length ? Math.round(fpItems.filter(it=>it.firstPassResult==='pass').length/fpItems.length*100) : null;
+  const opPct = totalItems ? Math.round(opDone/totalItems*100) : 0;
+  const vePct = totalItems ? Math.round(veDone/totalItems*100) : 0;
+  const startDate = s.started ? new Date(s.started) : null;
+  const endDate = s.completed ? new Date(s.completed) : null;
+  const plannedStart = dash.plannedStart ? new Date(dash.plannedStart) : null;
+  const plannedEnd = dash.plannedEnd ? new Date(dash.plannedEnd) : null;
+  let realDays = null;
+  if(startDate && endDate) realDays = Math.round((endDate-startDate)/(1000*60*60*24));
+  else if(startDate) realDays = Math.round((new Date()-startDate)/(1000*60*60*24));
+  let plannedDays = null;
+  if(plannedStart && plannedEnd) plannedDays = Math.round((plannedEnd-plannedStart)/(1000*60*60*24));
+  let status='grey', statusTxt='Non démarré';
+  if(s.completed){ status='green'; statusTxt='Terminé ✓'; }
+  else if(startDate){ status = plannedEnd && new Date()>plannedEnd ? 'red':'orange'; statusTxt = status==='red'?'En retard ⚠':'En cours'; }
+  let delayTxt='—', delayClass='';
+  if(plannedStart && startDate){
+    const ddays = Math.round((startDate-plannedStart)/(1000*60*60*24));
+    if(ddays>0){ delayTxt='+'+ddays+'j retard'; delayClass='bad'; }
+    else if(ddays<0){ delayTxt=Math.abs(ddays)+'j avance'; delayClass='good'; }
+    else { delayTxt='Dans les temps'; delayClass='good'; }
+  }
+  const opC = opPct>=80?'var(--accent)':opPct>=50?'var(--yellow)':'#e05555';
+  const veC = vePct>=80?'var(--accent)':vePct>=50?'var(--yellow)':'#e05555';
+
+  return `<div class="kpi-card">
+    <div class="kpi-card-header">
+      <div><div class="kpi-card-title">${s.serie}</div><div class="kpi-card-ref">${s.projet} | OP: ${s.op}</div></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div class="kpi-status ${status}">${statusTxt}</div>
+        ${ncCount>0?`<span class="nc-badge">${ncCount} NC</span>`:''}
+      </div>
+    </div>
+    <div class="kpi-dates">
+      <div class="kpi-date-box ${isAdmin?'editable':''}"><label>📅 Début prévu</label><input type="date" value="${dash.plannedStart||''}" ${isAdmin?'onchange="updateDash('+s.id+',\'plannedStart\',this.value)"':' readonly'} style="${!isAdmin?'pointer-events:none':''}"></div>
+      <div class="kpi-date-box ${isAdmin?'editable':''}"><label>🏁 Fin prévue</label><input type="date" value="${dash.plannedEnd||''}" ${isAdmin?'onchange="updateDash('+s.id+',\'plannedEnd\',this.value)"':' readonly'} style="${!isAdmin?'pointer-events:none':''}"></div>
+      <div class="kpi-date-box"><label>▶ Début réel</label><input type="date" value="${startDate?startDate.toISOString().slice(0,10):''}" readonly style="pointer-events:none"></div>
+      <div class="kpi-date-box"><label>✅ Fin réelle</label><input type="date" value="${endDate?endDate.toISOString().slice(0,10):''}" readonly style="pointer-events:none"></div>
+    </div>
+    <div class="kpi-rows" style="margin-top:10px">
+      <div class="kpi-row"><span class="kpi-label">⏱ Durée réelle</span><span class="kpi-value">${realDays!==null?(s.completed?realDays+'j':realDays+'j (en cours)'):'—'}</span></div>
+      <div class="kpi-row"><span class="kpi-label">📐 Durée prévue</span><span class="kpi-value">${plannedDays!==null?plannedDays+'j':'—'}</span></div>
+      <div class="kpi-row"><span class="kpi-label">🚦 Écart délai</span><span class="kpi-value ${delayClass}">${delayTxt}</span></div>
+      <div class="kpi-row"><span class="kpi-label">🎯 1er passage</span><span class="kpi-value ${fpRate===null?'':fpRate>=80?'good':fpRate>=60?'warn':'bad'}">${fpRate!==null?fpRate+'%':'—'}</span></div>
+      <div class="kpi-row"><span class="kpi-label">⚠️ Non-conf.</span><span class="kpi-value ${ncCount>0?'bad':'good'}">${ncCount}</span></div>
+    </div>
+    <div class="kpi-bar-wrap"><div class="kpi-bar-label"><span>✋ OP</span><span style="color:${opC}">${opPct}%</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${opPct}%;background:${opC}"></div></div></div>
+    <div class="kpi-bar-wrap" style="margin-top:6px"><div class="kpi-bar-label"><span>🔍 VE</span><span style="color:${veC}">${vePct}%</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${vePct}%;background:${veC}"></div></div></div>
+    <div style="margin-top:10px"><textarea placeholder="Commentaire / notes..." style="width:100%;height:50px;font-size:12px;resize:none" ${isAdmin?'onchange="updateDash('+s.id+',\'comment\',this.value)"':' readonly'}>${dash.comment||''}</textarea></div>
+  </div>`;
+}
+
+function selectDashYear(year){ dashSelectedYear=String(year); dashSelectedMonth=null; renderDashboard(); }
+function selectDashMonth(month){ dashSelectedMonth=String(month); renderDashboard(); }
+
+function exportDashboard(){
+  const monthSessions = sessions.filter(s=>{
+    if(!dashSelectedYear || !dashSelectedMonth) return false;
+    const d = s.started ? new Date(s.started) : new Date();
+    return String(d.getFullYear())===dashSelectedYear && String(d.getMonth())===dashSelectedMonth;
+  });
+  let csv = 'Série,Projet,Gamme,Opérateur,Date début,Date fin,Durée (j),Qualité OP (%),Qualité VE (%),1er passage (%),Non-conformités,Statut\n';
+  monthSessions.forEach(s=>{
+    const dash = dashCache[String(s.id)]||{};
+    const tot = s.steps.reduce((a,st)=>a+st.items.length,0);
+    const op = s.steps.reduce((a,st)=>a+st.items.filter(it=>it.opDone).length,0);
+    const ve = s.steps.reduce((a,st)=>a+st.items.filter(it=>it.veDone).length,0);
+    const nc = s.steps.reduce((a,st)=>a+st.items.filter(it=>it.ncReason&&it.ncReason!=='ok'&&it.ncReason!=='').length,0);
+    const fp = s.steps.flatMap(st=>st.items.filter(it=>it.firstPassResult));
+    const fpR = fp.length ? Math.round(fp.filter(it=>it.firstPassResult==='pass').length/fp.length*100) : '';
+    const start = s.started ? new Date(s.started).toLocaleDateString('fr-FR') : '';
+    const end = s.completed ? new Date(s.completed).toLocaleDateString('fr-FR') : '';
+    let days = '';
+    if(s.started){ const d = s.completed ? (new Date(s.completed)-new Date(s.started)) : (new Date()-new Date(s.started)); days = Math.round(d/(1000*60*60*24)); }
+    const status = s.completed?'Terminé':s.started?'En cours':'Non démarré';
+    csv += `"${s.serie}","${s.projet}","${s.modelName||''}","${s.op}","${start}","${end}","${days}","${tot?Math.round(op/tot*100):''}","${tot?Math.round(ve/tot*100):''}","${fpR}","${nc}","${status}"\n`;
+  });
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `enogia_kpi_${MOIS[Number(dashSelectedMonth)]}_${dashSelectedYear}.csv`;
+  a.click();
+}
+async function updateDash(sessionId, field, value){
+  const key = String(sessionId);
+  if(!dashCache[key]) dashCache[key] = {};
+  dashCache[key][field] = value;
+  dashCache[key].sessionId = sessionId;
+  await saveDashData(sessionId, dashCache[key]);
+}
+
 
 // ===================== TOAST =====================
-function showToast(msg, type=''){
+function showToast(msg,type=''){
   let t=document.getElementById('_toast');
   if(!t){t=document.createElement('div');t.id='_toast';t.className='toast';document.body.appendChild(t);}
-  t.textContent=msg;
-  t.className='toast show'+(type?' '+type:'');
-  clearTimeout(t._t);
-  t._t=setTimeout(()=>{t.className='toast';},3200);
+  t.textContent=msg;t.className='toast show'+(type?' '+type:'');
+  clearTimeout(t._t);t._t=setTimeout(()=>{t.className='toast';},3200);
 }
 
 // ===================== TIMER =====================
-let timerInterval=null, timerRunning=false;
-let stepTimerLog={};
+let timerInterval=null,timerRunning=false,stepTimerLog={};
 
 function timerStart(){
   if(timerRunning)return;
   timerRunning=true;
-  if(!stepTimerLog[currentStep]) stepTimerLog[currentStep]={seconds:0};
+  if(!stepTimerLog[currentStep])stepTimerLog[currentStep]={seconds:0};
   const base=Date.now()-stepTimerLog[currentStep].seconds*1000;
   document.getElementById('timerStartBtn').style.display='none';
   document.getElementById('timerStopBtn').style.display='';
   document.getElementById('timerBar').classList.add('timer-running');
   timerInterval=setInterval(()=>{
     stepTimerLog[currentStep].seconds=Math.floor((Date.now()-base)/1000);
-    _updateTimerDisplay();
+    _timerDraw();
   },1000);
 }
 
@@ -1899,11 +2384,11 @@ function timerStop(){
   if(!timerRunning)return;
   timerRunning=false;
   clearInterval(timerInterval);
-  const startBtn=document.getElementById('timerStartBtn');
-  const stopBtn=document.getElementById('timerStopBtn');
+  const sb=document.getElementById('timerStartBtn');
+  const pb=document.getElementById('timerStopBtn');
   const bar=document.getElementById('timerBar');
-  if(startBtn)startBtn.style.display='';
-  if(stopBtn)stopBtn.style.display='none';
+  if(sb)sb.style.display='';
+  if(pb)pb.style.display='none';
   if(bar)bar.classList.remove('timer-running');
   if(session&&stepTimerLog[currentStep]){
     session.steps[currentStep].timerSeconds=stepTimerLog[currentStep].seconds;
@@ -1914,58 +2399,52 @@ function timerStop(){
 function timerReset(){
   timerStop();
   if(stepTimerLog[currentStep])stepTimerLog[currentStep].seconds=0;
-  _updateTimerDisplay();
+  _timerDraw();
 }
 
-function _updateTimerDisplay(){
+function _timerDraw(){
   const s=stepTimerLog[currentStep]?stepTimerLog[currentStep].seconds:0;
   const el=document.getElementById('timerDisplay');
   if(el)el.textContent=_fmt(s);
-  const others=Object.entries(stepTimerLog)
+  const hist=Object.entries(stepTimerLog)
     .filter(([k])=>Number(k)!==currentStep&&stepTimerLog[k].seconds>0)
-    .map(([k,v])=>`Ét.${Number(k)+1}: ${_fmt(v.seconds)}`).join(' | ');
+    .map(([k,v])=>'Ét.'+(Number(k)+1)+': '+_fmt(v.seconds)).join(' | ');
   const hel=document.getElementById('timerHist');
-  if(hel)hel.textContent=others?'Autres: '+others:'';
+  if(hel)hel.textContent=hist?'Autres: '+hist:'';
 }
 
-function _fmt(s){
-  return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,'0')).join(':');
-}
+function _fmt(s){return[Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,'0')).join(':');}
 
 function restoreTimer(){
   const saved=session&&session.steps[currentStep]?session.steps[currentStep].timerSeconds:0;
-  if(saved&&!stepTimerLog[currentStep]) stepTimerLog[currentStep]={seconds:saved};
-  _updateTimerDisplay();
-  const startBtn=document.getElementById('timerStartBtn');
-  const stopBtn=document.getElementById('timerStopBtn');
-  if(startBtn)startBtn.style.display='';
-  if(stopBtn)stopBtn.style.display='none';
+  if(saved&&!stepTimerLog[currentStep])stepTimerLog[currentStep]={seconds:saved};
+  _timerDraw();
+  const sb=document.getElementById('timerStartBtn');
+  const pb=document.getElementById('timerStopBtn');
+  const bar=document.getElementById('timerBar');
+  if(sb)sb.style.display='';
+  if(pb)pb.style.display='none';
   timerRunning=false;
   clearInterval(timerInterval);
-  const bar=document.getElementById('timerBar');
   if(bar)bar.classList.remove('timer-running');
 }
 
 // ===================== PHOTOS =====================
 function addPhoto(si,ii,input){
-  const file=input.files[0];
-  if(!file)return;
+  const file=input.files[0];if(!file)return;
   const img=new Image();
   img.onload=()=>{
-    const canvas=document.createElement('canvas');
+    const c=document.createElement('canvas');
     let w=img.width,h=img.height;
     if(w>800){h=Math.round(h*800/w);w=800;}
     if(h>600){w=Math.round(w*600/h);h=600;}
-    canvas.width=w;canvas.height=h;
-    canvas.getContext('2d').drawImage(img,0,0,w,h);
-    const b64=canvas.toDataURL('image/jpeg',0.75);
+    c.width=w;c.height=h;
+    c.getContext('2d').drawImage(img,0,0,w,h);
+    const b64=c.toDataURL('image/jpeg',0.75);
     if(!session.steps[si].items[ii].photos)session.steps[si].items[ii].photos=[];
     session.steps[si].items[ii].photos.push(b64);
     saveState();renderStep();
-    setTimeout(()=>{
-      const body=document.getElementById('body_'+ACTIVE_STEPS[si].items[ii].id);
-      if(body)body.classList.add('open');
-    },100);
+    setTimeout(()=>{const b=document.getElementById('body_'+ACTIVE_STEPS[si].items[ii].id);if(b)b.classList.add('open');},100);
     showToast('📸 Photo ajoutée !');
   };
   img.src=URL.createObjectURL(file);
@@ -1974,7 +2453,7 @@ function addPhoto(si,ii,input){
 function viewPhoto(src){
   const m=document.createElement('div');
   m.style.cssText='position:fixed;inset:0;background:#000d;z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer';
-  m.innerHTML=`<img src="${src}" style="max-width:95vw;max-height:90vh;border-radius:8px">`;
+  m.innerHTML='<img src="'+src+'" style="max-width:95vw;max-height:90vh;border-radius:8px">';
   m.onclick=()=>document.body.removeChild(m);
   document.body.appendChild(m);
 }
@@ -1982,383 +2461,37 @@ function viewPhoto(src){
 // ===================== QR CODE =====================
 function showQR(){
   if(!session)return;
-  const old=document.getElementById('_qrModal');
-  if(old)document.body.removeChild(old);
+  const old=document.getElementById('_qrModal');if(old)document.body.removeChild(old);
   const url=location.origin+location.pathname+'?session='+session.id;
   const m=document.createElement('div');
-  m.id='_qrModal';
-  m.className='qr-overlay';
-  m.innerHTML=`<div class="qr-box">
-    <div style="font-family:var(--font-title);font-size:20px;color:var(--accent);margin-bottom:4px">📱 QR Code</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:14px">${session.serie} — ${session.projet}</div>
-    <div id="_qrcode" style="background:#fff;border-radius:8px;padding:8px;display:inline-block"></div>
-    <div style="font-size:9px;color:var(--text3);margin-top:8px;word-break:break-all">${url}</div>
-    <div style="margin-top:14px;display:flex;gap:8px;justify-content:center">
-      <button onclick="printQR('${url}')" class="btn btn-outline btn-sm">🖨 Imprimer</button>
-      <button onclick="document.body.removeChild(document.getElementById('_qrModal'))" class="btn btn-outline btn-sm">✕ Fermer</button>
-    </div>
-  </div>`;
+  m.id='_qrModal';m.className='qr-overlay';
+  m.innerHTML='<div class="qr-box">'+
+    '<div style="font-family:var(--font-title);font-size:20px;color:var(--accent);margin-bottom:4px">📱 QR Code</div>'+
+    '<div style="font-size:12px;color:var(--text3);margin-bottom:14px">'+session.serie+' — '+session.projet+'</div>'+
+    '<div id="_qrcode" style="background:#fff;border-radius:8px;padding:8px;display:inline-block"></div>'+
+    '<div style="font-size:9px;color:var(--text3);margin-top:8px;word-break:break-all">'+url+'</div>'+
+    '<div style="margin-top:14px;display:flex;gap:8px;justify-content:center">'+
+      '<button onclick="printQR()" class="btn btn-outline btn-sm">🖨 Imprimer</button>'+
+      '<button onclick="document.body.removeChild(document.getElementById('_qrModal'))" class="btn btn-outline btn-sm">✕ Fermer</button>'+
+    '</div></div>';
   document.body.appendChild(m);
   setTimeout(()=>{
-    if(typeof QRCode!=='undefined'){
+    if(typeof QRCode!=='undefined')
       new QRCode(document.getElementById('_qrcode'),{text:url,width:200,height:200,colorDark:'#00455a',colorLight:'#ffffff'});
-    }
   },80);
 }
 
-function printQR(url){
+function printQR(){
+  const url=location.origin+location.pathname+'?session='+session.id;
   const w=window.open('');
-  w.document.write(`<html><body style="text-align:center;padding:40px;font-family:sans-serif">
-    <h2 style="color:#00455a">ENOGIA — Checklist Montage</h2>
-    <p><strong>${session.serie}</strong> — ${session.projet}</p>
-    <p>Opérateur: ${session.op} | ${session.date}</p>
-    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}" style="border:8px solid #fff;border-radius:8px">
-    <p style="font-size:11px;color:#888;margin-top:16px">Scannez pour accéder à la checklist</p>
-  </body></html>`);
+  w.document.write('<html><body style="text-align:center;padding:40px;font-family:sans-serif">'+
+    '<h2 style="color:#00455a">ENOGIA — Checklist Montage</h2>'+
+    '<p><strong>'+session.serie+'</strong> — '+session.projet+'</p>'+
+    '<p>Opérateur: '+session.op+' | '+session.date+'</p>'+
+    '<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(url)+'" style="border:8px solid #fff;border-radius:8px">'+
+    '<p style="font-size:11px;color:#888;margin-top:16px">Scannez pour accéder à la checklist</p>'+
+    '</body></html>');
   w.document.close();setTimeout(()=>w.print(),300);
-}
-
-// ===================== ADMIN DELETE =====================
-async function deleteSession(id){
-  if(!confirm('Supprimer définitivement cette checklist ?'))return;
-  try{
-    await window._fsDeleteDoc(window._fsDoc(window._db,'sessions',String(id)));
-    sessions=sessions.filter(s=>s.id!==id);
-    try{localStorage.setItem('enogia_sessions',JSON.stringify(sessions));}catch(e){}
-    renderHistory();
-    showToast('🗑 Checklist supprimée');
-  }catch(e){showToast('Erreur suppression','warn');}
-}
-
-// ===================== DASHBOARD =====================
-let dashCache={}, dashYear=null, dashMonth=null;
-const MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-
-function showDashboard(){
-  showScreen('scDashboard');
-  renderDashboard();
-}
-
-async function renderDashboard(){
-  const el=document.getElementById('dashboardContent');
-  el.innerHTML='<div class="empty-state"><div class="spinner"></div><p style="margin-top:12px">Chargement...</p></div>';
-  if(!sessions.length){el.innerHTML='<div class="empty-state"><div class="emo">📊</div><p>Aucune checklist</p></div>';return;}
-
-  // Load dashboard metadata
-  try{
-    const snap=await window._fsGetDocs(window._fsCollection(window._db,'dashboard'));
-    dashCache={};
-    snap.docs.forEach(d=>{dashCache[d.id]=d.data();});
-  }catch(e){}
-
-  // Group by year/month
-  const byYear={};
-  sessions.forEach(s=>{
-    const d=s.started?new Date(s.started):new Date();
-    const y=String(d.getFullYear()), m=String(d.getMonth());
-    if(!byYear[y])byYear[y]={};
-    if(!byYear[y][m])byYear[y][m]=[];
-    byYear[y][m].push(s);
-  });
-
-  const years=Object.keys(byYear).sort((a,b)=>b-a);
-  if(!dashYear||!byYear[dashYear])dashYear=years[0];
-  const months=Object.keys(byYear[dashYear]).sort((a,b)=>Number(a)-Number(b));
-  if(dashMonth===null||!byYear[dashYear][dashMonth])dashMonth=months[months.length-1];
-
-  const isAdmin=window._currentUser&&window._currentUser.email==='nordine.sakhri@enogia.com';
-
-  // Year tabs
-  let html='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">';
-  years.forEach(y=>{html+=`<button onclick="selYear('${y}')" class="btn ${y===dashYear?'btn-primary':'btn-outline'}" style="min-width:80px">${y}</button>`;});
-  html+='</div>';
-
-  // Month tabs
-  html+='<div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap">';
-  months.forEach(m=>{
-    const cnt=byYear[dashYear][m].length;
-    html+=`<button onclick="selMonth('${m}')" class="btn btn-sm ${m===dashMonth?'btn-primary':'btn-outline'}" style="min-width:110px">${MOIS[Number(m)]} <span style="background:#ffffff22;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px">${cnt}</span></button>`;
-  });
-  html+='</div>';
-
-  const ms=byYear[dashYear][dashMonth]||[];
-
-  // Summary KPIs
-  const doneM=ms.filter(s=>s.completed).length;
-  const inProgM=ms.filter(s=>s.started&&!s.completed).length;
-  const lateM=ms.filter(s=>{const d=dashCache[String(s.id)]||{};return s.started&&!s.completed&&d.plannedEnd&&new Date()>new Date(d.plannedEnd);}).length;
-  let fpP=0,fpT=0,ncT=0,qSum=0;
-  ms.forEach(s=>{
-    const tot=s.steps.reduce((a,st)=>a+st.items.length,0);
-    const op=s.steps.reduce((a,st)=>a+st.items.filter(it=>it.opDone).length,0);
-    qSum+=tot?op/tot*100:0;
-    s.steps.forEach(st=>st.items.forEach(it=>{
-      if(it.veDone){fpT++;if(it.firstPassResult==='pass')fpP++;}
-      if(it.ncReason&&it.ncReason!=='ok'&&it.ncReason)ncT++;
-    }));
-  });
-  const avgQ=ms.length?Math.round(qSum/ms.length):0;
-  const fpR=fpT?Math.round(fpP/fpT*100):null;
-
-  html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:20px">
-    ${[['🏭 Machines',ms.length,''],['✅ Terminées',doneM,'good'],['🔄 En cours',inProgM,'warn'],['🚨 En retard',lateM,lateM>0?'bad':'good'],['⭐ Qualité OP',avgQ+'%',avgQ>=80?'good':avgQ>=50?'warn':'bad'],['🎯 1er passage',fpR!==null?fpR+'%':'—',fpR===null?'':fpR>=80?'good':fpR>=60?'warn':'bad'],['⚠️ NC total',ncT,ncT>0?'bad':'good']].map(([l,v,c])=>`
-    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px">
-      <span class="kpi-label">${l}</span>
-      <span class="kpi-value ${c}" style="font-size:22px">${v}</span>
-    </div>`).join('')}
-  </div>`;
-
-  // Gantt
-  html+=renderGantt(ms);
-
-  // NC chart
-  html+=renderNCChart(ms);
-
-  // Model avg time
-  html+=renderModelTime(ms);
-
-  // Operator comparison
-  html+=renderOpComp(ms);
-
-  // KPI cards by model
-  const byModel={};
-  ms.forEach(s=>{const k=s.modelName||'ENO 180 LTV3';if(!byModel[k])byModel[k]=[];byModel[k].push(s);});
-  Object.entries(byModel).forEach(([mn,arr])=>{
-    html+=`<div class="dash-title">⚙️ ${mn}</div><div class="kpi-grid">`;
-    arr.forEach(s=>{html+=renderKPICard(s,isAdmin);});
-    html+='</div>';
-  });
-
-  html+=`<div style="margin-top:20px;text-align:center"><button class="export-btn" onclick="exportCSV()">📥 Exporter CSV mensuel</button></div>`;
-  el.innerHTML=html;
-}
-
-function selYear(y){dashYear=y;dashMonth=null;renderDashboard();}
-function selMonth(m){dashMonth=m;renderDashboard();}
-
-function renderGantt(sessions){
-  if(!sessions.length)return'';
-  let min=null,max=null;
-  sessions.forEach(s=>{
-    const d=dashCache[String(s.id)]||{};
-    [s.started,s.completed,d.plannedStart,d.plannedEnd].filter(Boolean).forEach(dt=>{
-      const dd=new Date(dt);
-      if(!min||dd<min)min=dd;
-      if(!max||dd>max)max=dd;
-    });
-  });
-  if(!min)return'';
-  min=new Date(min);min.setDate(min.getDate()-3);
-  max=new Date(max);max.setDate(max.getDate()+3);
-  const span=max-min, today=new Date();
-  const pct=d=>Math.min(100,Math.max(0,(d-min)/span*100));
-  const todayP=pct(today);
-
-  // Build week ticks
-  const ticks=[];let cur=new Date(min);
-  while(cur<=max){ticks.push(new Date(cur));cur.setDate(cur.getDate()+7);}
-
-  let h='<div class="dash-title">📅 Planning Gantt</div>';
-  h+=`<div style="display:flex;gap:14px;margin-bottom:10px;font-size:11px;color:var(--text2);flex-wrap:wrap">
-    <span><span style="display:inline-block;width:20px;height:6px;background:#0086c244;border:1px dashed #0086c2;border-radius:2px;vertical-align:middle;margin-right:4px"></span>Planifié</span>
-    <span><span style="display:inline-block;width:20px;height:6px;background:var(--accent2);border-radius:2px;vertical-align:middle;margin-right:4px"></span>En cours</span>
-    <span><span style="display:inline-block;width:20px;height:6px;background:var(--accent);border-radius:2px;vertical-align:middle;margin-right:4px"></span>Terminé</span>
-    <span><span style="display:inline-block;width:20px;height:6px;background:#e05555;border-radius:2px;vertical-align:middle;margin-right:4px"></span>En retard</span>
-  </div>`;
-  h+='<div style="overflow-x:auto"><div style="min-width:500px">';
-
-  // Axis
-  h+='<div style="display:flex;margin-left:140px;position:relative;height:18px;margin-bottom:4px">';
-  ticks.forEach(t=>{h+=`<span style="position:absolute;left:${pct(t)}%;transform:translateX(-50%);font-size:9px;color:var(--text3)">${t.getDate()}/${t.getMonth()+1}</span>`;});
-  h+='</div>';
-
-  sessions.forEach((s,i)=>{
-    const d=dashCache[String(s.id)]||{};
-    const sD=s.started?new Date(s.started):null;
-    const eD=s.completed?new Date(s.completed):(sD?new Date():null);
-    const pS=d.plannedStart?new Date(d.plannedStart):null;
-    const pE=d.plannedEnd?new Date(d.plannedEnd):null;
-    const late=sD&&!s.completed&&pE&&today>pE;
-    h+=`<div style="display:flex;align-items:center;margin-bottom:6px;background:${i%2?'transparent':'#00364a22'};border-radius:4px;padding:3px 0">
-      <div style="width:140px;flex-shrink:0;padding-right:8px">
-        <div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${s.serie}">${s.serie}</div>
-        <div style="font-size:10px;color:var(--text3)">${s.op}</div>
-      </div>
-      <div style="flex:1;position:relative;height:30px">`;
-    ticks.forEach(t=>{h+=`<div style="position:absolute;left:${pct(t)}%;top:0;bottom:0;width:1px;background:#ffffff08"></div>`;});
-    h+=`<div style="position:absolute;left:${todayP}%;top:-2px;bottom:-2px;width:2px;background:#e05555;z-index:3;border-radius:1px"></div>`;
-    if(pS&&pE){const l=pct(pS),w=Math.max(0.5,pct(pE)-l);h+=`<div style="position:absolute;left:${l}%;width:${w}%;top:5px;height:20px;background:#0086c218;border:1px dashed #0086c2aa;border-radius:4px;font-size:9px;color:#0086c2;display:flex;align-items:center;padding:0 4px;overflow:hidden">${Math.round((pE-pS)/864e5)}j prévu</div>`;}
-    if(sD&&eD){const l=pct(sD),w=Math.max(0.5,pct(eD)-l);const col=s.completed?'var(--accent)':late?'#e05555':'var(--accent2)';h+=`<div style="position:absolute;left:${l}%;width:${w}%;top:8px;height:14px;background:${col};border-radius:4px;font-size:9px;color:#fff;font-weight:700;display:flex;align-items:center;padding:0 4px;overflow:hidden;z-index:2">${s.completed?'✓':late?'⚠':'▶'} ${Math.round((eD-sD)/864e5)}j</div>`;}
-    h+='</div></div>';
-  });
-  h+='</div></div>';
-  return h;
-}
-
-function renderNCChart(sessions){
-  const r={retouche:0,piece:0,mesure:0,autre:0};
-  sessions.forEach(s=>s.steps.forEach(st=>st.items.forEach(it=>{if(it.ncReason&&r[it.ncReason]!==undefined)r[it.ncReason]++;})));
-  if(!Object.values(r).reduce((a,b)=>a+b,0))return'';
-  const max=Math.max(...Object.values(r),1);
-  const labels={retouche:'Retouche',piece:'Pièce manq.',mesure:'Hors tol.',autre:'Autre'};
-  const colors={retouche:'#e05555',piece:'#f0a500',mesure:'#0086c2',autre:'#7ab8cc'};
-  let h='<div class="dash-title">⚠️ Non-conformités par type</div><div class="chart-wrap">';
-  h+='<div style="display:flex;align-items:flex-end;gap:8px;height:80px">';
-  Object.entries(r).forEach(([k,v])=>{h+=`<div style="flex:1;height:${Math.round(v/max*100)}%;background:${colors[k]};border-radius:4px 4px 0 0;min-height:4px;position:relative" title="${v}"></div>`;});
-  h+='</div><div style="display:flex;gap:8px;margin-top:6px">';
-  Object.entries(r).forEach(([k,v])=>{h+=`<div style="flex:1;font-size:10px;color:var(--text3);text-align:center">${labels[k]}<br><strong style="color:#fff">${v}</strong></div>`;});
-  h+='</div></div>';
-  return h;
-}
-
-function renderModelTime(sessions){
-  const mt={};
-  sessions.forEach(s=>{
-    if(!s.started||!s.completed)return;
-    const k=s.modelName||'ENO 180 LTV3';
-    const days=(new Date(s.completed)-new Date(s.started))/864e5;
-    if(!mt[k])mt[k]=[];
-    mt[k].push(days);
-  });
-  const entries=Object.entries(mt);
-  if(!entries.length)return'';
-  const avgs=entries.map(([n,v])=>({n,avg:Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10,min:Math.round(Math.min(...v)*10)/10,max:Math.round(Math.max(...v)*10)/10,cnt:v.length}));
-  const maxA=Math.max(...avgs.map(a=>a.avg),1);
-  let h='<div class="dash-title">⏱ Temps moyen de montage par gamme</div><div class="chart-wrap">';
-  avgs.forEach(a=>{
-    const p=Math.round(a.avg/maxA*100);
-    h+=`<div style="margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-        <span style="font-size:13px;font-weight:600">${a.n}</span>
-        <span style="font-size:12px;color:var(--accent);font-weight:700">${a.avg}j <span style="font-size:10px;color:var(--text3)">(${a.cnt} machine${a.cnt>1?'s':''})</span></span>
-      </div>
-      <div style="height:18px;background:#003548;border-radius:4px;overflow:hidden">
-        <div style="width:${p}%;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:4px"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:3px"><span>Min: ${a.min}j</span><span>Max: ${a.max}j</span></div>
-    </div>`;
-  });
-  h+='</div>';
-  return h;
-}
-
-function renderOpComp(sessions){
-  const ops={};
-  sessions.forEach(s=>{
-    const op=s.op||'—';
-    if(!ops[op])ops[op]={n:0,opI:0,veI:0,tot:0,nc:0,fpP:0,fpT:0};
-    ops[op].n++;
-    s.steps.forEach(st=>st.items.forEach(it=>{
-      ops[op].tot++;
-      if(it.opDone)ops[op].opI++;
-      if(it.veDone)ops[op].veI++;
-      if(it.ncReason&&it.ncReason!=='ok'&&it.ncReason)ops[op].nc++;
-      if(it.firstPassResult){ops[op].fpT++;if(it.firstPassResult==='pass')ops[op].fpP++;}
-    }));
-  });
-  const entries=Object.entries(ops);
-  if(entries.length<2)return'';
-  let h='<div class="dash-title">👤 Comparaison opérateurs</div>';
-  h+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
-  h+='<thead><tr style="background:#00364a"><th style="padding:8px;text-align:left;font-size:10px;color:var(--text3);text-transform:uppercase">Opérateur</th><th style="padding:8px;color:var(--text3);font-size:10px;text-transform:uppercase">Machines</th><th style="padding:8px;color:var(--text3);font-size:10px;text-transform:uppercase">Qualité OP</th><th style="padding:8px;color:var(--text3);font-size:10px;text-transform:uppercase">Qualité VE</th><th style="padding:8px;color:var(--text3);font-size:10px;text-transform:uppercase">1er passage</th><th style="padding:8px;color:var(--text3);font-size:10px;text-transform:uppercase">NC</th></tr></thead><tbody>';
-  entries.forEach(([op,d])=>{
-    const op_pct=d.tot?Math.round(d.opI/d.tot*100):0;
-    const ve_pct=d.tot?Math.round(d.veI/d.tot*100):0;
-    const fp=d.fpT?Math.round(d.fpP/d.fpT*100):null;
-    const c=v=>v>=80?'var(--accent)':v>=50?'var(--yellow)':'#e05555';
-    h+=`<tr style="border-bottom:1px solid #ffffff10">
-      <td style="padding:8px;font-weight:600">${op}</td>
-      <td style="padding:8px">${d.n}</td>
-      <td style="padding:8px;color:${c(op_pct)}">${op_pct}%</td>
-      <td style="padding:8px;color:${c(ve_pct)}">${ve_pct}%</td>
-      <td style="padding:8px;color:${fp===null?'var(--text3)':c(fp)}">${fp!==null?fp+'%':'—'}</td>
-      <td style="padding:8px;color:${d.nc>0?'#e05555':'var(--accent)'}">${d.nc}</td>
-    </tr>`;
-  });
-  h+='</tbody></table></div>';
-  return h;
-}
-
-function renderKPICard(s,isAdmin){
-  const d=dashCache[String(s.id)]||{};
-  const tot=s.steps.reduce((a,st)=>a+st.items.length,0);
-  const op=s.steps.reduce((a,st)=>a+st.items.filter(it=>it.opDone).length,0);
-  const ve=s.steps.reduce((a,st)=>a+st.items.filter(it=>it.veDone).length,0);
-  const nc=s.steps.reduce((a,st)=>a+st.items.filter(it=>it.ncReason&&it.ncReason!=='ok'&&it.ncReason).length,0);
-  const fpArr=s.steps.flatMap(st=>st.items.filter(it=>it.firstPassResult));
-  const fp=fpArr.length?Math.round(fpArr.filter(it=>it.firstPassResult==='pass').length/fpArr.length*100):null;
-  const opP=tot?Math.round(op/tot*100):0, veP=tot?Math.round(ve/tot*100):0;
-  const sD=s.started?new Date(s.started):null, eD=s.completed?new Date(s.completed):null;
-  const pS=d.plannedStart?new Date(d.plannedStart):null, pE=d.plannedEnd?new Date(d.plannedEnd):null;
-  const realD=sD&&eD?Math.round((eD-sD)/864e5):sD?Math.round((new Date()-sD)/864e5):null;
-  const planD=pS&&pE?Math.round((pE-pS)/864e5):null;
-  let status='grey',sTxt='Non démarré';
-  if(s.completed){status='green';sTxt='Terminé ✓';}
-  else if(sD){status=pE&&new Date()>pE?'red':'orange';sTxt=status==='red'?'En retard ⚠':'En cours';}
-  let dTxt='—',dCls='';
-  if(pS&&sD){const dd=Math.round((sD-pS)/864e5);dTxt=dd>0?'+'+dd+'j retard':dd<0?Math.abs(dd)+'j avance':'Dans les temps';dCls=dd>0?'bad':dd<0?'good':'';}
-  const bC=v=>v>=80?'var(--accent)':v>=50?'var(--yellow)':'#e05555';
-  const ei=isAdmin?`onchange="updateDash(${s.id},'FIELD',this.value)"`:'readonly';
-
-  return `<div class="kpi-card">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
-      <div><div class="kpi-card-title">${s.serie}</div><div class="kpi-card-ref">${s.projet} | OP: ${s.op}</div></div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-        <div class="kpi-status ${status}">${sTxt}</div>
-        ${nc>0?`<span class="nc-badge">${nc} NC</span>`:''}
-      </div>
-    </div>
-    <div class="kpi-dates">
-      <div class="kpi-date-box ${isAdmin?'editable':''}"><label>📅 Début prévu</label><input type="date" value="${d.plannedStart||''}" ${isAdmin?`onchange="updateDash(${s.id},'plannedStart',this.value)"`:' readonly'} style="${!isAdmin?'pointer-events:none':''}"></div>
-      <div class="kpi-date-box ${isAdmin?'editable':''}"><label>🏁 Fin prévue</label><input type="date" value="${d.plannedEnd||''}" ${isAdmin?`onchange="updateDash(${s.id},'plannedEnd',this.value)"`:' readonly'} style="${!isAdmin?'pointer-events:none':''}"></div>
-      <div class="kpi-date-box"><label>▶ Début réel</label><input type="date" value="${sD?sD.toISOString().slice(0,10):''}" readonly style="pointer-events:none"></div>
-      <div class="kpi-date-box"><label>✅ Fin réelle</label><input type="date" value="${eD?eD.toISOString().slice(0,10):''}" readonly style="pointer-events:none"></div>
-    </div>
-    <div class="kpi-rows">
-      <div class="kpi-row"><span class="kpi-label">⏱ Durée réelle</span><span class="kpi-value">${realD!==null?(s.completed?realD+'j':realD+'j (en cours)'):'—'}</span></div>
-      <div class="kpi-row"><span class="kpi-label">📐 Durée prévue</span><span class="kpi-value">${planD!==null?planD+'j':'—'}</span></div>
-      <div class="kpi-row"><span class="kpi-label">🚦 Écart</span><span class="kpi-value ${dCls}">${dTxt}</span></div>
-      <div class="kpi-row"><span class="kpi-label">🎯 1er passage</span><span class="kpi-value ${fp===null?'':fp>=80?'good':fp>=60?'warn':'bad'}">${fp!==null?fp+'%':'—'}</span></div>
-      <div class="kpi-row"><span class="kpi-label">⚠️ NC</span><span class="kpi-value ${nc>0?'bad':'good'}">${nc}</span></div>
-    </div>
-    <div class="kpi-bar-wrap"><div class="kpi-bar-label"><span>✋ OP</span><span style="color:${bC(opP)}">${opP}%</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${opP}%;background:${bC(opP)}"></div></div></div>
-    <div class="kpi-bar-wrap"><div class="kpi-bar-label"><span>🔍 VE</span><span style="color:${bC(veP)}">${veP}%</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${veP}%;background:${bC(veP)}"></div></div></div>
-    <div style="margin-top:8px"><textarea placeholder="Commentaire..." style="width:100%;height:44px;font-size:12px;resize:none" ${isAdmin?`onchange="updateDash(${s.id},'comment',this.value)"`:' readonly'}>${d.comment||''}</textarea></div>
-  </div>`;
-}
-
-async function updateDash(id,field,value){
-  const k=String(id);
-  if(!dashCache[k])dashCache[k]={};
-  dashCache[k][field]=value;
-  try{ await window._fsSetDoc(window._fsDoc(window._db,'dashboard',k), dashCache[k]); }catch(e){}
-}
-
-function exportCSV(){
-  const ms=sessions.filter(s=>{
-    if(!dashYear||dashMonth===null)return false;
-    const d=s.started?new Date(s.started):new Date();
-    return String(d.getFullYear())===dashYear&&String(d.getMonth())===dashMonth;
-  });
-  let csv='Série,Projet,Gamme,Opérateur,Début,Fin,Durée(j),Qualité OP(%),Qualité VE(%),1er passage(%),NC,Statut
-';
-  ms.forEach(s=>{
-    const tot=s.steps.reduce((a,st)=>a+st.items.length,0);
-    const op=s.steps.reduce((a,st)=>a+st.items.filter(it=>it.opDone).length,0);
-    const ve=s.steps.reduce((a,st)=>a+st.items.filter(it=>it.veDone).length,0);
-    const nc=s.steps.reduce((a,st)=>a+st.items.filter(it=>it.ncReason&&it.ncReason!=='ok'&&it.ncReason).length,0);
-    const fp=s.steps.flatMap(st=>st.items.filter(it=>it.firstPassResult));
-    const fpR=fp.length?Math.round(fp.filter(it=>it.firstPassResult==='pass').length/fp.length*100):'';
-    const sD=s.started?new Date(s.started).toLocaleDateString('fr-FR'):'';
-    const eD=s.completed?new Date(s.completed).toLocaleDateString('fr-FR'):'';
-    const days=s.started?Math.round((s.completed?new Date(s.completed):new Date()-new Date(s.started))/864e5):'';
-    csv+=`"${s.serie}","${s.projet}","${s.modelName||''}","${s.op}","${sD}","${eD}","${days}","${tot?Math.round(op/tot*100):''}","${tot?Math.round(ve/tot*100):''}","${fpR}","${nc}","${s.completed?'Terminé':s.started?'En cours':'Non démarré'}"
-`;
-  });
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}));
-  a.download=`enogia_kpi_${MOIS[Number(dashMonth)]}_${dashYear}.csv`;
-  a.click();
 }
 
 // ===================== INIT =====================
