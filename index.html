@@ -284,6 +284,21 @@ textarea{height:52px;resize:none;font-size:12px}
       <div><label>Opérateur (OP)</label><input id="inOp" placeholder="Nom opérateur"></div>
       <div><label>Vérificateur (VE)</label><input id="inVe" placeholder="Nom vérificateur"></div>
     </div>
+    <div class="section-title">Planification & Stock</div>
+    <div class="input-row">
+      <div><label>Date début planifiée</label><input type="date" id="inPlannedStart"></div>
+      <div><label>Date fin souhaitée</label><input type="date" id="inPlannedEnd"></div>
+    </div>
+    <div style="background:#00364a;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--text)">📦 Toutes les pièces sont disponibles</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">Vérification avant démarrage du montage</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0">
+        <input type="checkbox" id="inStockOk" style="width:20px;height:20px;accent-color:var(--accent);cursor:pointer">
+        <span id="inStockOkLabel" style="font-size:12px;color:var(--text3)">Non confirmé</span>
+      </label>
+    </div>
     <button class="btn btn-primary btn-full" onclick="startSession()">▶ Démarrer le montage</button>
   </div>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -1586,8 +1601,16 @@ function selectModel(modelId){
 function startSession(){
   const op=document.getElementById('inOp').value.trim();
   if(!op){alert('Veuillez renseigner le nom de l\'opérateur.');return;}
+  const plannedStart = document.getElementById('inPlannedStart').value || null;
+  const plannedEnd = document.getElementById('inPlannedEnd').value || null;
+  const stockOk = document.getElementById('inStockOk').checked;
+  const ofRef = 'OF-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-5);
   session={
     id:Date.now(),
+    ofRef,
+    plannedStart,
+    plannedEnd,
+    stockOk,
     projet:document.getElementById('inProjet').value.trim()||'–',
     serie:document.getElementById('inSerie').value.trim()||'–',
     op, ve:document.getElementById('inVe').value.trim(),
@@ -1747,12 +1770,12 @@ function renderStep(){
             <textarea placeholder="Commentaire…" oninput="saveVal(${currentStep},${idx},'veComment',this.value)" style="margin-top:6px">${it.veComment||''}</textarea>
             ${!it.opDone?'':`
             <select onchange="saveVal(${currentStep},${idx},'ncReason',this.value)" style="margin-top:6px;width:100%;background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px;font-size:12px" ${it.veDone?'disabled':''}>
-              <option value="">-- Statut VE --</option>
+              <option value="">— Statut VE —</option>
               <option value="ok" ${it.ncReason==='ok'?'selected':''}>✅ Conforme</option>
-              <option value="retouche" ${it.ncReason==='retouche'?'selected':''}>🔧 Non-conforme — Retouche</option>
-              <option value="piece" ${it.ncReason==='piece'?'selected':''}>📦 Non-conforme — Pièce manquante</option>
-              <option value="mesure" ${it.ncReason==='mesure'?'selected':''}>📏 Non-conforme — Hors tolérance</option>
-              <option value="autre" ${it.ncReason==='autre'?'selected':''}>⚠️ Non-conforme — Autre</option>
+              <option value="erreur_gamme" ${it.ncReason==='erreur_gamme'?'selected':''}>📐 NC — Erreur gamme</option>
+              <option value="defaut_assemblage" ${it.ncReason==='defaut_assemblage'?'selected':''}>🔧 NC — Défaut d'assemblage</option>
+              <option value="piece_manquante" ${it.ncReason==='piece_manquante'?'selected':''}>📦 NC — Pièce manquante</option>
+              <option value="autre" ${it.ncReason==='autre'?'selected':''}>📝 NC — Autre / à qualifier</option>
             </select>`}
             ${it.ncReason&&it.ncReason!=='ok'?`<span class="nc-badge" style="display:inline-block;margin-top:4px">NC: ${it.ncReason}</span>`:''}
             ${it.opDone?`<div style="margin-top:8px">
@@ -1959,10 +1982,17 @@ async function renderDashboard(){
 
   // First-pass rate across all sessions this month
   let fpTotal=0, fpPass=0, ncTotal=0;
+  let ncErreurGameme=0, ncDefautAssemblage=0, ncPieceManquante=0, ncAutre=0;
   monthSessions.forEach(s=>{
     s.steps.forEach(st=>st.items.forEach(it=>{
       if(it.veDone){ fpTotal++; if(it.firstPassResult==='pass') fpPass++; }
-      if(it.ncReason && it.ncReason!=='ok' && it.ncReason!=='') ncTotal++;
+      if(it.ncReason && it.ncReason!=='ok' && it.ncReason!==''){
+        ncTotal++;
+        if(it.ncReason==='erreur_gamme') ncErreurGameme++;
+        else if(it.ncReason==='defaut_assemblage') ncDefautAssemblage++;
+        else if(it.ncReason==='piece_manquante') ncPieceManquante++;
+        else ncAutre++;
+      }
     }));
   });
   const fpRate = fpTotal ? Math.round(fpPass/fpTotal*100) : null;
@@ -1972,7 +2002,35 @@ async function renderDashboard(){
     return acc+(tot?don/tot*100:0);
   },0)/totalM) : 0;
 
-  html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px">
+  // === KPI PLANIFICATION ===
+  const sessionsWithPlan = monthSessions.filter(s=>s.plannedStart && s.plannedEnd);
+  const startedOnTime = sessionsWithPlan.filter(s=>s.started && new Date(s.started)<=new Date(s.plannedStart+'T23:59:59')).length;
+  const completedOnTime = sessionsWithPlan.filter(s=>s.completed && new Date(s.completed)<=new Date(s.plannedEnd+'T23:59:59')).length;
+  const kpiPlanif = sessionsWithPlan.length ? Math.round((startedOnTime+completedOnTime)/(sessionsWithPlan.length*2)*100) : null;
+
+  // === KPI FIABILITE STOCK ===
+  const sessionsWithStock = monthSessions.filter(s=>s.stockOk!==undefined);
+  const stockOkCount = sessionsWithStock.filter(s=>s.stockOk===true).length;
+  const kpiStock = sessionsWithStock.length ? Math.round(stockOkCount/sessionsWithStock.length*100) : null;
+
+  // === KPI NOMENCLATURE (% items VE sans NC gamme/assemblage) ===
+  let veTotal=0, veConform=0;
+  monthSessions.forEach(s=>{
+    s.steps.forEach(st=>st.items.forEach(it=>{
+      if(it.veDone){
+        veTotal++;
+        if(!it.ncReason||it.ncReason==='ok') veConform++;
+      }
+    }));
+  });
+  const kpiNomencl = veTotal ? Math.round(veConform/veTotal*100) : null;
+
+  // === KPI RETARD OF ===
+  const sessionsWithDeadline = monthSessions.filter(s=>s.plannedEnd);
+  const onTimeCount = sessionsWithDeadline.filter(s=>s.completed&&new Date(s.completed)<=new Date(s.plannedEnd+'T23:59:59')).length;
+  const kpiRetard = sessionsWithDeadline.length ? Math.round(onTimeCount/sessionsWithDeadline.length*100) : null;
+
+  html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:12px">
     <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🏭 Machines</span><span class="kpi-value" style="font-size:24px">${totalM}</span></div>
     <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">✅ Terminées</span><span class="kpi-value good" style="font-size:24px">${doneM}</span></div>
     <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🔄 En cours</span><span class="kpi-value warn" style="font-size:24px">${inProgM}</span></div>
@@ -1980,6 +2038,34 @@ async function renderDashboard(){
     <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">⭐ Qualité OP</span><span class="kpi-value ${avgQ>=80?'good':avgQ>=50?'warn':'bad'}" style="font-size:24px">${avgQ}%</span></div>
     <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🎯 1er passage</span><span class="kpi-value ${fpRate===null?'':fpRate>=80?'good':fpRate>=60?'warn':'bad'}" style="font-size:24px">${fpRate!==null?fpRate+'%':'—'}</span></div>
     <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">⚠️ Non-conf.</span><span class="kpi-value ${ncTotal>0?'bad':'good'}" style="font-size:24px">${ncTotal}</span></div>
+  </div>
+
+  <div class="dash-section-title">📊 KPI Supply Chain</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:20px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;border-top:3px solid var(--accent2)">
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">📅 Planification</div>
+      <div style="font-size:28px;font-weight:700;color:${kpiPlanif===null?'var(--text3)':kpiPlanif>=80?'var(--green)':kpiPlanif>=60?'var(--yellow)':'#e05555'}">${kpiPlanif!==null?kpiPlanif+'%':'N/A'}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">Démarrées + livrées dans les temps</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:2px">${sessionsWithPlan.length} machine(s) avec dates planifiées</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;border-top:3px solid var(--accent)">
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">📦 Fiabilité Stock</div>
+      <div style="font-size:28px;font-weight:700;color:${kpiStock===null?'var(--text3)':kpiStock>=80?'var(--green)':kpiStock>=60?'var(--yellow)':'#e05555'}">${kpiStock!==null?kpiStock+'%':'N/A'}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">Pièces disponibles au démarrage</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:2px">${stockOkCount}/${sessionsWithStock.length} machine(s) confirmées</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;border-top:3px solid #f0a500">
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">📐 Nomenclatures</div>
+      <div style="font-size:28px;font-weight:700;color:${kpiNomencl===null?'var(--text3)':kpiNomencl>=90?'var(--green)':kpiNomencl>=70?'var(--yellow)':'#e05555'}">${kpiNomencl!==null?kpiNomencl+'%':'N/A'}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">Items VE sans NC gamme/assemblage</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:2px">📐${ncErreurGameme} gamme | 🔧${ncDefautAssemblage} assemblage | 📦${ncPieceManquante} pièce | 📝${ncAutre} autre</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;border-top:3px solid #e05555">
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">⏱️ Retard OF</div>
+      <div style="font-size:28px;font-weight:700;color:${kpiRetard===null?'var(--text3)':kpiRetard>=80?'var(--green)':kpiRetard>=60?'var(--yellow)':'#e05555'}">${kpiRetard!==null?kpiRetard+'%':'N/A'}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">Machines livrées dans les délais</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:2px">${onTimeCount}/${sessionsWithDeadline.length} machine(s) avec date de fin planifiée</div>
+    </div>
   </div>`;
 
   // === GANTT VIEW ===
@@ -2419,6 +2505,18 @@ function restoreActionTimers(){
 
 // ===================== INIT =====================
 // App initialized by firebaseReady event above
+
+// Stock checkbox label
+document.addEventListener('DOMContentLoaded', ()=>{
+  const cb = document.getElementById('inStockOk');
+  const lbl = document.getElementById('inStockOkLabel');
+  if(cb && lbl){
+    cb.addEventListener('change', ()=>{
+      lbl.textContent = cb.checked ? '✅ Confirmé' : 'Non confirmé';
+      lbl.style.color = cb.checked ? 'var(--green)' : 'var(--text3)';
+    });
+  }
+});
 </script>
 </div><!-- end appWrapper -->
 </body>
