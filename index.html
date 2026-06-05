@@ -345,7 +345,7 @@ textarea{height:52px;resize:none;font-size:12px}
     </div>
     <div class="input-row">
       <div><label>Date de préparation</label><input type="date" id="cond-date"></div>
-      <div><label>Responsable préparation</label><input type="text" id="cond-resp" placeholder="Prénom NOM"></div>
+      <div><label>Responsable préparation</label><input type="text" id="cond-resp" placeholder="Prénom NOM" title="Rempli automatiquement depuis votre compte" style="border-color:var(--accent2);opacity:.85"></div>
     </div>
     <div><label>Observations générales</label><textarea id="cond-obs" placeholder="Remarques sur la machine, particularités de cette commande..." style="height:60px;resize:vertical"></textarea></div>
   </div>
@@ -2719,15 +2719,21 @@ let condInvRows = 0;
 
 function showConditionnement() {
   showScreen('scConditionnement');
-  // Pré-remplir responsable avec le nom de l'utilisateur connecté
+  // Pré-remplir responsable depuis le champ opérateur (déjà rempli au login)
   const respField = document.getElementById('cond-resp');
-  if (respField && !respField.value && window._currentUser) {
-    respField.value = window._currentUser.displayName || window._currentUser.email || '';
+  if (respField && !respField.value) {
+    const name = (window._currentUser && (window._currentUser.displayName || window._currentUser.email))
+                 || document.getElementById('inOp').value
+                 || '';
+    respField.value = name;
   }
   // Pré-remplir la date du jour si vide
   const dateField = document.getElementById('cond-date');
   if (dateField && !dateField.value) {
-    dateField.value = new Date().toISOString().split('T')[0];
+    const today = new Date();
+    dateField.value = today.getFullYear() + '-' +
+      String(today.getMonth()+1).padStart(2,'0') + '-' +
+      String(today.getDate()).padStart(2,'0');
   }
   if (!document.getElementById('cond-inv-body').children.length) { condAddInvRow(); condAddInvRow(); }
 }
