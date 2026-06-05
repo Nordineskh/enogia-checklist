@@ -304,8 +304,198 @@ textarea{height:52px;resize:none;font-size:12px}
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
     <div class="section-title" style="margin:0;flex:1">Historique</div>
     <button class="btn btn-outline btn-sm" onclick="showDashboard()" style="margin-left:12px">📊 Tableau de bord</button>
+    <button class="btn btn-outline btn-sm" onclick="showConditionnement()" style="margin-left:8px">📦 Conditionnement</button>
   </div>
   <div id="histList"></div>
+</div>
+
+<!-- CONDITIONNEMENT -->
+<div class="screen" id="scConditionnement">
+  <div class="project-card" style="margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div class="project-title">📦 Ordre de conditionnement</div>
+        <div class="project-sub">Préparation au départ machine ORC</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="goHome()">↩ Retour</button>
+    </div>
+  </div>
+
+  <!-- Barre de progression -->
+  <div class="progress-bar-wrap">
+    <div class="progress-label">
+      <span id="cond-prog-label">Avancement global</span>
+      <span id="cond-prog-pct">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="cond-prog-fill" style="width:0%"></div></div>
+  </div>
+
+  <!-- Indicateurs -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px">
+      <div style="font-size:20px;font-weight:600;color:var(--text)" id="cond-stat-checks">0/0</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px">Contrôles validés</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px">
+      <div style="font-size:20px;font-weight:600;color:var(--text)" id="cond-stat-items">0</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px">Colis / éléments</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px">
+      <div style="font-size:20px;font-weight:600;color:var(--text)" id="cond-stat-poids">— kg</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px">Poids total estimé</div>
+    </div>
+  </div>
+
+  <!-- Section 1 : Identification -->
+  <div class="project-card" style="margin-bottom:12px">
+    <div class="section-title">1 — Identification machine / projet</div>
+    <div class="input-row">
+      <div><label>Référence projet</label><input type="text" id="cond-proj-ref" placeholder="PJxxx"></div>
+      <div><label>N° de série machine</label><input type="text" id="cond-serie" placeholder="ORC-2025-xxx"></div>
+    </div>
+    <div class="input-row">
+      <div><label>Type / modèle ORC</label><input type="text" id="cond-modele" placeholder="ex. ENO-30kW-HT"></div>
+      <div><label>Puissance nominale (kW)</label><input type="number" id="cond-power" placeholder="30"></div>
+    </div>
+    <div class="input-row">
+      <div><label>Date de préparation</label><input type="date" id="cond-date"></div>
+      <div><label>Responsable préparation</label><input type="text" id="cond-resp" placeholder="Prénom NOM"></div>
+    </div>
+    <div><label>Observations générales</label><textarea id="cond-obs" placeholder="Remarques sur la machine, particularités de cette commande..." style="height:60px;resize:vertical"></textarea></div>
+  </div>
+
+  <!-- Section 2 : Inventaire -->
+  <div class="project-card" style="margin-bottom:12px">
+    <div class="section-title">2 — Inventaire & liste des composants</div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px" id="cond-inv-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding:6px 8px;border-bottom:1px solid var(--border);background:var(--surface2);width:28px">#</th>
+            <th style="text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding:6px 8px;border-bottom:1px solid var(--border);background:var(--surface2)">Désignation</th>
+            <th style="text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding:6px 8px;border-bottom:1px solid var(--border);background:var(--surface2);width:90px">Réf. interne</th>
+            <th style="text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding:6px 8px;border-bottom:1px solid var(--border);background:var(--surface2);width:55px">Qté</th>
+            <th style="text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding:6px 8px;border-bottom:1px solid var(--border);background:var(--surface2);width:75px">Poids (kg)</th>
+            <th style="text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding:6px 8px;border-bottom:1px solid var(--border);background:var(--surface2);width:100px">État</th>
+            <th style="width:28px;background:var(--surface2);border-bottom:1px solid var(--border)"></th>
+          </tr>
+        </thead>
+        <tbody id="cond-inv-body"></tbody>
+      </table>
+    </div>
+    <button onclick="condAddInvRow()" style="background:none;border:none;color:var(--accent2);cursor:pointer;padding:8px 4px;font-size:12px;font-family:var(--font);display:flex;align-items:center;gap:4px">+ Ajouter un élément</button>
+  </div>
+
+  <!-- Section 3 : Emballage -->
+  <div class="project-card" style="margin-bottom:12px">
+    <div class="section-title">3 — Instructions d'emballage / conditionnement</div>
+    <div style="margin-bottom:12px">
+      <label>Type(s) de conditionnement</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px" id="cond-chips">
+        <button class="chip" style="cursor:pointer;transition:.2s" onclick="condToggleChip(this)">Caisse bois</button>
+        <button class="chip" style="cursor:pointer;transition:.2s" onclick="condToggleChip(this)">Palette filmée</button>
+        <button class="chip" style="cursor:pointer;transition:.2s" onclick="condToggleChip(this)">Conteneur 20'</button>
+        <button class="chip" style="cursor:pointer;transition:.2s" onclick="condToggleChip(this)">Conteneur 40'</button>
+        <button class="chip" style="cursor:pointer;transition:.2s" onclick="condToggleChip(this)">Caisse métallique</button>
+        <button class="chip" style="cursor:pointer;transition:.2s" onclick="condToggleChip(this)">Enveloppe sous vide</button>
+        <button class="chip" style="cursor:pointer;transition:.2s" onclick="condToggleChip(this)">Mousse PE</button>
+        <button class="chip" style="cursor:pointer;transition:.2s" onclick="condToggleChip(this)">Autre</button>
+      </div>
+    </div>
+    <div class="input-row">
+      <div><label>Dimensions colis principal (L × l × H cm)</label><input type="text" id="cond-dims" placeholder="ex. 280 × 120 × 150"></div>
+      <div><label>Poids brut total (kg)</label><input type="number" id="cond-poids-brut" placeholder="ex. 1250" oninput="condUpdateStats()"></div>
+    </div>
+    <div class="input-row">
+      <div><label>Nb de colis / unités</label><input type="number" id="cond-nb-colis" placeholder="ex. 3" oninput="condUpdateStats()"></div>
+      <div><label>Marquage / étiquetage</label>
+        <select id="cond-marquage" style="background:var(--surface);border-color:var(--border);color:var(--text)">
+          <option>Standard Enogia</option>
+          <option>Exigences client</option>
+          <option>IATA / transport aérien</option>
+          <option>IMDG / maritime</option>
+          <option>Personnalisé</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:10px"><label>Instructions spéciales</label><textarea id="cond-instr" placeholder="ex. Cuve haute pression — position UPRIGHT obligatoire. Purge azote avant fermeture. Silicagel intérieur." style="height:60px;resize:vertical"></textarea></div>
+    <div><label>Documents à inclure dans le colis</label><textarea id="cond-docs" placeholder="Manuel opérateur, liste de colisage, certificats CE, fiches MSDS fluide de travail..." style="height:60px;resize:vertical"></textarea></div>
+  </div>
+
+  <!-- Section 4 : Checklist -->
+  <div class="project-card" style="margin-bottom:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="section-title" style="margin:0;flex:1">4 — Contrôles avant départ</div>
+      <span id="cond-check-badge" style="background:#0086c222;color:var(--accent2);border:1px solid #0086c244;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;margin-left:10px">0 / 0</span>
+    </div>
+    <div id="cond-checklist-body"></div>
+  </div>
+
+  <!-- Section 5 : Transport -->
+  <div class="project-card" style="margin-bottom:12px">
+    <div class="section-title">5 — Transport & destinataire</div>
+    <div class="input-row">
+      <div><label>Client / destinataire final</label><input type="text" id="cond-client" placeholder="Nom société"></div>
+      <div><label>Contact sur site</label><input type="text" id="cond-contact" placeholder="Nom, téléphone"></div>
+    </div>
+    <div style="margin-bottom:10px"><label>Adresse de livraison</label><textarea id="cond-adresse" placeholder="Rue, ville, pays, code postal" style="height:52px;resize:vertical"></textarea></div>
+    <div class="input-row">
+      <div><label>Mode de transport</label>
+        <select style="background:var(--surface);border-color:var(--border);color:var(--text)">
+          <option>Routier</option><option>Maritime (FCL)</option><option>Maritime (LCL)</option>
+          <option>Aérien</option><option>Multimodal</option>
+        </select>
+      </div>
+      <div><label>Transporteur / transitaire</label><input type="text" id="cond-transporteur" placeholder="ex. DHL Freight, Geodis..."></div>
+    </div>
+    <div class="input-row">
+      <div><label>Date d'enlèvement prévue</label><input type="date" id="cond-date-enlevement"></div>
+      <div><label>Date de livraison prévue</label><input type="date" id="cond-date-livraison"></div>
+    </div>
+    <div class="input-row">
+      <div><label>Incoterms</label>
+        <select style="background:var(--surface);border-color:var(--border);color:var(--text)">
+          <option>EXW</option><option>FCA</option><option>CPT</option><option>CIP</option>
+          <option>DAP</option><option>DDP</option><option>FOB</option><option>CIF</option>
+        </select>
+      </div>
+      <div><label>N° commande achat client</label><input type="text" id="cond-po" placeholder="PO-xxxxx"></div>
+    </div>
+    <div><label>Instructions transport particulières</label><textarea id="cond-instr-transport" placeholder="ex. Accès chantier restreint, rendez-vous obligatoire, grue à prévoir sur site..." style="height:52px;resize:vertical"></textarea></div>
+  </div>
+
+  <!-- Section 6 : Signatures -->
+  <div class="project-card" style="margin-bottom:16px">
+    <div class="section-title">6 — Validations & signatures</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div style="background:#00364a;border:1px solid var(--border);border-radius:8px;padding:12px">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--accent2);margin-bottom:8px;font-weight:600">Préparé par</div>
+        <input type="text" placeholder="Nom & prénom" style="margin-bottom:6px">
+        <input type="date" style="margin-bottom:8px">
+        <div style="border:1px dashed var(--border);border-radius:6px;height:50px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text3)">Signature</div>
+      </div>
+      <div style="background:#00364a;border:1px solid var(--border);border-radius:8px;padding:12px">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);margin-bottom:8px;font-weight:600">Vérifié par (QC)</div>
+        <input type="text" placeholder="Nom & prénom" style="margin-bottom:6px">
+        <input type="date" style="margin-bottom:8px">
+        <div style="border:1px dashed var(--border);border-radius:6px;height:50px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text3)">Signature</div>
+      </div>
+      <div style="background:#00364a;border:1px solid var(--border);border-radius:8px;padding:12px">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--yellow);margin-bottom:8px;font-weight:600">Approuvé par</div>
+        <input type="text" placeholder="Nom & prénom" style="margin-bottom:6px">
+        <input type="date" style="margin-bottom:8px">
+        <div style="border:1px dashed var(--border);border-radius:6px;height:50px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text3)">Signature</div>
+      </div>
+    </div>
+    <div><label>Commentaire de validation</label><textarea placeholder="Remarques éventuelles avant expédition..." style="height:52px;resize:vertical"></textarea></div>
+  </div>
+
+  <!-- Actions -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+    <button class="btn btn-primary" onclick="condExport()">📄 Exporter la fiche</button>
+    <button class="btn btn-outline" onclick="condReset()">↺ Réinitialiser</button>
+    <button class="btn btn-outline" onclick="goHome()">↩ Retour accueil</button>
+  </div>
 </div>
 
 <!-- MODEL SELECTOR -->
@@ -2501,6 +2691,135 @@ function restoreActionTimers(){
       }
     });
   });
+}
+
+// ===================== CONDITIONNEMENT =====================
+const COND_CHECKLIST = [
+  { group: 'Machine & mécanique', items: [
+    { text: 'Purge et nettoyage du circuit fluide de travail', note: 'Vérifier absence de résidus' },
+    { text: 'Robinets d\'isolement fermés et verrouillés', note: '' },
+    { text: 'Pressions résiduelles vérifiées (circuit HP et BP)', note: '< 0,5 bar' },
+    { text: 'Brides et connexions bouchonnées / protégées', note: 'Capuchons plastique ou métal' },
+    { text: 'Fixations de transport installées (cales, sangles internes)', note: '' },
+    { text: 'Fluide frigorigène / HTF : type et quantité consignés', note: '' },
+  ]},
+  { group: 'Électrique & instrumentation', items: [
+    { text: 'Câblage électrique déconnecté et protégé', note: 'Embouts isolés' },
+    { text: 'Armoire électrique fermée et verrouillée', note: '' },
+    { text: 'Capteurs / sondes protégés (mousses, film bulle)', note: '' },
+    { text: 'Fiche de paramétrage machine sauvegardée et jointe', note: '' },
+  ]},
+  { group: 'Documentation', items: [
+    { text: 'Liste de colisage signée et jointe', note: '' },
+    { text: 'Certificat de conformité CE inclus', note: '' },
+    { text: 'Manuel opérateur (version finale) inclus', note: '' },
+    { text: 'Fiches de sécurité MSDS fluides incluses', note: '' },
+    { text: 'Schémas PID & électriques inclus', note: '' },
+  ]},
+  { group: 'Emballage & marquage', items: [
+    { text: 'Colis pesé et dimensions relevées', note: '' },
+    { text: 'Étiquettes de transport apposées (haut, fragile, ne pas retourner)', note: '' },
+    { text: 'Numéro de série et référence projet visibles sur le colis', note: '' },
+    { text: 'Photos de la machine avant fermeture caisse prises', note: '' },
+    { text: 'Caisse / palette scellée et cerclée', note: '' },
+  ]},
+];
+let condInvRows = 0;
+
+function showConditionnement() {
+  showScreen('scConditionnement');
+  if (!document.getElementById('cond-checklist-body').children.length) condBuildChecklist();
+  if (!document.getElementById('cond-inv-body').children.length) { condAddInvRow(); condAddInvRow(); }
+}
+
+function condBuildChecklist() {
+  const body = document.getElementById('cond-checklist-body');
+  COND_CHECKLIST.forEach(group => {
+    const gt = document.createElement('div');
+    gt.style.cssText = 'font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin:12px 0 6px;font-family:var(--font)';
+    gt.textContent = group.group;
+    body.appendChild(gt);
+    group.items.forEach((item, i) => {
+      const id = 'cond_chk_' + group.group.replace(/\s/g,'') + i;
+      const div = document.createElement('div');
+      div.style.cssText = 'display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)';
+      div.innerHTML = `
+        <input type="checkbox" id="${id}" onchange="condUpdateStats()" style="margin-top:2px;width:17px;height:17px;accent-color:var(--accent);flex-shrink:0;cursor:pointer">
+        <div>
+          <div style="font-size:13px;color:var(--text);line-height:1.4">${item.text}</div>
+          ${item.note ? `<div style="font-size:11px;color:var(--text3);font-style:italic">${item.note}</div>` : ''}
+        </div>`;
+      body.appendChild(div);
+    });
+  });
+  condUpdateStats();
+}
+
+function condAddInvRow() {
+  condInvRows++;
+  const tbody = document.getElementById('cond-inv-body');
+  const tr = document.createElement('tr');
+  tr.id = 'cond-inv-row-' + condInvRows;
+  const tdStyle = 'padding:5px 6px;border-bottom:1px solid var(--border)';
+  tr.innerHTML = `
+    <td style="${tdStyle};color:var(--text3);font-size:11px">${condInvRows}</td>
+    <td style="${tdStyle}"><input type="text" placeholder="ex. Évaporateur principal" style="padding:4px 7px;font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:100%"></td>
+    <td style="${tdStyle}"><input type="text" placeholder="REF-xxx" style="padding:4px 7px;font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:100%"></td>
+    <td style="${tdStyle}"><input type="number" value="1" min="1" oninput="condUpdateStats()" style="padding:4px 7px;font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:100%"></td>
+    <td style="${tdStyle}"><input type="number" placeholder="0" min="0" oninput="condUpdateStats()" style="padding:4px 7px;font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:100%"></td>
+    <td style="${tdStyle}"><select onchange="condUpdateStats()" style="padding:4px 6px;font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);width:100%">
+      <option value="">—</option><option>Neuf</option><option>Testé OK</option><option>Reconditionné</option><option>À vérifier</option>
+    </select></td>
+    <td style="${tdStyle}"><button onclick="condRemoveRow('cond-inv-row-${condInvRows}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:0;font-size:14px">🗑</button></td>`;
+  tbody.appendChild(tr);
+  condUpdateStats();
+}
+
+function condRemoveRow(id) { document.getElementById(id)?.remove(); condUpdateStats(); }
+
+function condUpdateStats() {
+  const checks = document.querySelectorAll('#cond-checklist-body input[type="checkbox"]');
+  const checked = Array.from(checks).filter(c => c.checked).length;
+  const total = checks.length;
+  document.getElementById('cond-stat-checks').textContent = checked + '/' + total;
+  document.getElementById('cond-check-badge').textContent = checked + ' / ' + total;
+  const rows = document.querySelectorAll('#cond-inv-body tr');
+  let totalQty = 0;
+  rows.forEach(r => { const q = parseInt(r.querySelectorAll('input')[2]?.value) || 0; totalQty += q; });
+  document.getElementById('cond-stat-items').textContent = rows.length;
+  const brut = parseFloat(document.getElementById('cond-poids-brut')?.value);
+  document.getElementById('cond-stat-poids').textContent = (brut || '—') + (brut ? ' kg' : '');
+  const pct = total > 0 ? Math.round(checked / total * 100) : 0;
+  document.getElementById('cond-prog-fill').style.width = pct + '%';
+  document.getElementById('cond-prog-pct').textContent = pct + '%';
+}
+
+function condToggleChip(btn) {
+  const active = btn.style.background === 'var(--accent2)' || btn.style.background === 'rgb(0, 134, 194)';
+  btn.style.background = active ? '' : 'var(--accent2)';
+  btn.style.color = active ? '' : '#fff';
+  btn.style.borderColor = active ? '' : 'var(--accent2)';
+}
+
+function condExport() {
+  const proj = document.getElementById('cond-proj-ref').value || 'PROJET';
+  const serie = document.getElementById('cond-serie').value || '—';
+  const date = document.getElementById('cond-date').value || new Date().toLocaleDateString('fr-FR');
+  const resp = document.getElementById('cond-resp').value || '—';
+  const checks = document.querySelectorAll('#cond-checklist-body input[type="checkbox"]');
+  const checked = Array.from(checks).filter(c => c.checked).length;
+  alert(`Fiche de conditionnement\nProjet : ${proj} | Série : ${serie}\nDate : ${date} | Responsable : ${resp}\nContrôles validés : ${checked}/${checks.length}\n\nPour générer un PDF, utilisez Ctrl+P depuis votre navigateur.`);
+}
+
+function condReset() {
+  if (!confirm('Réinitialiser toutes les données de la fiche de conditionnement ?')) return;
+  document.querySelectorAll('#scConditionnement input[type="text"], #scConditionnement input[type="number"], #scConditionnement input[type="date"], #scConditionnement textarea').forEach(el => el.value = '');
+  document.querySelectorAll('#scConditionnement input[type="checkbox"]').forEach(el => el.checked = false);
+  document.querySelectorAll('#cond-chips .chip').forEach(btn => { btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = ''; });
+  document.getElementById('cond-inv-body').innerHTML = '';
+  condInvRows = 0;
+  condAddInvRow(); condAddInvRow();
+  condUpdateStats();
 }
 
 // ===================== INIT =====================
