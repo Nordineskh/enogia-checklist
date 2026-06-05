@@ -304,7 +304,6 @@ textarea{height:52px;resize:none;font-size:12px}
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
     <div class="section-title" style="margin:0;flex:1">Historique</div>
     <button class="btn btn-outline btn-sm" onclick="showDashboard()" style="margin-left:12px">📊 Tableau de bord</button>
-    <button class="btn btn-outline btn-sm" onclick="showConditionnement()" style="margin-left:8px">📦 Conditionnement</button>
   </div>
   <div id="histList"></div>
 </div>
@@ -321,21 +320,8 @@ textarea{height:52px;resize:none;font-size:12px}
     </div>
   </div>
 
-  <!-- Barre de progression -->
-  <div class="progress-bar-wrap">
-    <div class="progress-label">
-      <span id="cond-prog-label">Avancement global</span>
-      <span id="cond-prog-pct">0%</span>
-    </div>
-    <div class="progress-track"><div class="progress-fill" id="cond-prog-fill" style="width:0%"></div></div>
-  </div>
-
   <!-- Indicateurs -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px">
-      <div style="font-size:20px;font-weight:600;color:var(--text)" id="cond-stat-checks">0/0</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px">Contrôles validés</div>
-    </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px">
       <div style="font-size:20px;font-weight:600;color:var(--text)" id="cond-stat-items">0</div>
       <div style="font-size:11px;color:var(--text3);margin-top:2px">Colis / éléments</div>
@@ -422,18 +408,9 @@ textarea{height:52px;resize:none;font-size:12px}
     <div><label>Documents à inclure dans le colis</label><textarea id="cond-docs" placeholder="Manuel opérateur, liste de colisage, certificats CE, fiches MSDS fluide de travail..." style="height:60px;resize:vertical"></textarea></div>
   </div>
 
-  <!-- Section 4 : Checklist -->
+  <!-- Section 4 : Transport -->
   <div class="project-card" style="margin-bottom:12px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <div class="section-title" style="margin:0;flex:1">4 — Contrôles avant départ</div>
-      <span id="cond-check-badge" style="background:#0086c222;color:var(--accent2);border:1px solid #0086c244;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;margin-left:10px">0 / 0</span>
-    </div>
-    <div id="cond-checklist-body"></div>
-  </div>
-
-  <!-- Section 5 : Transport -->
-  <div class="project-card" style="margin-bottom:12px">
-    <div class="section-title">5 — Transport & destinataire</div>
+    <div class="section-title">4 — Transport & destinataire</div>
     <div class="input-row">
       <div><label>Client / destinataire final</label><input type="text" id="cond-client" placeholder="Nom société"></div>
       <div><label>Contact sur site</label><input type="text" id="cond-contact" placeholder="Nom, téléphone"></div>
@@ -466,7 +443,7 @@ textarea{height:52px;resize:none;font-size:12px}
 
   <!-- Section 6 : Signatures -->
   <div class="project-card" style="margin-bottom:16px">
-    <div class="section-title">6 — Validations & signatures</div>
+    <div class="section-title">5 — Validations & signatures</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
       <div style="background:#00364a;border:1px solid var(--border);border-radius:8px;padding:12px">
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--accent2);margin-bottom:8px;font-weight:600">Préparé par</div>
@@ -505,6 +482,20 @@ textarea{height:52px;resize:none;font-size:12px}
     <div class="project-sub">Choisissez le modèle de machine à assembler</div>
   </div>
   <div id="modelGrid"></div>
+
+  <!-- Carte Conditionnement -->
+  <div onclick="showConditionnement()" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-top:8px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.2s" onmouseover="this.style.borderColor='#2aa99e';this.style.background='#00536d'" onmouseout="this.style.borderColor='';this.style.background='var(--surface)'">
+    <div style="font-size:28px">📦</div>
+    <div style="flex:1">
+      <div style="font-family:var(--font-title);font-size:20px;color:var(--accent);letter-spacing:1px">Ordre de conditionnement</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:2px">Fiche de préparation au départ machine ORC</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:4px">Identification · Inventaire · Emballage · Transport · Validation</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+      <div style="background:var(--accent);color:#fff;border-radius:20px;padding:3px 10px;font-size:11px">Expédition</div>
+    </div>
+    <div style="color:var(--accent);font-size:20px;margin-left:4px">›</div>
+  </div>
 </div>
 
 <!-- CHECKLIST -->
@@ -2728,7 +2719,6 @@ let condInvRows = 0;
 
 function showConditionnement() {
   showScreen('scConditionnement');
-  if (!document.getElementById('cond-checklist-body').children.length) condBuildChecklist();
   if (!document.getElementById('cond-inv-body').children.length) { condAddInvRow(); condAddInvRow(); }
 }
 
@@ -2778,20 +2768,10 @@ function condAddInvRow() {
 function condRemoveRow(id) { document.getElementById(id)?.remove(); condUpdateStats(); }
 
 function condUpdateStats() {
-  const checks = document.querySelectorAll('#cond-checklist-body input[type="checkbox"]');
-  const checked = Array.from(checks).filter(c => c.checked).length;
-  const total = checks.length;
-  document.getElementById('cond-stat-checks').textContent = checked + '/' + total;
-  document.getElementById('cond-check-badge').textContent = checked + ' / ' + total;
   const rows = document.querySelectorAll('#cond-inv-body tr');
-  let totalQty = 0;
-  rows.forEach(r => { const q = parseInt(r.querySelectorAll('input')[2]?.value) || 0; totalQty += q; });
   document.getElementById('cond-stat-items').textContent = rows.length;
   const brut = parseFloat(document.getElementById('cond-poids-brut')?.value);
   document.getElementById('cond-stat-poids').textContent = (brut || '—') + (brut ? ' kg' : '');
-  const pct = total > 0 ? Math.round(checked / total * 100) : 0;
-  document.getElementById('cond-prog-fill').style.width = pct + '%';
-  document.getElementById('cond-prog-pct').textContent = pct + '%';
 }
 
 function condToggleChip(btn) {
@@ -2814,7 +2794,6 @@ function condExport() {
 function condReset() {
   if (!confirm('Réinitialiser toutes les données de la fiche de conditionnement ?')) return;
   document.querySelectorAll('#scConditionnement input[type="text"], #scConditionnement input[type="number"], #scConditionnement input[type="date"], #scConditionnement textarea').forEach(el => el.value = '');
-  document.querySelectorAll('#scConditionnement input[type="checkbox"]').forEach(el => el.checked = false);
   document.querySelectorAll('#cond-chips .chip').forEach(btn => { btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = ''; });
   document.getElementById('cond-inv-body').innerHTML = '';
   condInvRows = 0;
