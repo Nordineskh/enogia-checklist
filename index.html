@@ -609,9 +609,7 @@ textarea{height:52px;resize:none;font-size:12px}
     'thibault.devarieux@enogia.com',
     'raffyk.frihi@enogia.com',
     'benoit.paillette@enogia.com',
-    'abdelarim54@gmail.com',
-    'gabriel.vincent@enogia.com',
-    'emmy.bourelly@enogia.com'
+    'abdelarim54@gmail.com'
   ];
 
   const app = initializeApp(firebaseConfig);
@@ -2721,6 +2719,16 @@ let condInvRows = 0;
 
 function showConditionnement() {
   showScreen('scConditionnement');
+  // Pré-remplir responsable avec le nom de l'utilisateur connecté
+  const respField = document.getElementById('cond-resp');
+  if (respField && !respField.value && window._currentUser) {
+    respField.value = window._currentUser.displayName || window._currentUser.email || '';
+  }
+  // Pré-remplir la date du jour si vide
+  const dateField = document.getElementById('cond-date');
+  if (dateField && !dateField.value) {
+    dateField.value = new Date().toISOString().split('T')[0];
+  }
   if (!document.getElementById('cond-inv-body').children.length) { condAddInvRow(); condAddInvRow(); }
 }
 
