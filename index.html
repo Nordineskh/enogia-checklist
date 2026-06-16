@@ -162,6 +162,9 @@ textarea{height:52px;resize:none;font-size:12px}
 /* CHARTS */
 .chart-wrap{background:#00364a;border-radius:8px;padding:12px;margin-top:8px}
 .bar-chart{display:flex;align-items:flex-end;gap:6px;height:80px;padding-top:8px}
+.sn-input-wrap { display: flex; gap: 4px; align-items: center; }
+.btn-scan { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); border-radius: 4px; padding: 4px 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: .2s; height: 26px; }
+.btn-scan:hover { border-color: var(--accent); color: var(--accent); }
 .bar-chart-bar{flex:1;border-radius:4px 4px 0 0;min-height:4px;transition:.5s;position:relative;cursor:default}
 .bar-chart-bar:hover::after{content:attr(data-val);position:absolute;top:-20px;left:50%;transform:translateX(-50%);background:#000a;color:#fff;border-radius:4px;padding:2px 6px;font-size:10px;white-space:nowrap}
 .bar-chart-labels{display:flex;gap:6px;margin-top:4px}
@@ -611,7 +614,8 @@ textarea{height:52px;resize:none;font-size:12px}
     'benoit.paillette@enogia.com',
     'abdelarim54@gmail.com',
     'gabriel.vincent@enogia.com',
-    'emmy.bourelly@enogia.com'
+    'emmy.bourelly@enogia.com',
+    'ines.couturier@insa-lyon.fr'
   ];
 
   const app = initializeApp(firebaseConfig);
@@ -1978,15 +1982,24 @@ function renderStep(){
   }).join('');
 
   // SN table
-  const snSec=document.getElementById('snSection');
+ const snSec=document.getElementById('snSection');
   if(step.snComponents){
     snSec.innerHTML=`<div class="section-title">Numéros de série</div>
     <div class="item-card"><div style="padding:12px">
     <table class="sn-table"><thead><tr><th>Composant</th><th>N° Série (SN)</th><th>OP</th><th>VE</th></tr></thead><tbody>
     ${step.snComponents.map(comp=>{
       const k=comp.replace(/\s+/g,'_');
-      return `<tr><td>${comp}</td>
-        <td><input type="text" value="${sstate.snData[k]||''}" oninput="saveSN('${k}',this.value)" placeholder="SN…"></td>
+      return `<tr>
+        <td>${comp}</td>
+        <td>
+          <div class="sn-input-wrap">
+            <input type="text" class="sn-input" data-comp="${k}" value="${sstate.snData[k]||''}" oninput="saveSN('${k}',this.value)" placeholder="SN…">
+            <label class="btn-scan" title="Prendre en photo">
+              📸
+              <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanSerialNumber('${k}', this)">
+            </label>
+          </div>
+        </td>
         <td><input type="text" value="${sstate.snData[k+'_op']||''}" oninput="saveSN('${k}_op',this.value)" style="width:70px" placeholder="OP"></td>
         <td><input type="text" value="${sstate.snData[k+'_ve']||''}" oninput="saveSN('${k}_ve',this.value)" style="width:70px" placeholder="VE"></td>
       </tr>`;
@@ -2021,6 +2034,31 @@ function toggleAction(si,ii,ai){
 }
 function saveVal(si,ii,key,val){session.steps[si].items[ii][key]=val;saveState();}
 function saveSN(key,val){session.steps[currentStep].snData[key]=val;saveState();}
+function scanSerialNumber(compKey, input) {
+  if (!input.files || !input.files[0]) return;
+  
+  const textInput = document.querySelector(`.sn-input[data-comp="${compKey}"]`);
+  if (textInput) {
+    textInput.value = "";
+    textInput.placeholder = "Analyse...";
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    setTimeout(() => {
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      const simulatedSN = "SN-" + compKey.substring(0, 4).toUpperCase() + "-" + randomSuffix;
+      
+      if (textInput) {
+        textInput.value = simulatedSN;
+        textInput.placeholder = "SN…";
+      }
+      // Appel de votre fonction saveSN que vous venez de me montrer
+      saveSN(compKey, simulatedSN);
+    }, 1200); 
+  };
+  reader.readAsDataURL(input.files[0]);
+}
 function saveStepComment(si,val){session.steps[si].comment=val;saveState();}
 
 function validateOP(si,ii){
