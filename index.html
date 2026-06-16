@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#00455a">
 <title>ENOGIA — Checklist Montage</title>
 <link href="https://fonts.googleapis.com/css2?family=Abel&family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
 <style>
 :root{
   /* Charte ENOGIA */
@@ -2040,24 +2041,56 @@ function scanSerialNumber(compKey, input) {
   const textInput = document.querySelector(`.sn-input[data-comp="${compKey}"]`);
   if (textInput) {
     textInput.value = "";
-    textInput.placeholder = "Analyse...";
+    textInput.placeholder = "Lecture OCR en cours...";
   }
 
+  const file = input.files[0];
   const reader = new FileReader();
+  
   reader.onload = function(e) {
-    setTimeout(() => {
-      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-      const simulatedSN = "SN-" + compKey.substring(0, 4).toUpperCase() + "-" + randomSuffix;
-      
-      if (textInput) {
-        textInput.value = simulatedSN;
-        textInput.placeholder = "SN…";
+    // Appel du moteur de reconnaissance de texte Tesseract
+    Tesseract.recognize(
+      e.target.result,
+      'eng', // Utilise le jeu de caractères standard / anglais (idéal pour les codes/S/N)
+      { 
+        logger: m => {
+          if (m.status === 'recognizing' && textInput) {
+            textInput.placeholder = `Analyse... ${Math.round(m.progress * 100)}%`;
+          }
+        } 
       }
-      // Appel de votre fonction saveSN que vous venez de me montrer
-      saveSN(compKey, simulatedSN);
-    }, 1200); 
+    ).then(({ data: { text } }) => {
+      if (textInput) textInput.placeholder = "SN…";
+      
+      if (!text || text.trim() === "") {
+        alert("Aucun texte n'a pu être détecté sur la photo. Réessayez avec une meilleure luminosité.");
+        return;
+      }
+
+      // Nettoyage basique du texte pour isoler le code alphanumérique le plus probable :
+      // Supprime les espaces superflus et isole les lignes
+      const lines = text.split('\n').map(l => l.trim().replace(/[^a-zA-Z0-9\-_]/g, '')).filter(l => l.length > 3);
+      
+      if (lines.length > 0) {
+        // On prend la première ligne de texte valide trouvée
+        const detectedSN = lines[0].toUpperCase();
+        
+        if (textInput) {
+          textInput.value = detectedSN;
+        }
+        // Enregistrement dans votre fonction de session
+        saveSN(compKey, detectedSN);
+      } else {
+        alert("Le texte lu semble illisible. Essayez de zoomer ou de stabiliser l'appareil.");
+      }
+    }).catch(err => {
+      console.error(err);
+      if (textInput) textInput.placeholder = "SN…";
+      alert("Erreur lors de l'analyse de l'image.");
+    });
   };
-  reader.readAsDataURL(input.files[0]);
+  
+  reader.readAsDataURL(file);
 }
 function saveStepComment(si,val){session.steps[si].comment=val;saveState();}
 
