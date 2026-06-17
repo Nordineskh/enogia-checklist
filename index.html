@@ -1670,7 +1670,7 @@ function loadOBJ(buf){
   box.getSize(size);
   const maxD=Math.max(size.x,size.y,size.z);
   mesh.position.sub(center);
-  zoomDist=maxD*2;
+  zoomDist=maxD*8;
 
   placeModel(mesh);
 }
