@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fr">
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -1583,7 +1582,7 @@ function animate(){
   threeRenderer.render(threeScene,threeCamera);
 }
 
-function resetCamera(){rotX=20;rotY=30;zoomDist=1000;panOffset={x:0,y:0};}
+function resetCamera(){rotX=20;rotY=30;zoomDist=500;panOffset={x:0,y:0};}
 function toggleWire(){
   wireframe=!wireframe;
   if(threeModel)threeModel.traverse(c=>{if(c.isMesh&&c.material)c.material.wireframe=wireframe;});
@@ -2034,100 +2033,65 @@ function toggleAction(si,ii,ai){
   saveState();renderStep();
   document.getElementById('body_'+ACTIVE_STEPS[si].items[ii].id).classList.add('open');
 }
-
 function saveVal(si,ii,key,val){session.steps[si].items[ii][key]=val;saveState();}
 function saveSN(key,val){session.steps[currentStep].snData[key]=val;saveState();}
-
-async function scanSerialNumber(compKey, input) {
+function scanSerialNumber(compKey, input) {
   if (!input.files || !input.files[0]) return;
-
+  
   const textInput = document.querySelector(`.sn-input[data-comp="${compKey}"]`);
   if (textInput) {
     textInput.value = "";
-    textInput.placeholder = "🔍 Préparation...";
+    textInput.placeholder = "Analyse de la photo...";
   }
 
   const file = input.files[0];
-
-  try {
-    if (textInput) textInput.placeholder = "🧠 Nettoyage de l'image...";
-
-    // 1. On nettoie l'image (Binarisation Noir & Blanc pour effacer le bruit du code-barres)
-    const processedImageBase64 = await preprocessIndustrialLabel(file);
-
-    if (textInput) textInput.placeholder = "⚡ Lecture du SN...";
-
-    // 2. Reconnaissance directe avec Tesseract v5 (Plus simple et ultra rapide)
-    const { data: { text } } = await Tesseract.recognize(
-      processedImageBase64,
-      'eng',
-      {
-        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-',
-        init_oem: 1
+  const reader = new FileReader();
+  
+  reader.onload = function(e) {
+    // Lance le moteur OCR de Tesseract.js chargé en haut de page
+    Tesseract.recognize(
+      e.target.result,
+      'eng', // Mode anglais (idéal pour filtrer les caractères de numéros de série sans accents)
+      { 
+        logger: m => {
+          if (m.status === 'recognizing' && textInput) {
+            textInput.placeholder = `Lecture... ${Math.round(m.progress * 100)}%`;
+          }
+        } 
       }
-    );
+    ).then(({ data: { text } }) => {
+      if (textInput) textInput.placeholder = "SN…";
+      
+      if (!text || text.trim() === "") {
+        alert("Aucun texte détecté. Assurez-vous que le numéro est bien visible et net.");
+        return;
+      }
 
-    // 3. Nettoyage de sécurité sur le texte reçu
-    let cleanText = text.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '');
-
-    if (textInput) {
-      if (cleanText) {
-        textInput.value = cleanText;
-        saveSN(compKey, cleanText); // Sauvegarde automatique dans ta session
+      // Nettoie le texte : isole les lignes, garde uniquement lettres, chiffres et tirets
+      const lines = text.split('\n')
+                        .map(l => l.trim().replace(/[^a-zA-Z0-9\-_]/g, ''))
+                        .filter(l => l.length > 2);
+      
+      if (lines.length > 0) {
+        // Enregistre la ligne lue la plus pertinente (souvent la première)
+        const detectedSN = lines[0].toUpperCase();
+        if (textInput) {
+          textInput.value = detectedSN;
+        }
+        // Sauvegarde la valeur lue dans votre session
+        saveSN(compKey, detectedSN);
       } else {
-        textInput.placeholder = "❌ Aucun SN valide détecté";
+        alert("Impossible d'isoler un numéro de série exploitable sur cette image.");
       }
-    }
-
-  } catch (err) {
-    console.error("Erreur OCR :", err);
-    if (textInput) textInput.placeholder = "⚠️ Échec de lecture";
-  }
+    }).catch(err => {
+      console.error(err);
+      if (textInput) textInput.placeholder = "SN…";
+      alert("Une erreur est survenue lors du traitement de l'image.");
+    });
+  };
+  
+  reader.readAsDataURL(file);
 }
-
-// Fonction interne pour transformer l'image en noir et blanc pur
-function preprocessIndustrialLabel(file) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      const img = new Image();
-      img.onload = function () {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-
-        // Réduction de la taille pour accélérer le traitement mobile
-        const maxW = 1200;
-        let finalW = img.width;
-        let finalH = img.height;
-        if (finalW > maxW) {
-          finalH = (maxW / finalW) * finalH;
-          finalW = maxW;
-        }
-        canvas.width = finalW;
-        canvas.height = finalH;
-        ctx.drawImage(img, 0, 0, finalW, finalH);
-
-        const imageData = ctx.getImageData(0, 0, finalW, finalH);
-        const data = imageData.data;
-        const threshold = 130; // Seuil de binarisation (ajustable)
-
-        for (let i = 0; i < data.length; i += 4) {
-          const avg = 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
-          const color = (avg > threshold) ? 255 : 0; 
-          data[i] = color;     
-          data[i + 1] = color; 
-          data[i + 2] = color; 
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-        resolve(canvas.toDataURL('image/jpeg', 0.85));
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
 
 function saveStepComment(si,val){session.steps[si].comment=val;saveState();}
 
