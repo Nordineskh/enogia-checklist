@@ -1534,7 +1534,7 @@ function initThree(){
   });
   c.addEventListener('mouseup',()=>{isDragging=false;isRightDragging=false;});
   c.addEventListener('mouseleave',()=>{isDragging=false;isRightDragging=false;});
-  c.addEventListener('wheel',e=>{zoomDist=Math.max(0.5,Math.min(50,zoomDist+e.deltaY*0.01));e.preventDefault();},{passive:false});
+  c.addEventListener('wheel',e=>{zoomDist=Math.max(0.5,Math.min(200,zoomDist+e.deltaY*0.02));e.preventDefault();},{passive:false});
   c.addEventListener('contextmenu',e=>e.preventDefault());
 
   // Touch
