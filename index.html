@@ -1534,7 +1534,7 @@ function initThree(){
   });
   c.addEventListener('mouseup',()=>{isDragging=false;isRightDragging=false;});
   c.addEventListener('mouseleave',()=>{isDragging=false;isRightDragging=false;});
-  c.addEventListener('wheel',e=>{zoomDist=Math.max(0.5,Math.min(200,zoomDist+e.deltaY*0.02));e.preventDefault();},{passive:false});
+  c.addEventListener('wheel',e=>{zoomDist=Math.max(0.5,Math.min(5000,zoomDist+e.deltaY*0.02));e.preventDefault();},{passive:false});
   c.addEventListener('contextmenu',e=>e.preventDefault());
 
   // Touch
@@ -1582,7 +1582,7 @@ function animate(){
   threeRenderer.render(threeScene,threeCamera);
 }
 
-function resetCamera(){rotX=20;rotY=30;zoomDist=5;panOffset={x:0,y:0};}
+function resetCamera(){rotX=20;rotY=30;zoomDist=500;panOffset={x:0,y:0};}
 function toggleWire(){
   wireframe=!wireframe;
   if(threeModel)threeModel.traverse(c=>{if(c.isMesh&&c.material)c.material.wireframe=wireframe;});
