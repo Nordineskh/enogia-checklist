@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#00455a">
 <title>ENOGIA — Checklist Montage</title>
 <link href="https://fonts.googleapis.com/css2?family=Abel&family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
 <style>
 :root{
   /* Charte ENOGIA */
@@ -281,20 +282,7 @@ textarea{height:52px;resize:none;font-size:12px}
     <div class="section-title">Nouveau montage</div>
     <div class="input-row">
       <div><label>N° Projet</label><input id="inProjet" placeholder="ex: PJXXX-X" value=""></div>
-      <div>
-        <label>N° Série machine</label>
-        <div class="sn-input-wrap">
-          <input id="inSerie" placeholder="ex: AAAA-XXX-180" style="flex:1">
-          <button class="btn-scan" onclick="scanSerieBarcode()" title="Scanner le code-barres">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/>
-              <path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
-              <line x1="7" y1="12" x2="7" y2="12"/><line x1="12" y1="7" x2="12" y2="17"/>
-              <line x1="17" y1="12" x2="17" y2="12"/>
-            </svg>
-          </button>
-        </div>
-      </div>
+      <div><label>N° Série machine</label><input id="inSerie" placeholder="ex: AAAA-XXX-180"></div>
     </div>
     <div class="input-row">
       <div><label>Opérateur (OP)</label><input id="inOp" placeholder="Nom opérateur"></div>
@@ -628,7 +616,7 @@ textarea{height:52px;resize:none;font-size:12px}
     'abdelarim54@gmail.com',
     'gabriel.vincent@enogia.com',
     'emmy.bourelly@enogia.com',
-    'ines.couturier@insa-lyon.fr'
+    'ines.couturier5@gmail.com'
   ];
 
   const app = initializeApp(firebaseConfig);
@@ -1504,7 +1492,7 @@ else { document.addEventListener('firebaseReady', initApp); }
 let threeRenderer=null,threeScene=null,threeCamera=null,threeModel=null;
 let isDragging=false,prevMouse={x:0,y:0},rotX=0,rotY=0,autoRotate=false,wireframe=false;
 let isRightDragging=false,panOffset={x:0,y:0};
-let zoomDist=5;
+let zoomDist=10;
 
 function initThree(){
   const canvas=document.getElementById('threeCanvas');
@@ -2006,7 +1994,7 @@ function renderStep(){
         <td>${comp}</td>
         <td>
           <div class="sn-input-wrap">
-            <input type="text" class="sn-input" data-comp="${k}" value="${sstate.snData[k]||''}" oninput="saveSN('${k}',this.value)" placeholder="SN…">
+            <input type="text" class="sn-input" data-comp="${k}" value="${sstate.snData[k]||''}" oninput="saveSN('${k}',this.value)" placeholder="SN…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             <label class="btn-scan" title="Prendre en photo">
               📸
               <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanSerialNumber('${k}', this)">
@@ -2053,25 +2041,58 @@ function scanSerialNumber(compKey, input) {
   const textInput = document.querySelector(`.sn-input[data-comp="${compKey}"]`);
   if (textInput) {
     textInput.value = "";
-    textInput.placeholder = "Analyse...";
+    textInput.placeholder = "Analyse de la photo...";
   }
 
+  const file = input.files[0];
   const reader = new FileReader();
+  
   reader.onload = function(e) {
-    setTimeout(() => {
-      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-      const simulatedSN = "SN-" + compKey.substring(0, 4).toUpperCase() + "-" + randomSuffix;
-      
-      if (textInput) {
-        textInput.value = simulatedSN;
-        textInput.placeholder = "SN…";
+    // Lance le moteur OCR de Tesseract.js chargé en haut de page
+    Tesseract.recognize(
+      e.target.result,
+      'eng', // Mode anglais (idéal pour filtrer les caractères de numéros de série sans accents)
+      { 
+        logger: m => {
+          if (m.status === 'recognizing' && textInput) {
+            textInput.placeholder = `Lecture... ${Math.round(m.progress * 100)}%`;
+          }
+        } 
       }
-      // Appel de votre fonction saveSN que vous venez de me montrer
-      saveSN(compKey, simulatedSN);
-    }, 1200); 
+    ).then(({ data: { text } }) => {
+      if (textInput) textInput.placeholder = "SN…";
+      
+      if (!text || text.trim() === "") {
+        alert("Aucun texte détecté. Assurez-vous que le numéro est bien visible et net.");
+        return;
+      }
+
+      // Nettoie le texte : isole les lignes, garde uniquement lettres, chiffres et tirets
+      const lines = text.split('\n')
+                        .map(l => l.trim().replace(/[^a-zA-Z0-9\-_]/g, ''))
+                        .filter(l => l.length > 2);
+      
+      if (lines.length > 0) {
+        // Enregistre la ligne lue la plus pertinente (souvent la première)
+        const detectedSN = lines[0].toUpperCase();
+        if (textInput) {
+          textInput.value = detectedSN;
+        }
+        // Sauvegarde la valeur lue dans votre session
+        saveSN(compKey, detectedSN);
+      } else {
+        alert("Impossible d'isoler un numéro de série exploitable sur cette image.");
+      }
+    }).catch(err => {
+      console.error(err);
+      if (textInput) textInput.placeholder = "SN…";
+      alert("Une erreur est survenue lors du traitement de l'image.");
+    });
   };
-  reader.readAsDataURL(input.files[0]);
+  
+  reader.readAsDataURL(file);
 }
+
 function saveStepComment(si,val){session.steps[si].comment=val;saveState();}
 
 function validateOP(si,ii){
@@ -2869,105 +2890,6 @@ function condReset() {
   condAddInvRow(); condAddInvRow();
   condUpdateStats();
 }
-
-// ===================== SCAN N° SÉRIE =====================
-let _scanStream = null;
-
-function scanSerieBarcode() {
-  if (!('BarcodeDetector' in window)) {
-    _scanFallback();
-    return;
-  }
-  const style = document.createElement('style');
-  style.textContent = '@keyframes scanLine{0%,100%{top:30%}50%{top:70%}}';
-  document.head.appendChild(style);
-
-  const modal = document.createElement('div');
-  modal.id = 'scanModal';
-  modal.style.cssText = 'position:fixed;inset:0;background:#000d;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px';
-  modal.innerHTML = `
-    <div style="color:var(--text2);font-family:var(--font);font-size:13px">📷 Pointez vers le code-barres ou QR code</div>
-    <div style="position:relative;width:min(90vw,400px);border-radius:12px;overflow:hidden;border:2px solid var(--accent)">
-      <video id="scanVideo" autoplay playsinline muted style="width:100%;display:block;background:#000"></video>
-      <div style="position:absolute;inset:0;border:3px solid transparent;box-shadow:inset 0 0 0 60px #0008;pointer-events:none;border-radius:10px"></div>
-      <div style="position:absolute;left:10%;right:10%;height:2px;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:scanLine 2s ease-in-out infinite"></div>
-    </div>
-    <div id="scanStatus" style="color:var(--text2);font-size:12px;font-family:var(--font)">Recherche en cours…</div>
-    <button onclick="closeScanModal()" style="background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:10px 24px;font-size:14px;cursor:pointer;font-family:var(--font)">✕ Annuler</button>
-  `;
-  document.body.appendChild(modal);
-
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-    .then(stream => {
-      _scanStream = stream;
-      const video = document.getElementById('scanVideo');
-      video.srcObject = stream;
-      const detector = new BarcodeDetector({ formats: ['qr_code','code_128','code_39','ean_13','ean_8','data_matrix','pdf417'] });
-      const scan = setInterval(async () => {
-        if (!document.getElementById('scanModal')) { clearInterval(scan); return; }
-        try {
-          const barcodes = await detector.detect(video);
-          if (barcodes.length > 0) {
-            clearInterval(scan);
-            _applyScanResult(barcodes[0].rawValue);
-          }
-        } catch(e) {}
-      }, 300);
-    })
-    .catch(() => { closeScanModal(); _scanFallback(); });
-}
-
-function closeScanModal() {
-  if (_scanStream) { _scanStream.getTracks().forEach(t => t.stop()); _scanStream = null; }
-  document.getElementById('scanModal')?.remove();
-}
-
-function _applyScanResult(val) {
-  closeScanModal();
-  const clean = val.trim();
-  const input = document.getElementById('inSerie');
-  input.value = clean;
-  input.style.borderColor = 'var(--accent)';
-  input.style.boxShadow = '0 0 0 3px #2aa99e44';
-  setTimeout(() => { input.style.borderColor = ''; input.style.boxShadow = ''; }, 2000);
-  _showScanToast('✅ N° série scanné : ' + clean);
-}
-
-function _scanFallback() {
-  const inp = document.createElement('input');
-  inp.type = 'file';
-  inp.accept = 'image/*';
-  inp.capture = 'environment';
-  inp.style.display = 'none';
-  inp.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) { inp.remove(); return; }
-    if ('BarcodeDetector' in window) {
-      try {
-        const img = await createImageBitmap(file);
-        const detector = new BarcodeDetector({ formats: ['qr_code','code_128','code_39','ean_13','ean_8'] });
-        const barcodes = await detector.detect(img);
-        if (barcodes.length > 0) { _applyScanResult(barcodes[0].rawValue); inp.remove(); return; }
-      } catch(e) {}
-    }
-    const val = prompt('Code-barres non détecté. Saisie manuelle du N° de série :');
-    if (val) _applyScanResult(val);
-    inp.remove();
-  };
-  document.body.appendChild(inp);
-  inp.click();
-}
-
-function _showScanToast(msg) {
-  const t = document.createElement('div');
-  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--accent);color:var(--text);padding:10px 20px;border-radius:20px;font-size:13px;font-family:var(--font);z-index:9998;box-shadow:0 4px 20px #0006;transition:opacity .4s;white-space:nowrap';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 2500);
-}
-
-// ===================== INIT =====================
-// App initialized by firebaseReady event above
 
 // Stock checkbox label
 document.addEventListener('DOMContentLoaded', ()=>{
