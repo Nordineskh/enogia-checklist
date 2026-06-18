@@ -1629,33 +1629,59 @@ function load3DFile(input){
   reader.readAsArrayBuffer(file);
 }
 
-// Sauvegarde un modèle 3D (texte OBJ) dans Firestore, lié à la session + l'étape courante
+const MODEL_CHUNK_SIZE = 700000; // ~700 Ko par morceau, en dessous de la limite Firestore (1 Mo/document)
+const MODEL_MAX_CHUNKS = 12; // ~8 Mo max au total
+
+// Sauvegarde un modèle 3D (texte OBJ) dans Firestore, en le découpant en plusieurs documents si besoin
 async function saveModel3D(stepIndex,name,ext,text){
   try{
     const db=window._db;
     if(!db||!session) return;
-    if(text.length>900000){
-      alert('Ce fichier OBJ est trop volumineux pour être sauvegardé de façon permanente (limite ≈900 Ko). Il restera affiché jusqu\'au rechargement de la page.');
+
+    const totalChunks=Math.ceil(text.length/MODEL_CHUNK_SIZE);
+    if(totalChunks>MODEL_MAX_CHUNKS){
+      alert('Ce fichier OBJ est trop volumineux pour être sauvegardé de façon permanente (limite ≈8 Mo). Il restera affiché jusqu\'au rechargement de la page.');
       return;
     }
+
+    const baseId=session.id+'_'+stepIndex;
+
+    // 1) Écrit chaque morceau du texte dans sa propre collection
+    for(let i=0;i<totalChunks;i++){
+      const chunk=text.slice(i*MODEL_CHUNK_SIZE,(i+1)*MODEL_CHUNK_SIZE);
+      await window._fsSetDoc(
+        window._fsDoc(db,'stepModelChunks', baseId+'_'+i),
+        { text:chunk }
+      );
+    }
+
+    // 2) Écrit le "manifeste" (infos + nombre de morceaux) en dernier
     await window._fsSetDoc(
-      window._fsDoc(db,'stepModels', session.id+'_'+stepIndex),
-      { sessionId:session.id, stepIndex, name, ext, text, updated:new Date().toISOString() }
+      window._fsDoc(db,'stepModels', baseId),
+      { sessionId:session.id, stepIndex, name, ext, totalChunks, updated:new Date().toISOString() }
     );
   }catch(e){ console.warn('Firebase save model error:', e); }
 }
 
-// Récupère un modèle 3D sauvegardé pour une étape donnée (ou null si absent)
+// Récupère un modèle 3D sauvegardé pour une étape donnée (ou null si absent), en recollant les morceaux
 async function fetchModel3D(stepIndex){
   try{
     const db=window._db;
     if(!db||!session) return null;
-    const snap=await window._fsGetDoc(window._fsDoc(db,'stepModels', session.id+'_'+stepIndex));
-    if(snap.exists()){
-      const data=snap.data();
-      const buf=new TextEncoder().encode(data.text).buffer;
-      return {name:data.name,buf,ext:data.ext};
+    const baseId=session.id+'_'+stepIndex;
+    const snap=await window._fsGetDoc(window._fsDoc(db,'stepModels', baseId));
+    if(!snap.exists()) return null;
+    const data=snap.data();
+
+    const chunkPromises=[];
+    for(let i=0;i<data.totalChunks;i++){
+      chunkPromises.push(window._fsGetDoc(window._fsDoc(db,'stepModelChunks', baseId+'_'+i)));
     }
+    const chunkSnaps=await Promise.all(chunkPromises);
+    const text=chunkSnaps.map(s=>s.exists()?s.data().text:'').join('');
+
+    const buf=new TextEncoder().encode(text).buffer;
+    return {name:data.name,buf,ext:data.ext};
   }catch(e){ console.warn('Firebase fetch model error:', e); }
   return null;
 }
@@ -1925,7 +1951,18 @@ async function deleteSession(id){
     await window._fsDeleteDoc(window._fsDoc(window._db, 'sessions', String(id)));
     if(s && s.steps){
       for(let i=0;i<s.steps.length;i++){
-        try{ await window._fsDeleteDoc(window._fsDoc(window._db,'stepModels', id+'_'+i)); }catch(e){/* pas de modèle pour cette étape, on ignore */}
+        const baseId=id+'_'+i;
+        try{
+          // Récupère le manifeste pour savoir combien de morceaux supprimer
+          const snap=await window._fsGetDoc(window._fsDoc(window._db,'stepModels', baseId));
+          if(snap.exists()){
+            const totalChunks=snap.data().totalChunks||0;
+            for(let c=0;c<totalChunks;c++){
+              try{ await window._fsDeleteDoc(window._fsDoc(window._db,'stepModelChunks', baseId+'_'+c)); }catch(e){}
+            }
+            await window._fsDeleteDoc(window._fsDoc(window._db,'stepModels', baseId));
+          }
+        }catch(e){/* pas de modèle pour cette étape, on ignore */}
       }
     }
     sessions = sessions.filter(s => s.id !== id);
