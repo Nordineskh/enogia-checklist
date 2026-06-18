@@ -590,7 +590,7 @@ textarea{height:52px;resize:none;font-size:12px}
 <!-- Firebase CDN -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-  import { getFirestore, collection, doc, setDoc, getDocs, orderBy, query, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, orderBy, query, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -628,6 +628,7 @@ textarea{height:52px;resize:none;font-size:12px}
   window._fsCollection = collection;
   window._fsDoc = doc;
   window._fsSetDoc = setDoc;
+  window._fsGetDoc = getDoc;
   window._fsGetDocs = getDocs;
   window._fsQuery = query;
   window._fsOrderBy = orderBy;
@@ -1615,11 +1616,48 @@ function load3DFile(input){
 
     if(ext==='glb'||ext==='gltf'){
       loadGLB(buf);
+      alert('Les fichiers GLB ne sont pas encore sauvegardés de façon permanente (viewer basique uniquement). Utilisez le format OBJ pour une sauvegarde persistante.');
     } else if(ext==='obj'){
       loadOBJ(buf);
+      // Sauvegarde persistante dans Firestore (l'OBJ est du texte, on l'enregistre tel quel)
+      try{
+        const text=new TextDecoder().decode(buf);
+        saveModel3D(currentStep,file.name,ext,text);
+      }catch(err){console.warn('Erreur préparation sauvegarde modèle 3D:',err);}
     }
   };
   reader.readAsArrayBuffer(file);
+}
+
+// Sauvegarde un modèle 3D (texte OBJ) dans Firestore, lié à la session + l'étape courante
+async function saveModel3D(stepIndex,name,ext,text){
+  try{
+    const db=window._db;
+    if(!db||!session) return;
+    if(text.length>900000){
+      alert('Ce fichier OBJ est trop volumineux pour être sauvegardé de façon permanente (limite ≈900 Ko). Il restera affiché jusqu\'au rechargement de la page.');
+      return;
+    }
+    await window._fsSetDoc(
+      window._fsDoc(db,'stepModels', session.id+'_'+stepIndex),
+      { sessionId:session.id, stepIndex, name, ext, text, updated:new Date().toISOString() }
+    );
+  }catch(e){ console.warn('Firebase save model error:', e); }
+}
+
+// Récupère un modèle 3D sauvegardé pour une étape donnée (ou null si absent)
+async function fetchModel3D(stepIndex){
+  try{
+    const db=window._db;
+    if(!db||!session) return null;
+    const snap=await window._fsGetDoc(window._fsDoc(db,'stepModels', session.id+'_'+stepIndex));
+    if(snap.exists()){
+      const data=snap.data();
+      const buf=new TextEncoder().encode(data.text).buffer;
+      return {name:data.name,buf,ext:data.ext};
+    }
+  }catch(e){ console.warn('Firebase fetch model error:', e); }
+  return null;
 }
 
 function loadGLB(buf){
@@ -1715,9 +1753,20 @@ function placeModel(obj){
   document.getElementById('loading3d').style.display='none';
 }
 
-// Restore model if step has one loaded in memory
-function restoreModel(){
-  const m=stepModels[currentStep];
+// Restore model if step has one loaded in memory, sinon tente de le récupérer depuis Firestore
+async function restoreModel(){
+  let m=stepModels[currentStep];
+  const stepIndexAtCall=currentStep; // garde une référence pour éviter d'afficher le mauvais modèle si on change d'étape pendant le fetch
+
+  if(!m && session && window._db){
+    document.getElementById('loading3d').style.display='flex';
+    document.getElementById('viewerEmpty').style.display='none';
+    document.getElementById('threeCanvas').style.display='block';
+    m=await fetchModel3D(stepIndexAtCall);
+    if(currentStep!==stepIndexAtCall) return; // l'utilisateur a changé d'étape pendant le chargement
+    if(m) stepModels[stepIndexAtCall]=m;
+  }
+
   if(m){
     document.getElementById('viewerEmpty').style.display='none';
     document.getElementById('threeCanvas').style.display='block';
@@ -1728,6 +1777,7 @@ function restoreModel(){
     if(m.ext==='obj')loadOBJ(m.buf);
     else loadGLB(m.buf);
   } else {
+    document.getElementById('loading3d').style.display='none';
     document.getElementById('viewerEmpty').style.display='flex';
     document.getElementById('threeCanvas').style.display='none';
     document.getElementById('viewerHint').style.display='none';
@@ -1871,7 +1921,13 @@ function calcProgress(s){
 async function deleteSession(id){
   if(!confirm('Supprimer définitivement cette checklist ?')) return;
   try {
+    const s = sessions.find(x=>x.id===id);
     await window._fsDeleteDoc(window._fsDoc(window._db, 'sessions', String(id)));
+    if(s && s.steps){
+      for(let i=0;i<s.steps.length;i++){
+        try{ await window._fsDeleteDoc(window._fsDoc(window._db,'stepModels', id+'_'+i)); }catch(e){/* pas de modèle pour cette étape, on ignore */}
+      }
+    }
     sessions = sessions.filter(s => s.id !== id);
     renderHistory();
   } catch(e) {
