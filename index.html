@@ -1714,7 +1714,7 @@ function getHighlightedParts(){
   // uniquement si on est sur l'étape Turbine A (tA_mtv3)
   if(!session || !ACTIVE_STEPS || !ACTIVE_STEPS[currentStep]) return [];
   const step = ACTIVE_STEPS[currentStep];
-  if(step.id !== 'tA_mtv3') return [];
+  if(step.id !== 'tA3') return [];
 
   const sstate = session.steps[currentStep];
   const items = step.items;
