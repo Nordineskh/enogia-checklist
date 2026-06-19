@@ -518,6 +518,10 @@ textarea{height:52px;resize:none;font-size:12px}
     <div class="viewer-panel" id="viewerPanel">
       <div class="viewer-toolbar">
         <span id="modelName">Aucun modèle chargé</span>
+        <span id="highlightLegend" style="display:none;align-items:center;gap:5px;font-size:11px;color:#e05555;background:#e0555515;border:1px solid #e0555540;border-radius:12px;padding:3px 9px">
+          <span style="width:10px;height:10px;border-radius:2px;background:#e05555;display:inline-block;flex-shrink:0"></span>
+          <span id="highlightLegendText">Pièce suivante</span>
+        </span>
         <label class="btn btn-3d btn-sm" style="cursor:pointer;margin:0">
           📎 Charger .glb / .obj
           <input type="file" accept=".glb,.obj,.gltf" style="display:none" onchange="load3DFile(this)">
@@ -1692,51 +1696,160 @@ function loadGLB(buf){
   showPlaceholderMesh('GLB chargé — viewer basique actif\n(Pour un rendu complet, utilisez le format OBJ)');
 }
 
+// Mapping étapes Turbine A → numéros de pièces OBJ à mettre en rouge
+// Format: stepId -> liste des suffixes numériques d'objets OBJ
+const TURBINE_A_STEP_PARTS = {
+  'mtvtA1': ['110'],           // Génératrice
+  'mtvtA2': ['008'],           // Injecteurs
+  'mtvtA3': ['102'],           // Capteur de vibration
+  'mtvtA4': ['098','099','026','027'], // Capteurs de température
+  'mtvtA5': [],                // Repérage phases (pas de pièce spécifique)
+};
+
+// Objets nommés dans le viewer 3D (THREE.Mesh), par suffixe numérique
+let namedMeshes = {}; // { '008': Mesh, '110': Mesh, ... }
+
+function getHighlightedParts(){
+  // Retourne les numéros de pièces à mettre en rouge = pièces de la PROCHAINE étape non validée
+  // uniquement si on est sur l'étape Turbine A (tA_mtv3)
+  if(!session || !ACTIVE_STEPS || !ACTIVE_STEPS[currentStep]) return [];
+  const step = ACTIVE_STEPS[currentStep];
+  if(step.id !== 'tA_mtv3') return [];
+
+  const sstate = session.steps[currentStep];
+  const items = step.items;
+
+  // Trouver la prochaine étape non complètement validée OP
+  for(let i=0;i<items.length;i++){
+    const it = sstate.items[i];
+    if(!it.opDone){
+      // Cet item n'est pas encore validé, c'est la pièce "en cours"
+      const parts = TURBINE_A_STEP_PARTS[items[i].id] || [];
+      return parts;
+    }
+  }
+  return [];
+}
+
+function applyPartHighlights(){
+  if(!threeModel || Object.keys(namedMeshes).length === 0) return;
+  const toHighlight = getHighlightedParts();
+
+  // Update legend
+  const legend = document.getElementById('highlightLegend');
+  const legendText = document.getElementById('highlightLegendText');
+  if(legend){
+    if(toHighlight.length > 0 && ACTIVE_STEPS[currentStep] && ACTIVE_STEPS[currentStep].id === 'tA_mtv3'){
+      const sstate = session.steps[currentStep];
+      const step = ACTIVE_STEPS[currentStep];
+      // Find next uncompleted item label
+      let nextLabel = '';
+      for(let i=0;i<step.items.length;i++){
+        if(!sstate.items[i].opDone){ nextLabel = step.items[i].label; break; }
+      }
+      legend.style.display='flex';
+      if(legendText) legendText.textContent = nextLabel ? '→ ' + nextLabel : 'Pièce suivante';
+    } else {
+      legend.style.display='none';
+    }
+  }
+
+  Object.entries(namedMeshes).forEach(([num, mesh]) => {
+    if(toHighlight.includes(num)){
+      mesh.material.color.setHex(0xe05555);
+      mesh.material.emissive.setHex(0x6b0000);
+      mesh.material.specular.setHex(0xff4444);
+      mesh.material.shininess=80;
+    } else {
+      mesh.material.color.setHex(0x4080c0);
+      mesh.material.emissive.setHex(0x000000);
+      mesh.material.specular.setHex(0x00c4ff);
+      mesh.material.shininess=60;
+    }
+  });
+}
+
 function loadOBJ(buf){
   const text=new TextDecoder().decode(buf);
-  const verts=[],uvs=[],normals=[],faces=[];
+  const verts=[],uvs=[],normals=[];
+  // Parse global vertex data
   text.split('\n').forEach(line=>{
     const p=line.trim().split(/\s+/);
     if(p[0]==='v')verts.push(parseFloat(p[1]),parseFloat(p[2]),parseFloat(p[3]));
     else if(p[0]==='vt')uvs.push(parseFloat(p[1]),parseFloat(p[2]));
     else if(p[0]==='vn')normals.push(parseFloat(p[1]),parseFloat(p[2]),parseFloat(p[3]));
-    else if(p[0]==='f')faces.push(p.slice(1));
   });
 
-  const pos=[],nm=[],uv2=[];
-  faces.forEach(fverts=>{
-    const tri=fverts.length===4?[[0,1,2],[0,2,3]]:[[0,1,2]];
-    tri.forEach(idx=>idx.forEach(i=>{
-      const parts=fverts[i].split('/');
-      const vi=(parseInt(parts[0])-1)*3;
-      pos.push(verts[vi],verts[vi+1],verts[vi+2]);
-      if(parts[2]&&normals.length){const ni=(parseInt(parts[2])-1)*3;nm.push(normals[ni],normals[ni+1],normals[ni+2]);}
-      if(parts[1]&&uvs.length){const ui=(parseInt(parts[1])-1)*2;uv2.push(uvs[ui],uvs[ui+1]);}
-    }));
+  // Split into named objects
+  const objects = []; // [{name, faces}]
+  let currentObj = null;
+  text.split('\n').forEach(line=>{
+    const p=line.trim().split(/\s+/);
+    if(p[0]==='o'||p[0]==='g'){
+      currentObj = {name: p.slice(1).join(' '), faces: []};
+      objects.push(currentObj);
+    } else if(p[0]==='f'){
+      if(!currentObj){ currentObj={name:'__default__',faces:[]}; objects.push(currentObj); }
+      currentObj.faces.push(p.slice(1));
+    }
   });
 
-  if(pos.length===0){showPlaceholderMesh('OBJ vide ou non supporté');return;}
+  if(verts.length===0 || objects.length===0){showPlaceholderMesh('OBJ vide ou non supporté');return;}
 
-  const geo=new THREE.BufferGeometry();
-  geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
-  if(nm.length)geo.setAttribute('normal',new THREE.Float32BufferAttribute(nm,3));
-  else geo.computeVertexNormals();
-  if(uv2.length)geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv2,2));
+  const grp=new THREE.Group();
+  namedMeshes={};
 
-  const mat=new THREE.MeshPhongMaterial({color:0x4080c0,specular:0x00c4ff,shininess:60,side:THREE.DoubleSide});
-  const mesh=new THREE.Mesh(geo,mat);
+  let allMinX=Infinity,allMinY=Infinity,allMinZ=Infinity;
+  let allMaxX=-Infinity,allMaxY=-Infinity,allMaxZ=-Infinity;
 
-  geo.computeBoundingBox();
-  const box=geo.boundingBox;
-  const center=new THREE.Vector3();
-  box.getCenter(center);
-  const size=new THREE.Vector3();
-  box.getSize(size);
-  const maxD=Math.max(size.x,size.y,size.z);
-  mesh.position.sub(center);
-  zoomDist=maxD*8;
+  objects.forEach(obj=>{
+    if(obj.faces.length===0) return;
+    const pos=[],nm=[],uv2=[];
+    obj.faces.forEach(fverts=>{
+      const tri=fverts.length===4?[[0,1,2],[0,2,3]]:[[0,1,2]];
+      tri.forEach(idx=>idx.forEach(i=>{
+        const parts=fverts[i].split('/');
+        const vi=(parseInt(parts[0])-1)*3;
+        if(isNaN(verts[vi])) return;
+        pos.push(verts[vi],verts[vi+1],verts[vi+2]);
+        if(parts[2]&&normals.length){const ni=(parseInt(parts[2])-1)*3;nm.push(normals[ni],normals[ni+1],normals[ni+2]);}
+        if(parts[1]&&uvs.length){const ui=(parseInt(parts[1])-1)*2;uv2.push(uvs[ui],uvs[ui+1]);}
+      }));
+    });
+    if(pos.length===0) return;
 
-  placeModel(mesh);
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+    if(nm.length)geo.setAttribute('normal',new THREE.Float32BufferAttribute(nm,3));
+    else geo.computeVertexNormals();
+    if(uv2.length)geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv2,2));
+
+    const mat=new THREE.MeshPhongMaterial({color:0x4080c0,specular:0x00c4ff,shininess:60,side:THREE.DoubleSide});
+    const mesh=new THREE.Mesh(geo,mat);
+    mesh.userData.objName = obj.name;
+    grp.add(mesh);
+
+    // Extract numeric suffix (e.g. "turbineAcomplèteInes.008" → "008")
+    const m = obj.name.match(/\.(\d+)$/);
+    if(m) namedMeshes[m[1]] = mesh;
+
+    // Track bounds
+    geo.computeBoundingBox();
+    const box=geo.boundingBox;
+    allMinX=Math.min(allMinX,box.min.x);allMinY=Math.min(allMinY,box.min.y);allMinZ=Math.min(allMinZ,box.min.z);
+    allMaxX=Math.max(allMaxX,box.max.x);allMaxY=Math.max(allMaxY,box.max.y);allMaxZ=Math.max(allMaxZ,box.max.z);
+  });
+
+  if(grp.children.length===0){showPlaceholderMesh('OBJ vide ou non supporté');return;}
+
+  const cx=(allMinX+allMaxX)/2, cy=(allMinY+allMaxY)/2, cz=(allMinZ+allMaxZ)/2;
+  const maxD=Math.max(allMaxX-allMinX, allMaxY-allMinY, allMaxZ-allMinZ);
+  grp.position.set(-cx,-cy,-cz);
+  zoomDist=maxD*1.8;
+
+  placeModel(grp);
+  // Apply highlights after model is placed
+  setTimeout(applyPartHighlights, 50);
 }
 
 function showPlaceholderMesh(msg){
@@ -1802,6 +1915,7 @@ async function restoreModel(){
     if(!threeRenderer)initThree();
     if(m.ext==='obj')loadOBJ(m.buf);
     else loadGLB(m.buf);
+    // Highlights appliqués dans loadOBJ lui-même (setTimeout)
   } else {
     document.getElementById('loading3d').style.display='none';
     document.getElementById('viewerEmpty').style.display='flex';
@@ -2112,6 +2226,8 @@ function renderStep(){
   // 3D viewer
   setTimeout(()=>{resizeRenderer();restoreModel();},50);
   restoreTimer();
+  // Mise à jour highlight pièces 3D (si modèle déjà chargé)
+  setTimeout(applyPartHighlights, 120);
 }
 
 function toggleItem(id){document.getElementById(id).classList.toggle('open');}
@@ -2194,6 +2310,8 @@ function validateOP(si,ii){
   it.opDone=true;it.opDate=new Date().toLocaleDateString('fr-FR');
   if(!it.opName)it.opName=session.op;
   saveState();renderStep();
+  // Mettre à jour la mise en rouge des pièces 3D
+  setTimeout(applyPartHighlights, 100);
 }
 function validateVE(si,ii){
   const it=session.steps[si].items[ii];
