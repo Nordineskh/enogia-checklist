@@ -1714,7 +1714,7 @@ function getHighlightedParts(){
   // uniquement si on est sur l'étape Turbine A (tA_mtv3)
   if(!session || !ACTIVE_STEPS || !ACTIVE_STEPS[currentStep]) return [];
   const step = ACTIVE_STEPS[currentStep];
-  if(step.id !== 'tA3') return [];
+  if(step.id !== 'tA_mtv3') return [];
 
   const sstate = session.steps[currentStep];
   const items = step.items;
@@ -1739,7 +1739,7 @@ function applyPartHighlights(){
   const legend = document.getElementById('highlightLegend');
   const legendText = document.getElementById('highlightLegendText');
   if(legend){
-    if(toHighlight.length > 0 && ACTIVE_STEPS[currentStep] && ACTIVE_STEPS[currentStep].id === 'tA3'){
+    if(toHighlight.length > 0 && ACTIVE_STEPS[currentStep] && ACTIVE_STEPS[currentStep].id === 'tA_mtv3'){
       const sstate = session.steps[currentStep];
       const step = ACTIVE_STEPS[currentStep];
       // Find next uncompleted item label
