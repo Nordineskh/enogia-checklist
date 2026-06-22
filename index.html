@@ -231,7 +231,8 @@ textarea{height:52px;resize:none;font-size:12px}
 .action-row{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
 .action-row:last-child{border:none}
 .action-timer-btn{background:#00364a;border:1px solid var(--border);color:var(--accent2);border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;font-family:var(--font)}
-.action-timer-btn.running{background:var(--yellow);color:#000;border-color:var(--yellow)}
+.action-timer-btn.idle{background:var(--accent2);color:#001824;border-color:var(--accent2);font-weight:700;font-size:11px;padding:5px 10px;box-shadow:0 0 0 2px #00c4ff33}
+.action-timer-btn.running{background:#e08a3c;color:#1a0d00;border-color:#e08a3c;font-weight:700;font-size:11px;padding:5px 10px}
 .action-timer-btn.done{background:#2aa99e22;color:var(--accent);border-color:var(--accent)}
 </style>
 </head>
@@ -1465,6 +1466,8 @@ async function saveState(){
   // Update local array
   const idx = sessions.findIndex(s=>s.id===session.id);
   if(idx>=0) sessions[idx]=session; else sessions.unshift(session);
+  // Mémorise la session active en cours, pour la retrouver après un rechargement de page
+  try{ localStorage.setItem('activeSessionId', String(session.id)); }catch(e){}
   // Save to Firestore
   try {
     const db = window._db;
@@ -1488,6 +1491,16 @@ function initApp(){
   loadSessions().then(()=>{
     renderHistory();
     renderModelGrid();
+    // Restaure la session active en cours après un rechargement de page (si elle existe encore)
+    try{
+      const activeId = localStorage.getItem('activeSessionId');
+      if(activeId){
+        const found = sessions.find(s=>String(s.id)===String(activeId));
+        if(found && !found.completed){
+          loadSession(found.id);
+        }
+      }
+    }catch(e){ console.warn('Restauration session active impossible:', e); }
   });
 }
 if(window._firebaseReady){ initApp(); }
@@ -2106,6 +2119,7 @@ function startSession(){
   const ofRef = 'OF-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-5);
   session={
     id:Date.now(),
+    modelId:(currentModel && currentModel.id) || 'eno180ltv3',
     ofRef,
     plannedStart,
     plannedEnd,
@@ -2206,6 +2220,7 @@ async function deleteSession(id){
       }
     }
     sessions = sessions.filter(s => s.id !== id);
+    try{ if(localStorage.getItem('activeSessionId')===String(id)) localStorage.removeItem('activeSessionId'); }catch(e){}
     renderHistory();
   } catch(e) {
     alert('Erreur lors de la suppression : ' + e.message);
@@ -2264,9 +2279,10 @@ function renderStep(){
             const tRunning=activeActionTimer&&activeActionTimer.key===tKey;
             const tDone=it.actions[ai]&&tSecs>0;
             let tLabel,tCls;
-            if(tRunning){tLabel='⏸ '+_fmt(tSecs);tCls='running';}
-            else if(tDone){tLabel='✓ '+_fmt(tSecs);tCls='done';}
-            else{tLabel='▶ Début';tCls='';}
+            // Le temps écoulé n'est plus affiché à l'écran (toujours enregistré pour les KPI)
+            if(tRunning){tLabel='⏹ Fin';tCls='running';}
+            else if(tDone){tLabel='✓ Fait';tCls='done';}
+            else{tLabel='▶ Début';tCls='idle';}
             return `<div class="action-row">
               <div class="action-check ${it.actions[ai]?'checked':''}" onclick="toggleAction(${currentStep},${idx},${ai})">${it.actions[ai]?'✓':''}</div>
               <div class="action-text">${act.txt}</div>
@@ -2463,6 +2479,7 @@ function navStep(dir){
 function showReport(){
   timerStop();
   session.completed=new Date().toISOString();saveState();
+  try{ localStorage.removeItem('activeSessionId'); }catch(e){}
   const prog=calcProgress(session);
   document.getElementById('reportContent').innerHTML=`
     <div class="project-card">
@@ -3045,9 +3062,7 @@ function startActionTimer(key, si, ii, ai){
   actionTimers[key].started = new Date().toISOString();
   const interval = setInterval(()=>{
     actionTimers[key].seconds = Math.floor((Date.now()-base)/1000);
-    // Update button live
-    const btns = document.querySelectorAll('.action-timer-btn.running');
-    btns.forEach(b=>{ b.textContent='⏸ '+_fmt(actionTimers[key].seconds); });
+    // Le temps n'est plus affiché à l'écran (toujours comptabilisé pour les KPI)
   }, 1000);
   activeActionTimer = {key, interval, si, ii, ai};
   renderStep();
