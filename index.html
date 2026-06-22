@@ -1629,19 +1629,28 @@ function load3DFile(input){
       alert('Les fichiers GLB ne sont pas encore sauvegardés de façon permanente (viewer basique uniquement). Utilisez le format OBJ pour une sauvegarde persistante.');
     } else if(ext==='obj'){
       loadOBJ(buf);
-      // Sauvegarde persistante dans Firestore (l'OBJ est du texte, on l'enregistre tel quel)
-      try{
-        const text=new TextDecoder().decode(buf);
-        console.log(`[load3DFile] OBJ chargé — session=${session ? session.id : 'NULL'}, currentModel=${currentModel ? currentModel.id : 'NULL'}, db=${window._db ? 'OK' : 'NULL'}`);
-        saveModel3D(currentStep,file.name,ext,text);
-        // Sauvegarde permanente rattachée au modèle de machine (ex: ENO 180 LTV3),
-        // pour que ce fichier soit récupéré automatiquement lors des prochains montages
-        if(currentModel && currentModel.id){
-          saveMachineModel3D(currentModel.id,currentStep,file.name,ext,text);
-        } else {
-          console.warn('[load3DFile] currentModel non défini — sauvegarde machine ignorée');
-        }
-      }catch(err){console.warn('Erreur préparation sauvegarde modèle 3D:',err);}
+      // Sauvegarde persistante dans Firestore
+      (async () => {
+        try{
+          const text=new TextDecoder().decode(buf);
+          console.log('[load3DFile] OBJ chargé — session=' + (session ? session.id : 'NULL') + ', currentModel=' + (currentModel ? currentModel.id : 'NULL') + ', db=' + (window._db ? 'OK' : 'NULL'));
+          // Attendre que session et db soient disponibles (max 5s)
+          let waited = 0;
+          while((!session || !window._db) && waited < 5000){
+            await new Promise(r=>setTimeout(r,200));
+            waited += 200;
+          }
+          if(!session){ console.warn('[load3DFile] session toujours null après attente — sauvegarde abandonnée'); return; }
+          if(!window._db){ console.warn('[load3DFile] Firestore toujours null après attente — sauvegarde abandonnée'); return; }
+          console.log('[load3DFile] Lancement sauvegarde Firestore...');
+          await saveModel3D(currentStep,file.name,ext,text);
+          if(currentModel && currentModel.id){
+            await saveMachineModel3D(currentModel.id,currentStep,file.name,ext,text);
+          } else {
+            console.warn('[load3DFile] currentModel non défini — sauvegarde machine ignorée');
+          }
+        }catch(err){ console.error('[load3DFile] Erreur sauvegarde OBJ:', err); }
+      })();
     }
   };
   reader.readAsArrayBuffer(file);
