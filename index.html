@@ -2086,7 +2086,7 @@ function renderHistory(){
     const hasProjet = s.projet && s.projet !== '–';
     const histTitle = (hasSerie || hasProjet)
       ? `${hasSerie ? s.serie : 'Sans n° série'} — ${hasProjet ? s.projet : 'Sans n° projet'}`
-      : 'Montage sans référence';
+      : '___';
     return `<div class="hist-card">
       <div style="font-size:24px">⚙️</div>
       <div class="hist-info">
