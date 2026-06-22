@@ -32,6 +32,20 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .badge{background:#ffffff18;border:1px solid #ffffff30;border-radius:20px;padding:4px 10px;font-size:11px;color:var(--text2)}
 .badge.live{border-color:var(--accent);color:var(--accent)}
 
+/* Bouton menu sous le logo (hors bandeau) */
+.app-menu-bar{padding:8px 16px;background:var(--bg);border-bottom:1px solid var(--border);position:relative;z-index:90}
+.menu-btn{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:8px 14px;font-size:13px;font-family:var(--font);cursor:pointer;transition:.2s}
+.menu-btn:hover{border-color:var(--accent);color:var(--accent)}
+.menu-btn .menu-burger{font-size:14px;line-height:1}
+.menu-btn .menu-caret{font-size:10px;transition:.2s;margin-left:2px}
+.menu-btn.open .menu-caret{transform:rotate(180deg)}
+.menu-dropdown{position:absolute;top:calc(100% + 4px);left:16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 10px 30px #0008;min-width:230px;padding:6px;display:none;flex-direction:column;gap:2px;z-index:95}
+.menu-dropdown.open{display:flex}
+.menu-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--text2);font-size:13px;font-family:var(--font);cursor:pointer;background:none;border:none;text-align:left;width:100%;transition:.15s}
+.menu-item:hover{background:#0086c222;color:#fff}
+.menu-item .menu-item-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.menu-divider{height:1px;background:var(--border);margin:4px 6px}
+
 .screen{display:none;padding:16px;max-width:960px;margin:0 auto}
 .screen.active{display:block}
 
@@ -269,6 +283,22 @@ textarea{height:52px;resize:none;font-size:12px}
     <span class="badge" id="sessionBadge">–</span>
     <span class="badge" id="userEmail" style="color:var(--accent)"></span>
     <button class="btn btn-outline btn-sm" onclick="window._signOut()" style="padding:4px 10px;font-size:11px">⎋ Déconnexion</button>
+  </div>
+</div>
+
+<!-- MENU BAR (sous le logo, hors bandeau) -->
+<div class="app-menu-bar">
+  <button class="menu-btn" id="appMenuBtn" onclick="toggleAppMenu()">
+    <span class="menu-burger">☰</span> Menu <span class="menu-caret">▾</span>
+  </button>
+  <div class="menu-dropdown" id="appMenuDropdown">
+    <button class="menu-item" onclick="closeAppMenu();goHome()"><span class="menu-item-icon">🏠</span> Accueil</button>
+    <button class="menu-item" onclick="closeAppMenu();showModelSelector()"><span class="menu-item-icon">⚙️</span> Sélection gamme</button>
+    <button class="menu-item" onclick="closeAppMenu();showDashboard()"><span class="menu-item-icon">📊</span> Tableau de bord</button>
+    <div class="menu-divider"></div>
+    <button class="menu-item" onclick="closeAppMenu();showConditionnement()"><span class="menu-item-icon">📦</span> Conditionnement</button>
+    <div class="menu-divider"></div>
+    <button class="menu-item" onclick="closeAppMenu();window._signOut()"><span class="menu-item-icon">⎋</span> Déconnexion</button>
   </div>
 </div>
 
@@ -1781,19 +1811,21 @@ const TURBINE_A_STEP_PARTS = {
   'tA2': ['008'],             // Injecteurs - 180LTV3
   'tA3': ['102'],             // Capteur de vibration - 180LTV3
   'tA4': ['098','099','026','027'], // Capteurs de température - 180LTV3
-  'tA5': [],                  // Repérage phases - 180LTV3
+  'tA5': ['030','087'],                  // Repérage phases - 180LTV3
+  'tB5': ['030','087'],                  // Repérage phases - 180LTV3 (Turbine B)
   'mtvtA1': ['110','012'],           // Génératrice
   'mtvtA2': ['008','020','021','019','022','024','001'],           // Injecteurs
   'mtvtA3': ['102'],           // Capteur de vibration
   'mtvtA4': ['098','099','026','027'], // Capteurs de température
   'mtvtA5': ['030','087'],                // Repérage phases (pas de pièce spécifique)
+  'mtvtB5': ['030','087'],                // Repérage phases (Turbine B)
 };
 
 // Objets nommés dans le viewer 3D (THREE.Mesh), par suffixe numérique
 let namedMeshes = {}; // { '008': Mesh, '110': Mesh, ... }
 
 function isTurbineAStep(step){
-  return step && (step.id === 'turbineA' || step.id === 'tA_mtv3');
+  return step && (step.id === 'turbineA' || step.id === 'tA_mtv3' || step.id === 'turbineB' || step.id === 'tB_mtv3');
 }
 
 function getHighlightedParts(){
@@ -2165,6 +2197,25 @@ function loadSession(id){
 
 function goHome(){showScreen('scHome');loadSessions().then(()=>renderHistory());}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+// ===================== MENU APP (sous le logo) =====================
+function toggleAppMenu(){
+  const dd = document.getElementById('appMenuDropdown');
+  const btn = document.getElementById('appMenuBtn');
+  if(!dd) return;
+  const open = dd.classList.toggle('open');
+  btn.classList.toggle('open', open);
+}
+function closeAppMenu(){
+  const dd = document.getElementById('appMenuDropdown');
+  const btn = document.getElementById('appMenuBtn');
+  if(dd) dd.classList.remove('open');
+  if(btn) btn.classList.remove('open');
+}
+document.addEventListener('click', (e)=>{
+  const bar = document.querySelector('.app-menu-bar');
+  if(bar && !bar.contains(e.target)) closeAppMenu();
+});
 
 // ===================== HISTORY =====================
 function renderHistory(){
@@ -2689,6 +2740,9 @@ async function renderDashboard(){
   // === OPERATOR COMPARISON ===
   html += renderOpComparison(monthSessions);
 
+  // === TIME SECTION (par gamme / opérateur / étape) ===
+  html += renderTimeSection(monthSessions);
+
   // === KPI CARDS per machine ===
   const byModel = {};
   monthSessions.forEach(s=>{ const k=s.modelName||'ENO 180 LTV3'; if(!byModel[k])byModel[k]=[]; byModel[k].push(s); });
@@ -2926,6 +2980,112 @@ function renderOpComparison(sessions){
     </tr>`;
   });
   html += '</tbody></table></div>';
+  return html;
+}
+
+// ===================== SECTION TIME (temps par gamme / par opérateur / par étape) =====================
+// Calcule, pour chaque session, le temps passé sur chaque étape (step macro) en
+// sommant les actionTimers de tous les items de cette étape (en secondes).
+function computeStepTimesForSession(s){
+  const modelId = s.modelId || 'eno180ltv3';
+  const model = MODELS[modelId];
+  const stepsDef = model ? model.getSteps() : [];
+  const out = []; // [{stepId, stepLabel, seconds}]
+  (s.steps||[]).forEach((st, si)=>{
+    const def = stepsDef[si];
+    const stepLabel = def ? (def.icon ? def.icon+' '+def.name : def.name) : st.id;
+    let seconds = 0;
+    (st.items||[]).forEach(it=>{
+      if(it.actionTimers){
+        Object.values(it.actionTimers).forEach(t=>{ seconds += (t && t.seconds) || 0; });
+      }
+    });
+    out.push({ stepId: st.id, stepLabel, seconds });
+  });
+  return out;
+}
+
+function _fmtHM(totalSeconds){
+  if(!totalSeconds) return '0 min';
+  const h = Math.floor(totalSeconds/3600);
+  const m = Math.round((totalSeconds%3600)/60);
+  if(h>0) return `${h}h${String(m).padStart(2,'0')}`;
+  return `${m} min`;
+}
+
+function renderTimeSection(sessions){
+  // Ne garder que les sessions ayant au moins un chrono enregistré
+  const withTimers = sessions.filter(s=>(s.steps||[]).some(st=>(st.items||[]).some(it=>it.actionTimers && Object.keys(it.actionTimers).length)));
+  if(!withTimers.length) return '<div class="dash-section-title">⏱ Temps de montage par gamme / opérateur / étape</div><div class="empty-state" style="padding:20px 10px"><p style="font-size:12px;color:var(--text3)">Aucun chrono d\'étape enregistré ce mois-ci.</p></div>';
+
+  // === Agrégation PAR GAMME → PAR ÉTAPE ===
+  const byModel = {}; // { modelName: { stepLabel: {seconds, count} } }
+  // === Agrégation PAR OPÉRATEUR → PAR ÉTAPE ===
+  const byOp = {}; // { op: { stepLabel: {seconds, count} } }
+
+  withTimers.forEach(s=>{
+    const modelName = s.modelName || (MODELS[s.modelId||'eno180ltv3']||{}).name || 'ENO 180 LTV3';
+    const op = s.op || '—';
+    const stepTimes = computeStepTimesForSession(s);
+    stepTimes.forEach(({stepLabel, seconds})=>{
+      if(!seconds) return;
+      if(!byModel[modelName]) byModel[modelName]={};
+      if(!byModel[modelName][stepLabel]) byModel[modelName][stepLabel]={seconds:0,count:0};
+      byModel[modelName][stepLabel].seconds += seconds;
+      byModel[modelName][stepLabel].count += 1;
+
+      if(!byOp[op]) byOp[op]={};
+      if(!byOp[op][stepLabel]) byOp[op][stepLabel]={seconds:0,count:0};
+      byOp[op][stepLabel].seconds += seconds;
+      byOp[op][stepLabel].count += 1;
+    });
+  });
+
+  let html = '<div class="dash-section-title">⏱ Temps de montage par gamme / opérateur / étape</div>';
+
+  // --- Tableau par gamme ---
+  html += '<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin:4px 0 8px">⚙️ Par gamme</div>';
+  Object.entries(byModel).forEach(([modelName, steps])=>{
+    const entries = Object.entries(steps).sort((a,b)=>b[1].seconds-a[1].seconds);
+    const total = entries.reduce((a,[,v])=>a+v.seconds,0);
+    html += `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:600;color:var(--text)">${modelName}</span>
+        <span style="font-size:12px;color:var(--accent);font-weight:700">${_fmtHM(total)} cumulé</span>
+      </div>`;
+    entries.forEach(([stepLabel, v])=>{
+      const avg = v.count ? Math.round(v.seconds/v.count) : 0;
+      html += `<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:4px 0;border-bottom:1px solid #ffffff10">
+        <span>${stepLabel}</span>
+        <span>${_fmtHM(avg)} <span style="color:var(--text3);font-size:10px">moy. (${v.count} relevé${v.count>1?'s':''})</span></span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  // --- Tableau par opérateur ---
+  html += '<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">👤 Par opérateur</div>';
+  html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+  // Construire la liste de toutes les étapes rencontrées (colonnes)
+  const allSteps = Array.from(new Set(Object.values(byOp).flatMap(steps=>Object.keys(steps))));
+  html += '<thead><tr style="background:#00364a">';
+  html += '<th style="padding:8px;text-align:left;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:1px">Opérateur</th>';
+  allSteps.forEach(st=>{
+    html += `<th style="padding:8px;text-align:left;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:1px">${st}</th>`;
+  });
+  html += '<th style="padding:8px;text-align:left;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:1px">Total</th>';
+  html += '</tr></thead><tbody>';
+  Object.entries(byOp).forEach(([op, steps])=>{
+    const totalOp = Object.values(steps).reduce((a,v)=>a+v.seconds,0);
+    html += `<tr style="border-bottom:1px solid #ffffff10"><td style="padding:8px;font-weight:600">${op}</td>`;
+    allSteps.forEach(st=>{
+      const v = steps[st];
+      html += `<td style="padding:8px;color:var(--text2)">${v?_fmtHM(Math.round(v.seconds/v.count)):'—'}</td>`;
+    });
+    html += `<td style="padding:8px;color:var(--accent);font-weight:700">${_fmtHM(totalOp)}</td></tr>`;
+  });
+  html += '</tbody></table></div>';
+
   return html;
 }
 
