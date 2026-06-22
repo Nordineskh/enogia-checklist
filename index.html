@@ -3095,6 +3095,21 @@ function _fmt(s){
   return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,'0')).join(':');
 }
 
+// Arrête le timer global de session (stub — pas de timer global dans cette version)
+function timerStop(){
+  // Arrêt du timer d'action en cours s'il y en a un
+  if(activeActionTimer){
+    const {key,si,ii,ai}=activeActionTimer;
+    stopActionTimer(key,si,ii,ai);
+  }
+}
+
+// Restaure l'état du timer global au chargement d'une étape (stub)
+function restoreTimer(){
+  // Les timers d'action sont restaurés via restoreActionTimers()
+  // Cette fonction existe pour compatibilité avec renderStep()
+}
+
 // Restore timers when loading a session
 function restoreActionTimers(){
   actionTimers={};
