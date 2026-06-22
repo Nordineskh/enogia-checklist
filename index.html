@@ -272,11 +272,6 @@ textarea{height:52px;resize:none;font-size:12px}
   </div>
 </div>
 
-<!-- BARRE MENU -->
-<div id="menuBar" style="background:var(--surface2);border-bottom:1px solid var(--border);padding:6px 16px;display:none">
-  <button class="btn btn-outline btn-sm" onclick="goToModelSelector()" style="padding:5px 14px;font-size:12px">☰ Menu — Sélection des machines</button>
-</div>
-
 <!-- HOME -->
 <div class="screen" id="scHome">
   <div class="project-card">
@@ -1496,8 +1491,16 @@ function initApp(){
   loadSessions().then(()=>{
     renderHistory();
     renderModelGrid();
-    // Au rechargement, toujours afficher la sélection de machines
-    showScreen('scModels');
+    // Restaure la session active en cours après un rechargement de page (si elle existe encore)
+    try{
+      const activeId = localStorage.getItem('activeSessionId');
+      if(activeId){
+        const found = sessions.find(s=>String(s.id)===String(activeId));
+        if(found && !found.completed){
+          loadSession(found.id);
+        }
+      }
+    }catch(e){ console.warn('Restauration session active impossible:', e); }
   });
 }
 if(window._firebaseReady){ initApp(); }
@@ -1633,28 +1636,16 @@ function load3DFile(input){
       alert('Les fichiers GLB ne sont pas encore sauvegardés de façon permanente (viewer basique uniquement). Utilisez le format OBJ pour une sauvegarde persistante.');
     } else if(ext==='obj'){
       loadOBJ(buf);
-      // Sauvegarde persistante dans Firestore
-      (async () => {
-        try{
-          const text=new TextDecoder().decode(buf);
-          console.log('[load3DFile] OBJ chargé — session=' + (session ? session.id : 'NULL') + ', currentModel=' + (currentModel ? currentModel.id : 'NULL') + ', db=' + (window._db ? 'OK' : 'NULL'));
-          // Attendre que session et db soient disponibles (max 5s)
-          let waited = 0;
-          while((!session || !window._db) && waited < 5000){
-            await new Promise(r=>setTimeout(r,200));
-            waited += 200;
-          }
-          if(!session){ console.warn('[load3DFile] session toujours null après attente — sauvegarde abandonnée'); return; }
-          if(!window._db){ console.warn('[load3DFile] Firestore toujours null après attente — sauvegarde abandonnée'); return; }
-          console.log('[load3DFile] Lancement sauvegarde Firestore...');
-          await saveModel3D(currentStep,file.name,ext,text);
-          if(currentModel && currentModel.id){
-            await saveMachineModel3D(currentModel.id,currentStep,file.name,ext,text);
-          } else {
-            console.warn('[load3DFile] currentModel non défini — sauvegarde machine ignorée');
-          }
-        }catch(err){ console.error('[load3DFile] Erreur sauvegarde OBJ:', err); }
-      })();
+      // Sauvegarde persistante dans Firestore (l'OBJ est du texte, on l'enregistre tel quel)
+      try{
+        const text=new TextDecoder().decode(buf);
+        saveModel3D(currentStep,file.name,ext,text);
+        // Sauvegarde permanente rattachée au modèle de machine (ex: ENO 180 LTV3),
+        // pour que ce fichier soit récupéré automatiquement lors des prochains montages
+        if(currentModel && currentModel.id){
+          saveMachineModel3D(currentModel.id,currentStep,file.name,ext,text);
+        }
+      }catch(err){console.warn('Erreur préparation sauvegarde modèle 3D:',err);}
     }
   };
   reader.readAsArrayBuffer(file);
@@ -1667,11 +1658,9 @@ const MODEL_MAX_CHUNKS = 12; // ~8 Mo max au total
 async function saveModel3D(stepIndex,name,ext,text){
   try{
     const db=window._db;
-    if(!db){ console.warn('[saveModel3D] Firestore non disponible (window._db est null/undefined)'); return; }
-    if(!session){ console.warn('[saveModel3D] Pas de session active — le fichier OBJ ne peut pas être sauvegardé. Démarrez un montage d\'abord.'); return; }
+    if(!db||!session) return;
 
     const totalChunks=Math.ceil(text.length/MODEL_CHUNK_SIZE);
-    console.log(`[saveModel3D] Sauvegarde "${name}" — ${totalChunks} morceau(x) — session=${session.id} step=${stepIndex}`);
     if(totalChunks>MODEL_MAX_CHUNKS){
       alert('Ce fichier OBJ est trop volumineux pour être sauvegardé de façon permanente (limite ≈8 Mo). Il restera affiché jusqu\'au rechargement de la page.');
       return;
@@ -1693,21 +1682,18 @@ async function saveModel3D(stepIndex,name,ext,text){
       window._fsDoc(db,'stepModels', baseId),
       { sessionId:session.id, stepIndex, name, ext, totalChunks, updated:new Date().toISOString() }
     );
-    console.log(`[saveModel3D] ✅ Sauvegardé avec succès (baseId=${baseId})`);
-  }catch(e){ console.error('[saveModel3D] ❌ Erreur Firebase:', e); }
+  }catch(e){ console.warn('Firebase save model error:', e); }
 }
 
 // Récupère un modèle 3D sauvegardé pour une étape donnée (ou null si absent), en recollant les morceaux
 async function fetchModel3D(stepIndex){
   try{
     const db=window._db;
-    if(!db||!session){ console.warn('[fetchModel3D] db ou session manquant'); return null; }
+    if(!db||!session) return null;
     const baseId=session.id+'_'+stepIndex;
-    console.log('[fetchModel3D] Recherche baseId=' + baseId);
     const snap=await window._fsGetDoc(window._fsDoc(db,'stepModels', baseId));
-    if(!snap.exists()){ console.log('[fetchModel3D] Aucun doc pour ' + baseId); return null; }
+    if(!snap.exists()) return null;
     const data=snap.data();
-    console.log('[fetchModel3D] ✅ Trouvé: ' + data.name + ' — ' + data.totalChunks + ' morceaux');
 
     const chunkPromises=[];
     for(let i=0;i<data.totalChunks;i++){
@@ -1732,11 +1718,9 @@ const MACHINE_MODEL_MAX_CHUNKS = MODEL_MAX_CHUNKS;
 async function saveMachineModel3D(modelId,stepIndex,name,ext,text){
   try{
     const db=window._db;
-    if(!db){ console.warn('[saveMachineModel3D] Firestore non disponible'); return; }
-    if(!modelId){ console.warn('[saveMachineModel3D] modelId manquant'); return; }
+    if(!db||!modelId) return;
 
     const totalChunks=Math.ceil(text.length/MACHINE_MODEL_CHUNK_SIZE);
-    console.log(`[saveMachineModel3D] Sauvegarde permanente "${name}" — modelId=${modelId} step=${stepIndex} — ${totalChunks} morceau(x)`);
     if(totalChunks>MACHINE_MODEL_MAX_CHUNKS){
       alert('Ce fichier OBJ est trop volumineux pour être sauvegardé de façon permanente (limite ≈8 Mo). Il restera affiché jusqu\'au rechargement de la page.');
       return;
@@ -1758,21 +1742,18 @@ async function saveMachineModel3D(modelId,stepIndex,name,ext,text){
       window._fsDoc(db,'machineModelFiles', baseId),
       { modelId, stepIndex, name, ext, totalChunks, updated:new Date().toISOString() }
     );
-    console.log(`[saveMachineModel3D] ✅ Sauvegardé avec succès (baseId=${baseId})`);
-  }catch(e){ console.error('[saveMachineModel3D] ❌ Erreur Firebase:', e); }
+  }catch(e){ console.warn('Firebase save machine model error:', e); }
 }
 
 // Récupère le modèle 3D permanent sauvegardé pour un modèle de machine + une étape données
 async function fetchMachineModel3D(modelId,stepIndex){
   try{
     const db=window._db;
-    if(!db||!modelId){ console.warn('[fetchMachineModel3D] db ou modelId manquant'); return null; }
+    if(!db||!modelId) return null;
     const baseId=modelId+'_'+stepIndex;
-    console.log('[fetchMachineModel3D] Recherche baseId=' + baseId);
     const snap=await window._fsGetDoc(window._fsDoc(db,'machineModelFiles', baseId));
-    if(!snap.exists()){ console.log('[fetchMachineModel3D] Aucun doc pour ' + baseId); return null; }
+    if(!snap.exists()) return null;
     const data=snap.data();
-    console.log('[fetchMachineModel3D] ✅ Trouvé: ' + data.name + ' — ' + data.totalChunks + ' morceaux');
 
     const chunkPromises=[];
     for(let i=0;i<data.totalChunks;i++){
@@ -2037,7 +2018,6 @@ function placeModel(obj){
 async function restoreModel(){
   let m=stepModels[currentStep];
   const stepIndexAtCall=currentStep; // garde une référence pour éviter d'afficher le mauvais modèle si on change d'étape pendant le fetch
-  console.log('[restoreModel] step=' + currentStep + ' — en mémoire: ' + (m ? m.name : 'non') + ' — session: ' + (session ? session.id : 'NULL') + ' — model: ' + (currentModel ? currentModel.id : 'NULL'));
 
   if(!m && session && window._db){
     document.getElementById('loading3d').style.display='flex';
@@ -2055,17 +2035,6 @@ async function restoreModel(){
       if(currentStep!==stepIndexAtCall) return;
       // On le rattache aussi à cette session, pour cohérence avec l'historique existant
       if(m) saveModel3D(stepIndexAtCall,m.name,m.ext,new TextDecoder().decode(m.buf));
-    }
-
-    // Si on a trouvé le modèle via fetchModel3D (session) mais pas via machineModelFiles,
-    // on le sauvegarde de façon permanente pour tous les futurs montages
-    if(m && currentModel && currentModel.id){
-      const machineM = await fetchMachineModel3D(currentModel.id, stepIndexAtCall);
-      if(!machineM){
-        console.log('[restoreModel] Copie vers machineModelFiles pour les futurs montages...');
-        const txt = new TextDecoder().decode(m.buf);
-        saveMachineModel3D(currentModel.id, stepIndexAtCall, m.name, m.ext, txt);
-      }
     }
 
     if(m) stepModels[stepIndexAtCall]=m;
@@ -2195,21 +2164,7 @@ function loadSession(id){
 }
 
 function goHome(){showScreen('scHome');loadSessions().then(()=>renderHistory());}
-function goToModelSelector(){
-  // Retourne à la sélection de machines — arrête toute session en cours
-  timerStop();
-  session=null;
-  stepModels={};
-  showScreen('scModels');
-  renderModelGrid();
-}
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  // Affiche le bouton Menu sous le logo sauf sur la page de sélection des machines
-  const menuBar = document.getElementById('menuBar');
-  if(menuBar) menuBar.style.display = (id === 'scModels') ? 'none' : 'block';
-}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 
 // ===================== HISTORY =====================
 function renderHistory(){
@@ -2231,7 +2186,7 @@ function renderHistory(){
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
         <button class="btn btn-outline btn-sm" onclick="loadSession(${s.id})">Reprendre</button>
-        <button class="btn btn-sm" style="background:#e0555522;border:1px solid #e0555544;color:#e05555" onclick="deleteSession(${s.id})">🗑</button>
+        ${isAdmin ? `<button class="btn btn-sm" style="background:#e0555522;border:1px solid #e0555544;color:#e05555" onclick="deleteSession(${s.id})">🗑</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -2412,7 +2367,7 @@ function renderStep(){
 
   // 3D viewer
   setTimeout(()=>{resizeRenderer();restoreModel();},50);
-  restoreTimer();
+  // (restoreTimer supprimé — les timers sont gérés par restoreActionTimers dans loadSession)
   // Mise à jour highlight pièces 3D (si modèle déjà chargé)
   setTimeout(applyPartHighlights, 120);
 }
@@ -2513,7 +2468,7 @@ function validateVE(si,ii){
 }
 function jumpStep(i){currentStep=i;session.currentStep=i;saveState();renderStep();window.scrollTo(0,0);}
 function navStep(dir){
-  timerStop();
+  if(activeActionTimer){ stopActionTimer(activeActionTimer.key, activeActionTimer.si, activeActionTimer.ii, activeActionTimer.ai); }
   const next=currentStep+dir;
   if(next<0)return;
   if(next>=ACTIVE_STEPS.length){showReport();return;}
@@ -2522,7 +2477,7 @@ function navStep(dir){
 
 // ===================== REPORT =====================
 function showReport(){
-  timerStop();
+  if(activeActionTimer){ stopActionTimer(activeActionTimer.key, activeActionTimer.si, activeActionTimer.ii, activeActionTimer.ai); }
   session.completed=new Date().toISOString();saveState();
   try{ localStorage.removeItem('activeSessionId'); }catch(e){}
   const prog=calcProgress(session);
@@ -3138,21 +3093,6 @@ function stopActionTimer(key, si, ii, ai){
 
 function _fmt(s){
   return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,'0')).join(':');
-}
-
-// Arrête le timer global de session (stub — pas de timer global dans cette version)
-function timerStop(){
-  // Arrêt du timer d'action en cours s'il y en a un
-  if(activeActionTimer){
-    const {key,si,ii,ai}=activeActionTimer;
-    stopActionTimer(key,si,ii,ai);
-  }
-}
-
-// Restaure l'état du timer global au chargement d'une étape (stub)
-function restoreTimer(){
-  // Les timers d'action sont restaurés via restoreActionTimers()
-  // Cette fonction existe pour compatibilité avec renderStep()
 }
 
 // Restore timers when loading a session
