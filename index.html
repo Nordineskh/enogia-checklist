@@ -1627,6 +1627,11 @@ function load3DFile(input){
       try{
         const text=new TextDecoder().decode(buf);
         saveModel3D(currentStep,file.name,ext,text);
+        // Sauvegarde permanente rattachée au modèle de machine (ex: ENO 180 LTV3),
+        // pour que ce fichier soit récupéré automatiquement lors des prochains montages
+        if(currentModel && currentModel.id){
+          saveMachineModel3D(currentModel.id,currentStep,file.name,ext,text);
+        }
       }catch(err){console.warn('Erreur préparation sauvegarde modèle 3D:',err);}
     }
   };
@@ -1687,6 +1692,66 @@ async function fetchModel3D(stepIndex){
     const buf=new TextEncoder().encode(text).buffer;
     return {name:data.name,buf,ext:data.ext};
   }catch(e){ console.warn('Firebase fetch model error:', e); }
+  return null;
+}
+
+// ---- Modèles 3D permanents, rattachés au MODÈLE DE MACHINE (pas à une session) ----
+// Ainsi, le fichier OBJ chargé pour une étape (ex: Turbine A sur ENO 180 LTV3) est
+// réutilisé automatiquement pour tous les montages suivants du même modèle de machine.
+const MACHINE_MODEL_CHUNK_SIZE = MODEL_CHUNK_SIZE;
+const MACHINE_MODEL_MAX_CHUNKS = MODEL_MAX_CHUNKS;
+
+// Sauvegarde permanente d'un modèle 3D (texte OBJ) pour un modèle de machine + une étape donnés
+async function saveMachineModel3D(modelId,stepIndex,name,ext,text){
+  try{
+    const db=window._db;
+    if(!db||!modelId) return;
+
+    const totalChunks=Math.ceil(text.length/MACHINE_MODEL_CHUNK_SIZE);
+    if(totalChunks>MACHINE_MODEL_MAX_CHUNKS){
+      alert('Ce fichier OBJ est trop volumineux pour être sauvegardé de façon permanente (limite ≈8 Mo). Il restera affiché jusqu\'au rechargement de la page.');
+      return;
+    }
+
+    const baseId=modelId+'_'+stepIndex;
+
+    // 1) Écrit chaque morceau du texte dans sa propre collection
+    for(let i=0;i<totalChunks;i++){
+      const chunk=text.slice(i*MACHINE_MODEL_CHUNK_SIZE,(i+1)*MACHINE_MODEL_CHUNK_SIZE);
+      await window._fsSetDoc(
+        window._fsDoc(db,'machineModelFileChunks', baseId+'_'+i),
+        { text:chunk }
+      );
+    }
+
+    // 2) Écrit le "manifeste" (infos + nombre de morceaux) en dernier
+    await window._fsSetDoc(
+      window._fsDoc(db,'machineModelFiles', baseId),
+      { modelId, stepIndex, name, ext, totalChunks, updated:new Date().toISOString() }
+    );
+  }catch(e){ console.warn('Firebase save machine model error:', e); }
+}
+
+// Récupère le modèle 3D permanent sauvegardé pour un modèle de machine + une étape données
+async function fetchMachineModel3D(modelId,stepIndex){
+  try{
+    const db=window._db;
+    if(!db||!modelId) return null;
+    const baseId=modelId+'_'+stepIndex;
+    const snap=await window._fsGetDoc(window._fsDoc(db,'machineModelFiles', baseId));
+    if(!snap.exists()) return null;
+    const data=snap.data();
+
+    const chunkPromises=[];
+    for(let i=0;i<data.totalChunks;i++){
+      chunkPromises.push(window._fsGetDoc(window._fsDoc(db,'machineModelFileChunks', baseId+'_'+i)));
+    }
+    const chunkSnaps=await Promise.all(chunkPromises);
+    const text=chunkSnaps.map(s=>s.exists()?s.data().text:'').join('');
+
+    const buf=new TextEncoder().encode(text).buffer;
+    return {name:data.name,buf,ext:data.ext};
+  }catch(e){ console.warn('Firebase fetch machine model error:', e); }
   return null;
 }
 
@@ -1947,6 +2012,18 @@ async function restoreModel(){
     document.getElementById('threeCanvas').style.display='block';
     m=await fetchModel3D(stepIndexAtCall);
     if(currentStep!==stepIndexAtCall) return; // l'utilisateur a changé d'étape pendant le chargement
+
+    // Si rien n'est rattaché à cette session précise, on récupère le fichier
+    // permanent associé au modèle de machine (ex: ENO 180 LTV3) et à cette étape.
+    // C'est ce qui permet au modèle 3D de se recharger automatiquement à chaque
+    // nouveau montage, sans avoir à le re-uploader.
+    if(!m && currentModel && currentModel.id){
+      m=await fetchMachineModel3D(currentModel.id,stepIndexAtCall);
+      if(currentStep!==stepIndexAtCall) return;
+      // On le rattache aussi à cette session, pour cohérence avec l'historique existant
+      if(m) saveModel3D(stepIndexAtCall,m.name,m.ext,new TextDecoder().decode(m.buf));
+    }
+
     if(m) stepModels[stepIndexAtCall]=m;
   }
 
@@ -2086,7 +2163,7 @@ function renderHistory(){
     const hasProjet = s.projet && s.projet !== '–';
     const histTitle = (hasSerie || hasProjet)
       ? `${hasSerie ? s.serie : 'Sans n° série'} — ${hasProjet ? s.projet : 'Sans n° projet'}`
-      : '___';
+      : 'Montage sans référence';
     return `<div class="hist-card">
       <div style="font-size:24px">⚙️</div>
       <div class="hist-info">
