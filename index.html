@@ -2053,6 +2053,17 @@ async function restoreModel(){
       if(m) saveModel3D(stepIndexAtCall,m.name,m.ext,new TextDecoder().decode(m.buf));
     }
 
+    // Si on a trouvé le modèle via fetchModel3D (session) mais pas via machineModelFiles,
+    // on le sauvegarde de façon permanente pour tous les futurs montages
+    if(m && currentModel && currentModel.id){
+      const machineM = await fetchMachineModel3D(currentModel.id, stepIndexAtCall);
+      if(!machineM){
+        console.log('[restoreModel] Copie vers machineModelFiles pour les futurs montages...');
+        const txt = new TextDecoder().decode(m.buf);
+        saveMachineModel3D(currentModel.id, stepIndexAtCall, m.name, m.ext, txt);
+      }
+    }
+
     if(m) stepModels[stepIndexAtCall]=m;
   }
 
