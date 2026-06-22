@@ -306,7 +306,7 @@ textarea{height:52px;resize:none;font-size:12px}
     <button class="btn btn-primary btn-full" onclick="startSession()">▶ Démarrer le montage</button>
   </div>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-    <div class="section-title" style="margin:0;flex:1">Historique</div>
+    <div class="section-title" style="margin:0;flex:none"><span style="white-space:nowrap">Historique</span></div>
     <button class="btn btn-outline btn-sm" onclick="showDashboard()" style="margin-left:12px">📊 Tableau de bord</button>
   </div>
   <div id="histList"></div>
@@ -1507,7 +1507,7 @@ function initThree(){
   threeRenderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
   threeRenderer.setPixelRatio(window.devicePixelRatio);
   threeRenderer.shadowMap.enabled=true;
-  threeRenderer.setClearColor(0x060f1e,1);
+  threeRenderer.setClearColor(0xffffff,1);
 
   threeScene=new THREE.Scene();
   threeScene.add(new THREE.AmbientLight(0xffffff,0.6));
@@ -1519,7 +1519,7 @@ function initThree(){
   threeScene.add(dir2);
 
   // Grid
-  const grid=new THREE.GridHelper(10,20,0x1e3358,0x1e3358);
+  const grid=new THREE.GridHelper(10,20,0xc0c0c0,0xc0c0c0);
   threeScene.add(grid);
 
   threeCamera=new THREE.PerspectiveCamera(45,1,0.01,1000);
@@ -1699,12 +1699,12 @@ function loadGLB(buf){
 // Mapping étapes Turbine A → numéros de pièces OBJ à mettre en rouge
 // Format: stepId -> liste des suffixes numériques d'objets OBJ
 const TURBINE_A_STEP_PARTS = {
-  'tA1': ['110'],             // Génératrice - 180LTV3
+  'tA1': ['110','012'],             // Génératrice - 180LTV3
   'tA2': ['008'],             // Injecteurs - 180LTV3
   'tA3': ['102'],             // Capteur de vibration - 180LTV3
   'tA4': ['098','099','026','027'], // Capteurs de température - 180LTV3
   'tA5': [],                  // Repérage phases - 180LTV3
-  'mtvtA1': ['110'],           // Génératrice
+  'mtvtA1': ['110','012'],           // Génératrice
   'mtvtA2': ['008'],           // Injecteurs
   'mtvtA3': ['102'],           // Capteur de vibration
   'mtvtA4': ['098','099','026','027'], // Capteurs de température
@@ -1770,12 +1770,34 @@ function applyPartHighlights(){
       mesh.material.specular.setHex(0xff4444);
       mesh.material.shininess=80;
     } else {
-      mesh.material.color.setHex(0x4080c0);
+      const base = (mesh.userData && mesh.userData.baseColor !== undefined) ? mesh.userData.baseColor : PART_COLOR_LIGHTGRAY;
+      mesh.material.color.setHex(base);
       mesh.material.emissive.setHex(0x000000);
       mesh.material.specular.setHex(0x00c4ff);
       mesh.material.shininess=60;
     }
   });
+}
+
+// Palette de couleurs pour le rendu du modèle 3D
+const PART_COLOR_DARKGRAY = 0x4d4d4d;  // pièces structurelles principales
+const PART_COLOR_BEIGE    = 0xd9c7a3;  // pièce 005
+const PART_COLOR_BLACK    = 0x1a1a1a;  // petites pièces (vis, capteurs, etc.)
+const PART_COLOR_LIGHTGRAY= 0xb8b8b8;  // reste des pièces
+
+// Numéros de pièces (suffixe OBJ) à colorer en gris foncé
+const PARTS_DARKGRAY = ['089','094','092','091','093'];
+// Numéros de pièces à colorer en beige
+const PARTS_BEIGE = ['005'];
+// Seuil de taille (diagonale de la bounding box) sous lequel une pièce est
+// considérée comme une "petite pièce" (vis, capteur, raccord...) → noir
+const SMALL_PART_DIAG_THRESHOLD = 60;
+
+function getBaseColorForPart(num, diag){
+  if(PARTS_DARKGRAY.includes(num)) return PART_COLOR_DARKGRAY;
+  if(PARTS_BEIGE.includes(num)) return PART_COLOR_BEIGE;
+  if(diag !== null && diag < SMALL_PART_DIAG_THRESHOLD) return PART_COLOR_BLACK;
+  return PART_COLOR_LIGHTGRAY;
 }
 
 function loadOBJ(buf){
@@ -1833,18 +1855,27 @@ function loadOBJ(buf){
     else geo.computeVertexNormals();
     if(uv2.length)geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv2,2));
 
-    const mat=new THREE.MeshPhongMaterial({color:0x4080c0,specular:0x00c4ff,shininess:60,side:THREE.DoubleSide});
+    // Numéro de pièce (suffixe numérique du nom, ex: "turbineAcomplèteInes.008" → "008")
+    const numMatch = obj.name.match(/\.(\d+)$/);
+    const partNum = numMatch ? numMatch[1] : null;
+
+    // Taille de la pièce (diagonale de sa bounding box) pour distinguer les petites pièces
+    geo.computeBoundingBox();
+    const partBox=geo.boundingBox;
+    const partDiag = partBox.max.distanceTo(partBox.min);
+
+    const baseColor = getBaseColorForPart(partNum, partDiag);
+    const mat=new THREE.MeshPhongMaterial({color:baseColor,specular:0x00c4ff,shininess:60,side:THREE.DoubleSide});
     const mesh=new THREE.Mesh(geo,mat);
     mesh.userData.objName = obj.name;
+    mesh.userData.baseColor = baseColor;
     grp.add(mesh);
 
     // Extract numeric suffix (e.g. "turbineAcomplèteInes.008" → "008")
-    const m = obj.name.match(/\.(\d+)$/);
-    if(m) namedMeshes[m[1]] = mesh;
+    if(partNum) namedMeshes[partNum] = mesh;
 
     // Track bounds
-    geo.computeBoundingBox();
-    const box=geo.boundingBox;
+    const box=partBox;
     allMinX=Math.min(allMinX,box.min.x);allMinY=Math.min(allMinY,box.min.y);allMinZ=Math.min(allMinZ,box.min.z);
     allMaxX=Math.max(allMaxX,box.max.x);allMaxY=Math.max(allMaxY,box.max.y);allMaxZ=Math.max(allMaxZ,box.max.z);
   });
