@@ -2221,7 +2221,7 @@ function renderHistory(){
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
         <button class="btn btn-outline btn-sm" onclick="loadSession(${s.id})">Reprendre</button>
-        ${isAdmin ? `<button class="btn btn-sm" style="background:#e0555522;border:1px solid #e0555544;color:#e05555" onclick="deleteSession(${s.id})">🗑</button>` : ''}
+        <button class="btn btn-sm" style="background:#e0555522;border:1px solid #e0555544;color:#e05555" onclick="deleteSession(${s.id})">🗑</button>
       </div>
     </div>`;
   }).join('');
