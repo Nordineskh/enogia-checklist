@@ -1688,11 +1688,13 @@ async function saveModel3D(stepIndex,name,ext,text){
 async function fetchModel3D(stepIndex){
   try{
     const db=window._db;
-    if(!db||!session) return null;
+    if(!db||!session){ console.warn('[fetchModel3D] db ou session manquant'); return null; }
     const baseId=session.id+'_'+stepIndex;
+    console.log('[fetchModel3D] Recherche baseId=' + baseId);
     const snap=await window._fsGetDoc(window._fsDoc(db,'stepModels', baseId));
-    if(!snap.exists()) return null;
+    if(!snap.exists()){ console.log('[fetchModel3D] Aucun doc pour ' + baseId); return null; }
     const data=snap.data();
+    console.log('[fetchModel3D] ✅ Trouvé: ' + data.name + ' — ' + data.totalChunks + ' morceaux');
 
     const chunkPromises=[];
     for(let i=0;i<data.totalChunks;i++){
@@ -1751,11 +1753,13 @@ async function saveMachineModel3D(modelId,stepIndex,name,ext,text){
 async function fetchMachineModel3D(modelId,stepIndex){
   try{
     const db=window._db;
-    if(!db||!modelId) return null;
+    if(!db||!modelId){ console.warn('[fetchMachineModel3D] db ou modelId manquant'); return null; }
     const baseId=modelId+'_'+stepIndex;
+    console.log('[fetchMachineModel3D] Recherche baseId=' + baseId);
     const snap=await window._fsGetDoc(window._fsDoc(db,'machineModelFiles', baseId));
-    if(!snap.exists()) return null;
+    if(!snap.exists()){ console.log('[fetchMachineModel3D] Aucun doc pour ' + baseId); return null; }
     const data=snap.data();
+    console.log('[fetchMachineModel3D] ✅ Trouvé: ' + data.name + ' — ' + data.totalChunks + ' morceaux');
 
     const chunkPromises=[];
     for(let i=0;i<data.totalChunks;i++){
@@ -2020,6 +2024,7 @@ function placeModel(obj){
 async function restoreModel(){
   let m=stepModels[currentStep];
   const stepIndexAtCall=currentStep; // garde une référence pour éviter d'afficher le mauvais modèle si on change d'étape pendant le fetch
+  console.log('[restoreModel] step=' + currentStep + ' — en mémoire: ' + (m ? m.name : 'non') + ' — session: ' + (session ? session.id : 'NULL') + ' — model: ' + (currentModel ? currentModel.id : 'NULL'));
 
   if(!m && session && window._db){
     document.getElementById('loading3d').style.display='flex';
