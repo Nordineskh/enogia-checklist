@@ -1786,12 +1786,12 @@ const PART_COLOR_BLACK    = 0x1a1a1a;  // petites pièces (vis, capteurs, etc.)
 const PART_COLOR_LIGHTGRAY= 0x8a8a8a;  // reste des pièces (légèrement plus foncé pour bien ressortir sur fond blanc)
 
 // Numéros de pièces (suffixe OBJ) à colorer en gris foncé
-const PARTS_DARKGRAY = ['089','094','092','091','093'];
+const PARTS_DARKGRAY = ['089','094','092','091','093','088'];
 // Numéros de pièces à colorer en beige
 const PARTS_BEIGE = ['005'];
 // Numéros de pièces à forcer en noir (capteurs, petites pièces identifiées
 // individuellement, même si leur bounding box ne les classerait pas "petites")
-const PARTS_BLACK = ['099','098','026','027'];
+const PARTS_BLACK = ['099','098','026','027','032','030','087','106','107','105','031','104','086'];
 // Seuil de taille (diagonale de la bounding box) sous lequel une pièce est
 // considérée comme une "petite pièce" (vis, capteur, raccord...) → noir
 const SMALL_PART_DIAG_THRESHOLD = 60;
@@ -2082,10 +2082,15 @@ function renderHistory(){
   el.innerHTML=sessions.map(s=>{
     const p=calcProgress(s);
     const isAdmin = window._currentUser && window._currentUser.email === window._ADMIN_EMAIL;
+    const hasSerie = s.serie && s.serie !== '–';
+    const hasProjet = s.projet && s.projet !== '–';
+    const histTitle = (hasSerie || hasProjet)
+      ? `${hasSerie ? s.serie : 'Sans n° série'} — ${hasProjet ? s.projet : 'Sans n° projet'}`
+      : 'Montage sans référence';
     return `<div class="hist-card">
       <div style="font-size:24px">⚙️</div>
       <div class="hist-info">
-        <div class="hist-title">${s.serie} — ${s.projet}</div>
+        <div class="hist-title">${histTitle}</div>
         <div class="hist-meta">${s.modelName||'ENO 180 LTV3'} | OP: ${s.op} | ${s.date} | ${p.pct}% complété</div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
