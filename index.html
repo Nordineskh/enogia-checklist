@@ -1510,8 +1510,8 @@ function initThree(){
   threeRenderer.setClearColor(0xffffff,1);
 
   threeScene=new THREE.Scene();
-  threeScene.add(new THREE.AmbientLight(0xffffff,0.6));
-  const dir=new THREE.DirectionalLight(0x00c4ff,0.8);
+  threeScene.add(new THREE.AmbientLight(0xffffff,0.7));
+  const dir=new THREE.DirectionalLight(0xffffff,0.7);
   dir.position.set(5,10,7);
   threeScene.add(dir);
   const dir2=new THREE.DirectionalLight(0xffffff,0.4);
@@ -1522,7 +1522,7 @@ function initThree(){
   const grid=new THREE.GridHelper(10,20,0xc0c0c0,0xc0c0c0);
   threeScene.add(grid);
 
-  threeCamera=new THREE.PerspectiveCamera(45,1,0.01,1000);
+  threeCamera=new THREE.PerspectiveCamera(45,1,0.1,200000);
   threeCamera.position.set(0,2,5);
 
   // Mouse events
@@ -1557,7 +1557,7 @@ function initThree(){
     }
     if(e.touches.length===2){
       const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-      if(lastDist)zoomDist=Math.max(0.5,Math.min(50,zoomDist-(d-lastDist)*0.05));
+      if(lastDist)zoomDist=Math.max(0.5,Math.min(50000,zoomDist-(d-lastDist)*0.05));
       lastDist=d;
     }
   },{passive:false});
@@ -1773,8 +1773,8 @@ function applyPartHighlights(){
       const base = (mesh.userData && mesh.userData.baseColor !== undefined) ? mesh.userData.baseColor : PART_COLOR_LIGHTGRAY;
       mesh.material.color.setHex(base);
       mesh.material.emissive.setHex(0x000000);
-      mesh.material.specular.setHex(0x00c4ff);
-      mesh.material.shininess=60;
+      mesh.material.specular.setHex(0x303030);
+      mesh.material.shininess=25;
     }
   });
 }
@@ -1865,7 +1865,7 @@ function loadOBJ(buf){
     const partDiag = partBox.max.distanceTo(partBox.min);
 
     const baseColor = getBaseColorForPart(partNum, partDiag);
-    const mat=new THREE.MeshPhongMaterial({color:baseColor,specular:0x00c4ff,shininess:60,side:THREE.DoubleSide});
+    const mat=new THREE.MeshPhongMaterial({color:baseColor,specular:0x303030,shininess:25,side:THREE.DoubleSide});
     const mesh=new THREE.Mesh(geo,mat);
     mesh.userData.objName = obj.name;
     mesh.userData.baseColor = baseColor;
