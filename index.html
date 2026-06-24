@@ -2050,7 +2050,7 @@ function loadOBJ(buf){
   const maxD=Math.max(allMaxX-allMinX, allMaxY-allMinY, allMaxZ-allMinZ);
   grp.position.set(-cx,-cy,-cz);
   // Zoom beaucoup plus éloigné pour la boucle chaude (vue éclatée grande)
-  modelZoomDist = isBoucleChaudeOBJ() ? maxD * 5.0 : maxD * 1.8;
+  modelZoomDist = isBoucleChaudeOBJ() ? maxD * 3 : maxD * 1.8;
   zoomDist = modelZoomDist;
 
   placeModel(grp);
