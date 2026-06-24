@@ -1538,6 +1538,7 @@ else { document.addEventListener('firebaseReady', initApp); }
 let threeRenderer=null,threeScene=null,threeCamera=null,threeModel=null;
 let isDragging=false,prevMouse={x:0,y:0},rotX=0,rotY=0,autoRotate=false,wireframe=false;
 let isRightDragging=false,panOffset={x:0,y:0};
+let modelZoomDist=500; // zoom calculé à partir des dimensions du modèle chargé
 let zoomDist=10;
 
 function initThree(){
@@ -1628,7 +1629,7 @@ function animate(){
   threeRenderer.render(threeScene,threeCamera);
 }
 
-function resetCamera(){rotX=20;rotY=30;zoomDist=500;panOffset={x:0,y:0};}
+function resetCamera(){rotX=20;rotY=30;zoomDist=modelZoomDist;panOffset={x:0,y:0};}
 function toggleWire(){
   wireframe=!wireframe;
   if(threeModel)threeModel.traverse(c=>{if(c.isMesh&&c.material)c.material.wireframe=wireframe;});
@@ -1925,9 +1926,13 @@ const PARTS_BEIGE_TURBINE = ['005'];
 // Numéros de pièces à forcer en noir (capteurs, petites pièces identifiées individuellement)
 const PARTS_BLACK = ['099','098','026','027','032','030','087','106','107','105','031','104','086'];
 
-// Longues vis spécifiques au fichier boucle chaude (détectées par analyse géométrique)
-const PARTS_BLACK_BOUCLECHAUDE = [
-  '007','011','018','022',
+// Longues vis spécifiques au fichier boucle chaude (vraies vis fines, mindim < 15mm)
+const PARTS_BLACK_BOUCLECHAUDE = ['007'];
+
+// Raccords / cylindres creux boucle chaude → gris clair (pas noir)
+// (mindim > 28mm = corps cylindrique, ce ne sont pas des vis)
+const PARTS_GRAY_BOUCLECHAUDE = [
+  '011','018','022',
   '037','038','039','040','041','042','043',
   '072','073','074','075','076','077','078',
   '100','101','102','103','104','105','106',
@@ -1949,8 +1954,10 @@ function getBaseColorForPart(num, diag){
   // Beige uniquement pour les fichiers turbine, pas pour la boucle chaude
   if(!isBoucleChaudeOBJ() && PARTS_BEIGE_TURBINE.includes(num)) return PART_COLOR_BEIGE;
   if(PARTS_BLACK.includes(num)) return PART_COLOR_BLACK;
-  // Longues vis spécifiques à la boucle chaude → noir
-  if(isBoucleChaudeOBJ() && PARTS_BLACK_BOUCLECHAUDE.includes(num)) return PART_COLOR_BLACK;
+  if(isBoucleChaudeOBJ()){
+    if(PARTS_BLACK_BOUCLECHAUDE.includes(num)) return PART_COLOR_BLACK;
+    if(PARTS_GRAY_BOUCLECHAUDE.includes(num)) return PART_COLOR_LIGHTGRAY;
+  }
   if(diag !== null && diag < SMALL_PART_DIAG_THRESHOLD) return PART_COLOR_BLACK;
   return PART_COLOR_LIGHTGRAY;
 }
@@ -2043,7 +2050,8 @@ function loadOBJ(buf){
   const maxD=Math.max(allMaxX-allMinX, allMaxY-allMinY, allMaxZ-allMinZ);
   grp.position.set(-cx,-cy,-cz);
   // Zoom beaucoup plus éloigné pour la boucle chaude (vue éclatée grande)
-  zoomDist = isBoucleChaudeOBJ() ? maxD * 5.0 : maxD * 1.8;
+  modelZoomDist = isBoucleChaudeOBJ() ? maxD * 5.0 : maxD * 1.8;
+  zoomDist = modelZoomDist;
 
   placeModel(grp);
   // Apply highlights after model is placed
