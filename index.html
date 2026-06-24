@@ -1929,8 +1929,11 @@ const PARTS_BLACK = ['099','098','026','027','032','030','087','106','107','105'
 // Longues vis spécifiques au fichier boucle chaude (vraies vis fines, mindim < 15mm)
 const PARTS_BLACK_BOUCLECHAUDE = ['007'];
 
+// Grosses pièces compactes type "117" (vannes, corps principaux) → noir
+// ratio ~1.4, min > 160mm — inclut la pièce de base (sans suffixe = '117') et ses similaires
+const PARTS_BLACK_COMPACT_BOUCLECHAUDE = ['001','002','003','004','005'];
+
 // Raccords / cylindres creux boucle chaude → gris clair (pas noir)
-// (mindim > 28mm = corps cylindrique, ce ne sont pas des vis)
 const PARTS_GRAY_BOUCLECHAUDE = [
   '011','018','022',
   '037','038','039','040','041','042','043',
@@ -1955,6 +1958,8 @@ function getBaseColorForPart(num, diag){
   if(!isBoucleChaudeOBJ() && PARTS_BEIGE_TURBINE.includes(num)) return PART_COLOR_BEIGE;
   if(PARTS_BLACK.includes(num)) return PART_COLOR_BLACK;
   if(isBoucleChaudeOBJ()){
+    // Pièce 117 (sans suffixe, num=null) + pièces compactes similaires → noir
+    if(num === null || PARTS_BLACK_COMPACT_BOUCLECHAUDE.includes(num)) return PART_COLOR_BLACK;
     if(PARTS_BLACK_BOUCLECHAUDE.includes(num)) return PART_COLOR_BLACK;
     if(PARTS_GRAY_BOUCLECHAUDE.includes(num)) return PART_COLOR_LIGHTGRAY;
   }
@@ -2050,7 +2055,7 @@ function loadOBJ(buf){
   const maxD=Math.max(allMaxX-allMinX, allMaxY-allMinY, allMaxZ-allMinZ);
   grp.position.set(-cx,-cy,-cz);
   // Zoom beaucoup plus éloigné pour la boucle chaude (vue éclatée grande)
-  modelZoomDist = isBoucleChaudeOBJ() ? maxD * 3 : maxD * 1.8;
+  modelZoomDist = isBoucleChaudeOBJ() ? maxD * 1.25 : maxD * 1.8;
   zoomDist = modelZoomDist;
 
   placeModel(grp);
