@@ -1580,7 +1580,7 @@ function initThree(){
   });
   c.addEventListener('mouseup',()=>{isDragging=false;isRightDragging=false;});
   c.addEventListener('mouseleave',()=>{isDragging=false;isRightDragging=false;});
-  c.addEventListener('wheel',e=>{zoomDist=Math.max(0.5,Math.min(50000,zoomDist+e.deltaY*0.02));e.preventDefault();},{passive:false});
+  c.addEventListener('wheel',e=>{const spd=Math.max(0.05, zoomDist*0.0012);zoomDist=Math.max(0.5,Math.min(50000,zoomDist+e.deltaY*spd));e.preventDefault();},{passive:false});
   c.addEventListener('contextmenu',e=>e.preventDefault());
 
   // Touch
@@ -1598,7 +1598,7 @@ function initThree(){
     }
     if(e.touches.length===2){
       const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-      if(lastDist)zoomDist=Math.max(0.5,Math.min(50000,zoomDist-(d-lastDist)*0.05));
+      if(lastDist){const tspd=Math.max(0.15, zoomDist*0.004);zoomDist=Math.max(0.5,Math.min(50000,zoomDist-(d-lastDist)*tspd));}
       lastDist=d;
     }
   },{passive:false});
@@ -1924,6 +1924,15 @@ const PARTS_DARKGRAY = ['089','094','092','091','093','088'];
 const PARTS_BEIGE_TURBINE = ['005'];
 // Numéros de pièces à forcer en noir (capteurs, petites pièces identifiées individuellement)
 const PARTS_BLACK = ['099','098','026','027','032','030','087','106','107','105','031','104','086'];
+
+// Longues vis spécifiques au fichier boucle chaude (détectées par analyse géométrique)
+const PARTS_BLACK_BOUCLECHAUDE = [
+  '007','011','018','022',
+  '037','038','039','040','041','042','043',
+  '072','073','074','075','076','077','078',
+  '100','101','102','103','104','105','106',
+  '111','112','113','114','115','116'
+];
 // Seuil de taille (diagonale de la bounding box) sous lequel une pièce est
 // considérée comme une "petite pièce" (vis, capteur, raccord...) → noir
 const SMALL_PART_DIAG_THRESHOLD = 60;
@@ -1940,6 +1949,8 @@ function getBaseColorForPart(num, diag){
   // Beige uniquement pour les fichiers turbine, pas pour la boucle chaude
   if(!isBoucleChaudeOBJ() && PARTS_BEIGE_TURBINE.includes(num)) return PART_COLOR_BEIGE;
   if(PARTS_BLACK.includes(num)) return PART_COLOR_BLACK;
+  // Longues vis spécifiques à la boucle chaude → noir
+  if(isBoucleChaudeOBJ() && PARTS_BLACK_BOUCLECHAUDE.includes(num)) return PART_COLOR_BLACK;
   if(diag !== null && diag < SMALL_PART_DIAG_THRESHOLD) return PART_COLOR_BLACK;
   return PART_COLOR_LIGHTGRAY;
 }
@@ -2031,8 +2042,8 @@ function loadOBJ(buf){
   const cx=(allMinX+allMaxX)/2, cy=(allMinY+allMaxY)/2, cz=(allMinZ+allMaxZ)/2;
   const maxD=Math.max(allMaxX-allMinX, allMaxY-allMinY, allMaxZ-allMinZ);
   grp.position.set(-cx,-cy,-cz);
-  // Zoom plus éloigné pour la boucle chaude (modèle plus grand / vue éclatée)
-  zoomDist = isBoucleChaudeOBJ() ? maxD * 3.0 : maxD * 1.8;
+  // Zoom beaucoup plus éloigné pour la boucle chaude (vue éclatée grande)
+  zoomDist = isBoucleChaudeOBJ() ? maxD * 5.0 : maxD * 1.8;
 
   placeModel(grp);
   // Apply highlights after model is placed
