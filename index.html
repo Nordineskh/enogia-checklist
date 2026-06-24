@@ -1650,6 +1650,7 @@ function load3DFile(input){
   document.getElementById('viewerHint').style.display='block';
   document.getElementById('viewerControls').style.display='flex';
   document.getElementById('modelName').textContent=file.name;
+  currentObjFilename = file.name; // pour la coloration par fichier
 
   if(!threeRenderer)initThree();
 
@@ -1825,13 +1826,29 @@ const TURBINE_A_STEP_PARTS = {
   'mtvtB3': ['102'],           // Capteur de vibration (Turbine B)
   'mtvtB4': ['098','099','026','027'], // Capteurs de température (Turbine B)
   'mtvtB5': ['030','087'],                // Repérage phases (Turbine B)
+  // Boucle chaude — ENO 180 LTV3
+  'bc1': ['007','019','020','044','045','046','047','048','049','050','023','024','025','026','027','028','029'],
+  'bc2': ['109','013','014','058','059','060','061','062','063','064','051','052','053','054','055','056','057'],
+  'bc3': ['110','015','016','079','080','081','082','083','084','085','086','087','088','089','090','091','092'],
+  'bc4': ['107','108'],
+  // Boucle chaude — ENO 180 MTV3
+  'mtvbc1': ['007','019','020','044','045','046','047','048','049','050','023','024','025','026','027','028','029'],
+  'mtvbc2': ['109','013','014','058','059','060','061','062','063','064','051','052','053','054','055','056','057'],
+  'mtvbc3': ['110','015','016','079','080','081','082','083','084','085','086','087','088','089','090','091','092'],
+  'mtvbc4': ['107','108'],
 };
 
 // Objets nommés dans le viewer 3D (THREE.Mesh), par suffixe numérique
 let namedMeshes = {}; // { '008': Mesh, '110': Mesh, ... }
+let currentObjFilename = ''; // nom du fichier OBJ actuellement chargé (pour la coloration par fichier)
 
 function isTurbineAStep(step){
-  return step && (step.id === 'turbineA' || step.id === 'tA_mtv3' || step.id === 'turbineB' || step.id === 'tB_mtv3');
+  return step && (
+    step.id === 'turbineA' || step.id === 'tA_mtv3' ||
+    step.id === 'turbineB' || step.id === 'tB_mtv3' ||
+    step.id === 'boucleChd' || step.id === 'boucleChd_mtv3' ||
+    step.id === 'boucleChd_40'
+  );
 }
 
 function getHighlightedParts(){
@@ -1897,24 +1914,31 @@ function applyPartHighlights(){
 
 // Palette de couleurs pour le rendu du modèle 3D
 const PART_COLOR_DARKGRAY = 0x4d4d4d;  // pièces structurelles principales
-const PART_COLOR_BEIGE    = 0xd9c7a3;  // pièce 005
+const PART_COLOR_BEIGE    = 0xd9c7a3;  // pièce 005 (turbine A uniquement)
 const PART_COLOR_BLACK    = 0x1a1a1a;  // petites pièces (vis, capteurs, etc.)
-const PART_COLOR_LIGHTGRAY= 0x8a8a8a;  // reste des pièces (légèrement plus foncé pour bien ressortir sur fond blanc)
+const PART_COLOR_LIGHTGRAY= 0x8a8a8a;  // reste des pièces
 
-// Numéros de pièces (suffixe OBJ) à colorer en gris foncé
+// Numéros de pièces (suffixe OBJ) à colorer en gris foncé — commun à tous les fichiers
 const PARTS_DARKGRAY = ['089','094','092','091','093','088'];
-// Numéros de pièces à colorer en beige
-const PARTS_BEIGE = ['005'];
-// Numéros de pièces à forcer en noir (capteurs, petites pièces identifiées
-// individuellement, même si leur bounding box ne les classerait pas "petites")
+// Numéros de pièces à colorer en beige — uniquement pour les fichiers turbine (pas boucle chaude)
+const PARTS_BEIGE_TURBINE = ['005'];
+// Numéros de pièces à forcer en noir (capteurs, petites pièces identifiées individuellement)
 const PARTS_BLACK = ['099','098','026','027','032','030','087','106','107','105','031','104','086'];
 // Seuil de taille (diagonale de la bounding box) sous lequel une pièce est
 // considérée comme une "petite pièce" (vis, capteur, raccord...) → noir
 const SMALL_PART_DIAG_THRESHOLD = 60;
 
+// Retourne true si le fichier OBJ chargé est celui de la boucle chaude
+function isBoucleChaudeOBJ(){
+  return currentObjFilename.toLowerCase().includes('bouclechaude') ||
+         currentObjFilename.toLowerCase().includes('bouche_chaude') ||
+         currentObjFilename.toLowerCase().includes('hotloop');
+}
+
 function getBaseColorForPart(num, diag){
   if(PARTS_DARKGRAY.includes(num)) return PART_COLOR_DARKGRAY;
-  if(PARTS_BEIGE.includes(num)) return PART_COLOR_BEIGE;
+  // Beige uniquement pour les fichiers turbine, pas pour la boucle chaude
+  if(!isBoucleChaudeOBJ() && PARTS_BEIGE_TURBINE.includes(num)) return PART_COLOR_BEIGE;
   if(PARTS_BLACK.includes(num)) return PART_COLOR_BLACK;
   if(diag !== null && diag < SMALL_PART_DIAG_THRESHOLD) return PART_COLOR_BLACK;
   return PART_COLOR_LIGHTGRAY;
@@ -1922,6 +1946,8 @@ function getBaseColorForPart(num, diag){
 
 function loadOBJ(buf){
   const text=new TextDecoder().decode(buf);
+  // Détecter le nom du fichier depuis la 1ère ligne de commentaire Blender si disponible
+  // (sinon on conserve ce qui a été défini lors du chargement)
   const verts=[],uvs=[],normals=[];
   // Parse global vertex data
   text.split('\n').forEach(line=>{
@@ -2005,7 +2031,8 @@ function loadOBJ(buf){
   const cx=(allMinX+allMaxX)/2, cy=(allMinY+allMaxY)/2, cz=(allMinZ+allMaxZ)/2;
   const maxD=Math.max(allMaxX-allMinX, allMaxY-allMinY, allMaxZ-allMinZ);
   grp.position.set(-cx,-cy,-cz);
-  zoomDist=maxD*1.8;
+  // Zoom plus éloigné pour la boucle chaude (modèle plus grand / vue éclatée)
+  zoomDist = isBoucleChaudeOBJ() ? maxD * 3.0 : maxD * 1.8;
 
   placeModel(grp);
   // Apply highlights after model is placed
@@ -2084,6 +2111,7 @@ async function restoreModel(){
     document.getElementById('viewerHint').style.display='block';
     document.getElementById('viewerControls').style.display='flex';
     document.getElementById('modelName').textContent=m.name;
+    currentObjFilename = m.name; // pour la coloration par fichier
     if(!threeRenderer)initThree();
     if(m.ext==='obj')loadOBJ(m.buf);
     else loadGLB(m.buf);
