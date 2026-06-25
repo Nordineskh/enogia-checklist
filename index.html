@@ -761,11 +761,6 @@ const STEPS_180LTV3=[
       {txt:'Remplacement joints toriques',torque:null,qty:2},
       {txt:'Vérifier le sens du clapet',torque:null,qty:1},
       {txt:'Serrer les boulons',torque:'44 Nm',qty:1}]},
-    {id:'orc7',label:'Vanne Bypass',actions:[
-      {txt:'Vérifier le sens de la vanne',torque:null,qty:1},
-      {txt:'Serrer les boulons',torque:'150 Nm',qty:4},
-      {txt:'Serrer le bouchon',torque:'25 Nm',qty:1},
-      {txt:'Serrer le pilote',torque:'50 Nm',qty:1}]},
   ]},
   {id:'instrORC',name:'Instrumentation Cycle ORC',icon:'🌡️',items:[
     {id:'ins1',label:'Vannes remplissage/vidange (VA)',actions:[
@@ -881,6 +876,11 @@ const STEPS_180LTV3=[
     {id:'bc4',label:'Sondes TT + Servo-moteurs',actions:[
       {txt:'Sondes TT-11 & TT-13 — Loctite 272',torque:null,qty:2},
       {txt:'Servo-moteurs ENO-FCV-11 & ENO-FCV-12 sur vannes',torque:null,qty:2}]},
+    {id:'orc7',label:'Vanne Bypass',actions:[
+      {txt:'Vérifier le sens de la vanne',torque:null,qty:1},
+      {txt:'Serrer les boulons',torque:'150 Nm',qty:4},
+      {txt:'Serrer le bouchon',torque:'25 Nm',qty:1},
+      {txt:'Serrer le pilote',torque:'50 Nm',qty:1}]},
   ]},
   {id:'boucleFrd',name:'Boucle froide',icon:'🧊',items:[
     {id:'bf1',label:'Condenseur — partie haute',actions:[
@@ -1837,6 +1837,8 @@ const TURBINE_A_STEP_PARTS = {
   'mtvbc2': ['109','013','014','058','059','060','061','062','063','064','051','052','053','054','055','056','057'],
   'mtvbc3': ['110','015','016','079','080','081','082','083','084','085','086','087','088','089','090','091','092'],
   'mtvbc4': ['107','108'],
+  // Vanne Bypass — déplacée en fin de Boucle chaude (étape 9)
+  'orc7': ['109','110'],
 };
 
 // Objets nommés dans le viewer 3D (THREE.Mesh), par suffixe numérique
