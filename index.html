@@ -1839,6 +1839,39 @@ const TURBINE_A_STEP_PARTS = {
   'mtvbc4': ['107','108'],
   // Vanne Bypass — déplacée en fin de Boucle chaude (étape 9)
   'orc7': ['109','110'],
+
+  // ===== CYCLE ORC — toutes gammes (fichier cycle_ORC_test.obj) =====
+  // Pièces : suffixes numériques dans "Nouveau-Pi085-510-DC001-G-CycleORC.XXX"
+  // Tuyauterie cycle (tous les tubes = tous sauf les sous-ensembles identifiés ci-dessous)
+  // On liste ici les pièces tubes principales connues — le reste est la tuyauterie
+  'orc1':    ['_TUBES_'],  // marqueur spécial → voir logique ci-dessous (tous les tubes)
+  'orc2':    ['104','105','098','099','100','101','103','109','110','111','112','113'],  // Pompe ORC
+  'orc3':    ['842','085','1140','179','1169','161','174','160','176','164'],  // Évaporateur + Condensateur (pièces principales + collées)
+  'orc4':    ['158','003','159','001','175','004','177','002','1005','1247','1038','034'],  // Volutes + Turbines
+  'orc5':    ['118','119'],  // Filtres
+  'orc6':    ['120','005','006'],  // Clapet
+  // ENO 100 LTV3
+  'orc100_1': ['_TUBES_'],
+  'orc100_2': ['104','105','098','099','100','101','103','109','110','111','112','113'],
+  'orc100_3': ['842','085','1140','179','1169','161','174','160','176','164'],
+  'orc100_4': ['158','003','159','001','175','004','177','002','1005','1247','1038','034'],
+  'orc100_5': ['118','119'],
+  'orc100_6': ['120','005','006'],
+  'orc100_7': ['120','005','006'],
+  // ENO 40 LTV3
+  'orc40_1': ['_TUBES_'],
+  'orc40_2': ['104','105','098','099','100','101','103','109','110','111','112','113'],
+  'orc40_3': ['842','085','1140','179','1169','161','174','160','176','164'],
+  'orc40_4': ['158','003','159','001','175','004','177','002','1005','1247','1038','034'],
+  'orc40_5': ['118','119','120','005','006'],
+  // ENO 180 MTV3
+  'mtvorc1': ['_TUBES_'],
+  'mtvorc2': ['104','105','098','099','100','101','103','109','110','111','112','113'],
+  'mtvorc3': ['842','085','1140','179','1169','161','174','160','176','164'],
+  'mtvorc4': ['158','003','159','001','175','004','177','002','1005','1247','1038','034'],
+  'mtvorc5': ['118','119'],
+  'mtvorc6': ['120','005','006'],
+  'mtvorc7': ['120','005','006'],
 };
 
 // Objets nommés dans le viewer 3D (THREE.Mesh), par suffixe numérique
@@ -1850,13 +1883,23 @@ function isTurbineAStep(step){
     step.id === 'turbineA' || step.id === 'tA_mtv3' ||
     step.id === 'turbineB' || step.id === 'tB_mtv3' ||
     step.id === 'boucleChd' || step.id === 'boucleChd_mtv3' ||
-    step.id === 'boucleChd_40'
+    step.id === 'boucleChd_40' ||
+    // Cycle ORC — toutes gammes
+    step.id === 'cycleORC' || step.id === 'cycleORC_100' ||
+    step.id === 'cycleORC_40' || step.id === 'cycleORC_mtv3'
   );
+}
+
+// Retourne true si le fichier OBJ chargé est celui du Cycle ORC
+function isCycleORCOBJ(){
+  return currentObjFilename.toLowerCase().includes('cycleorc') ||
+         currentObjFilename.toLowerCase().includes('cycle_orc') ||
+         currentObjFilename.toLowerCase().includes('orc_cycle');
 }
 
 function getHighlightedParts(){
   // Retourne les numéros de pièces à mettre en rouge = pièces de la PROCHAINE étape non validée
-  // uniquement si on est sur l'étape Turbine A
+  // uniquement si on est sur une étape compatible (Turbine A, Boucle chaude, Cycle ORC)
   if(!session || !ACTIVE_STEPS || !ACTIVE_STEPS[currentStep]) return [];
   const step = ACTIVE_STEPS[currentStep];
   if(!isTurbineAStep(step)) return [];
@@ -1869,7 +1912,20 @@ function getHighlightedParts(){
     const it = sstate.items[i];
     if(!it.opDone){
       // Cet item n'est pas encore validé, c'est la pièce "en cours"
-      const parts = TURBINE_A_STEP_PARTS[items[i].id] || [];
+      let parts = TURBINE_A_STEP_PARTS[items[i].id] || [];
+
+      // Cas spécial "_TUBES_" : tuyauterie = toutes les pièces du modèle
+      // sauf celles réservées aux autres sous-étapes du cycle ORC
+      if(parts.length === 1 && parts[0] === '_TUBES_'){
+        const reservedParts = new Set([
+          '104','105','098','099','100','101','103','109','110','111','112','113',
+          '842','085','1140','179','1169','161','174','160','176','164',
+          '158','003','159','001','175','004','177','002','1005','1247','1038','034',
+          '118','119','120','005','006'
+        ]);
+        parts = Object.keys(namedMeshes).filter(n => !reservedParts.has(n));
+      }
+
       return parts;
     }
   }
@@ -1984,6 +2040,17 @@ function getBaseColorForPart(num, diag){
     if(PARTS_DARKGRAY_BOUCLECHAUDE.includes(num))return PART_COLOR_DARKGRAY;
     return PART_COLOR_LIGHTGRAY; // fallback
   }
+  // Fichier Cycle ORC : coloration par taille (pièces très nombreuses)
+  if(isCycleORCOBJ()){
+    if(num === null) return PART_COLOR_DARKGRAY;
+    // Grosses pièces structurelles (échangeurs, réservoir, volutes) → gris foncé
+    const bigParts = ['842','085','1140','158','159','175','177','001','002','003','004',
+                      '1005','1247','1038','034'];
+    if(bigParts.includes(num)) return PART_COLOR_DARKGRAY;
+    // Petites pièces (vis, brides, capteurs) → noir si petites
+    if(diag !== null && diag < SMALL_PART_DIAG_THRESHOLD) return PART_COLOR_BLACK;
+    return PART_COLOR_LIGHTGRAY;
+  }
   // Autres fichiers (turbine, etc.)
   if(PARTS_DARKGRAY.includes(num)) return PART_COLOR_DARKGRAY;
   if(PARTS_BEIGE_TURBINE.includes(num)) return PART_COLOR_BEIGE;
@@ -2066,7 +2133,14 @@ function loadOBJ(buf){
     grp.add(mesh);
 
     // Extract numeric suffix (e.g. "turbineAcomplèteInes.008" → "008")
-    if(partNum) namedMeshes[partNum] = mesh;
+    // Pour le fichier Cycle ORC : ignorer les objets turbineA qui écraseraient les pièces ORC
+    if(partNum){
+      if(isCycleORCOBJ() && !obj.name.startsWith('Nouveau-Pi')){
+        // objet parasite (ex: turbineAcomplèteInes.001) → ne pas écraser la vraie pièce ORC
+      } else {
+        namedMeshes[partNum] = mesh;
+      }
+    }
 
     // Track bounds
     const box=partBox;
@@ -2079,8 +2153,8 @@ function loadOBJ(buf){
   const cx=(allMinX+allMaxX)/2, cy=(allMinY+allMaxY)/2, cz=(allMinZ+allMaxZ)/2;
   const maxD=Math.max(allMaxX-allMinX, allMaxY-allMinY, allMaxZ-allMinZ);
   grp.position.set(-cx,-cy,-cz);
-  // Zoom beaucoup plus éloigné pour la boucle chaude (vue éclatée grande)
-  modelZoomDist = isBoucleChaudeOBJ() ? maxD * 1.25 : maxD * 1.8;
+  // Zoom beaucoup plus éloigné pour la boucle chaude ou le cycle ORC (vue éclatée grande)
+  modelZoomDist = (isBoucleChaudeOBJ() || isCycleORCOBJ()) ? maxD * 1.25 : maxD * 1.8;
   zoomDist = modelZoomDist;
 
   placeModel(grp);
