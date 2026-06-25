@@ -2274,6 +2274,22 @@ function loadSession(id){
   const modelId = session.modelId || 'eno180ltv3';
   currentModel = MODELS[modelId] || MODELS['eno180ltv3'];
   ACTIVE_STEPS = currentModel.getSteps();
+  // Migration : synchroniser session.steps avec ACTIVE_STEPS (si structure modifiee)
+  ACTIVE_STEPS.forEach((step, si) => {
+    if(!session.steps[si]){
+      session.steps[si] = { id:step.id, items:(step.items||[]).map(it=>({id:it.id,actions:it.actions.map(()=>false),opDone:false,opName:'',opDate:'',opComment:'',veDone:false,veName:'',veDate:'',veComment:'',ncReason:'',firstPassResult:null,ncCount:0,photos:[],actionTimers:{}})), snData:{}, comment:''};
+    } else {
+      session.steps[si].id = step.id;
+      (step.items||[]).forEach((item, ii) => {
+        if(!session.steps[si].items[ii]){
+          session.steps[si].items[ii] = {id:item.id,actions:item.actions.map(()=>false),opDone:false,opName:'',opDate:'',opComment:'',veDone:false,veName:'',veDate:'',veComment:'',ncReason:'',firstPassResult:null,ncCount:0,photos:[],actionTimers:{}};
+        }
+      });
+      if(session.steps[si].items.length > (step.items||[]).length){
+        session.steps[si].items = session.steps[si].items.slice(0, (step.items||[]).length);
+      }
+    }
+  });
   showScreen('scChecklist');
   renderStep();
 }
