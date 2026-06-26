@@ -1940,43 +1940,60 @@ function removeOrcArrows(){
   orcArrows=[];
 }
 
-function _makeArrow(ox,oy,oz, dx,dy,dz, len){
-  const dir=new THREE.Vector3(dx,dy,dz).normalize();
-  const origin=new THREE.Vector3(ox,oy,oz);
-  const head=len*0.38;
-  const headW=len*0.26;
-  const arrow=new THREE.ArrowHelper(dir,origin,len,0xe05555,head,headW);
-  // épaissir le shaft (line)
-  if(arrow.line && arrow.line.material) arrow.line.material.linewidth=4;
-  threeScene.add(arrow);
-  orcArrows.push(arrow);
+// Crée une flèche 3D solide (cylindre + cône) — bien épaisse et visible
+function _makeSolidArrow(ox,oy,oz, dx,dy,dz, len){
+  const dir = new THREE.Vector3(dx,dy,dz).normalize();
+  const shaftR   = len * 0.055;
+  const shaftLen = len * 0.62;
+  const headR    = len * 0.13;
+  const headLen  = len * 0.38;
+
+  const mat = new THREE.MeshPhongMaterial({color:0xe05555, emissive:0x6b0000, specular:0xff4444, shininess:80});
+
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(shaftR, shaftR, shaftLen, 16), mat.clone());
+  const head  = new THREE.Mesh(new THREE.ConeGeometry(headR, headLen, 16), mat.clone());
+
+  // Orienter le cylindre/cône selon dir (par défaut Three.js oriente Y+)
+  const quaternion = new THREE.Quaternion();
+  quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir);
+
+  const grp = new THREE.Group();
+  shaft.position.set(0, shaftLen/2, 0);
+  head.position.set(0, shaftLen + headLen/2, 0);
+  grp.add(shaft);
+  grp.add(head);
+  grp.quaternion.copy(quaternion);
+  grp.position.set(ox, oy, oz);
+
+  threeScene.add(grp);
+  orcArrows.push(grp);
 }
 
-// Config flèches par sous-étape (coordonnées dans l'espace OBJ avant centrage)
-// Chaque entrée = [ [ox,oy,oz, dx,dy,dz, len], ... ]
-// Les coords sont dans le repère OBJ brut ; on les transforme via threeModel.position (= -cx,-cy,-cz)
+// Définitions des flèches par sous-étape, dans l'axe réel des tuyaux, en dessous des pièces
+// Basé sur l'analyse OBJ + schéma Pi085-051-DC002
 function _orcArrowDefs(itemId){
-  // Pompe ORC : 3 flèches comme sur le schéma — entrée basse (-Z), sortie droite (+X), sortie gauche (-X)
+  // POMPE ORC (098): brides 099(-X) et 100(+X) → flux en +X sur tuyaux latéraux
+  // + entrée basse de la pompe (tuyau descend vers -Z puis tourne)
   if(['orc2','orc100_2','orc40_2','mtvorc2'].includes(itemId)) return [
-    // entrée basse de la pompe → flux vers le bas (-Y)
-    [128, 60,  1132,   0,-1, 0,  220],
-    // sortie droite (+X)
-    [400, 212, 1132,   1, 0, 0,  200],
-    // sortie gauche (-X), connexion tuyauterie
-    [-150,212, 1132,  -1, 0, 0,  200],
+    // Flèche droite sur bride droite (+X) — sortie pompe
+    [ 340, 60, 1132,   1, 0, 0,  240],
+    // Flèche droite sur bride gauche (+X) — même sens flux circuit
+    [-200, 60, 1132,   1, 0, 0,  240],
+    // Flèche entrée basse ↘ (-Z vers la pompe)
+    [ 128, 60,  820,   0, 0, 1,  220],
   ];
-  // Filtre : flux de gauche à droite (+X)
+  // FILTRE (118/119): allongé en Z, flux de -Z vers +Z
   if(['orc5','orc100_5','mtvorc5'].includes(itemId)) return [
-    [-820, 220, -189,  1, 0, 0,  220],
+    [-592, 60, -420,   0, 0, 1,  220],
   ];
-  // Clapet anti-retour : flux en -Z (sens autorisé)
+  // CLAPET (120): tuyaux en Z, flux vers +Z (vers la pompe)
   if(['orc6','orc100_6','orc100_7','mtvorc6'].includes(itemId)) return [
-    [508, 212, 1050,   0, 0,-1,  200],
+    [ 508, 60,  680,   0, 0, 1,  220],
   ];
-  // ENO 40 filtre+clapet+bypass groupé
+  // ENO 40 filtre+clapet groupé
   if(itemId==='orc40_5') return [
-    [-820, 220, -189,  1, 0, 0,  200],
-    [508,  212, 1050,  0, 0,-1,  180],
+    [-592, 60, -420,   0, 0, 1,  200],
+    [ 508, 60,  680,   0, 0, 1,  200],
   ];
   return [];
 }
@@ -1994,12 +2011,10 @@ function addOrcArrows(toHighlight){
   }
   if(!activeItemId || !ORC_ARROW_STEPS.has(activeItemId)) return;
 
-  // Offset lié au centrage du modèle (threeModel.position = -cx,-cy,-cz)
   const off = threeModel ? threeModel.position : new THREE.Vector3(0,0,0);
-
   const defs = _orcArrowDefs(activeItemId);
   defs.forEach(([ox,oy,oz,dx,dy,dz,len])=>{
-    _makeArrow(ox+off.x, oy+off.y, oz+off.z, dx,dy,dz, len);
+    _makeSolidArrow(ox+off.x, oy+off.y, oz+off.z, dx,dy,dz, len);
   });
 }
 
