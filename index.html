@@ -1975,25 +1975,21 @@ function _orcArrowDefs(itemId){
   // POMPE ORC (098): brides 099(-X) et 100(+X) → flux en +X sur tuyaux latéraux
   // + entrée basse de la pompe (tuyau descend vers -Z puis tourne)
   if(['orc2','orc100_2','orc40_2','mtvorc2'].includes(itemId)) return [
-    // Flèche droite sur bride droite (+X) — sortie pompe
-    [ 340, 60, 1132,   1, 0, 0,  240],
-    // Flèche droite sur bride gauche (+X) — même sens flux circuit
-    [-200, 60, 1132,   1, 0, 0,  240],
-    // Flèche entrée basse ↘ (-Z vers la pompe)
-    [ 128, 60,  820,   0, 0, 1,  220],
+    // Flèche en dessous de la pompe — même sens que le clapet (+X)
+    [ 128, -80, 1132,  1, 0, 0,  220],
   ];
   // FILTRE (118/119): allongé en Z, flux de -Z vers +Z
   if(['orc5','orc100_5','mtvorc5'].includes(itemId)) return [
     [-592, 60, -420,   0, 0, 1,  220],
   ];
-  // CLAPET (120): tuyaux en Z, flux vers +Z (vers la pompe)
+  // CLAPET (120): flèche tournée 90° vers la droite (+X)
   if(['orc6','orc100_6','orc100_7','mtvorc6'].includes(itemId)) return [
-    [ 508, 60,  680,   0, 0, 1,  220],
+    [ 508, 60,  680,   1, 0, 0,  220],
   ];
   // ENO 40 filtre+clapet groupé
   if(itemId==='orc40_5') return [
     [-592, 60, -420,   0, 0, 1,  200],
-    [ 508, 60,  680,   0, 0, 1,  200],
+    [ 508, 60,  680,   1, 0, 0,  200],
   ];
   return [];
 }
