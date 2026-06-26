@@ -2229,8 +2229,16 @@ function loadOBJ(buf){
   let allMinX=Infinity,allMinY=Infinity,allMinZ=Infinity;
   let allMaxX=-Infinity,allMaxY=-Infinity,allMaxZ=-Infinity;
 
+  // Pièces remplacées par les turbineAcomplèteInes.5xxx dans le nouveau fichier CycleORC
+  const CYCLERC_REPLACED = new Set(['002','004','005','006']);
+
   objects.forEach(obj=>{
     if(obj.faces.length===0) return;
+    // Dans le fichier CycleORC, ignorer les Nouveau-Pi dont les IDs sont remplacés par 5xxx
+    if(isCycleORCOBJ() && obj.name.startsWith('Nouveau-Pi')){
+      const nm = obj.name.match(/\.(\d+)$/);
+      if(nm && CYCLERC_REPLACED.has(nm[1])) return;
+    }
     const pos=[],nm=[],uv2=[];
     obj.faces.forEach(fverts=>{
       const tri=fverts.length===4?[[0,1,2],[0,2,3]]:[[0,1,2]];
