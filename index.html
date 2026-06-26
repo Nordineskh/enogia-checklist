@@ -1655,7 +1655,9 @@ function initThree(){
 function resizeRenderer(){
   const wrap=document.getElementById('canvasWrap');
   if(!threeRenderer||!wrap)return;
-  const w=wrap.clientWidth,h=Math.max(280,wrap.clientHeight);
+  const w=wrap.clientWidth||wrap.offsetWidth||600;
+  const h=Math.max(280,wrap.clientHeight||wrap.offsetHeight||280);
+  if(w===0) return;
   threeRenderer.setSize(w,h);
   if(threeCamera){threeCamera.aspect=w/h;threeCamera.updateProjectionMatrix();}
 }
@@ -2195,7 +2197,8 @@ function getBaseColorForPart(num, diag){
 }
 
 function loadOBJ(buf){
-  const text=new TextDecoder().decode(buf);
+  // buf peut être un ArrayBuffer (chargement initial) ou une string (restauration depuis Firestore)
+  const text = (typeof buf === 'string') ? buf : new TextDecoder().decode(buf);
   // Détecter le nom du fichier depuis la 1ère ligne de commentaire Blender si disponible
   // (sinon on conserve ce qui a été défini lors du chargement)
   const verts=[],uvs=[],normals=[];
@@ -2383,8 +2386,10 @@ async function restoreModel(){
     document.getElementById('modelName').textContent=m.name;
     currentObjFilename = m.name; // pour la coloration par fichier
     if(!threeRenderer)initThree();
+    resizeRenderer(); // s'assurer des bonnes dimensions avant le chargement
     if(m.ext==='obj')loadOBJ(m.buf);
     else loadGLB(m.buf);
+    setTimeout(resizeRenderer, 50); // re-resize après rendu
     // Highlights appliqués dans loadOBJ lui-même (setTimeout)
   } else {
     document.getElementById('loading3d').style.display='none';
@@ -2737,7 +2742,7 @@ function renderStep(){
   document.getElementById('btnNext').textContent=currentStep===ACTIVE_STEPS.length-1?'📄 Rapport final ▶':'Suivant ▶';
 
   // 3D viewer
-  setTimeout(()=>{resizeRenderer();restoreModel();},50);
+  setTimeout(async()=>{ resizeRenderer(); await restoreModel(); setTimeout(resizeRenderer,100); },100);
   // (restoreTimer supprimé — les timers sont gérés par restoreActionTimers dans loadSession)
   // Mise à jour highlight pièces 3D (si modèle déjà chargé)
   setTimeout(applyPartHighlights, 120);
