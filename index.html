@@ -2105,7 +2105,7 @@ const PART_COLOR_LIGHTGRAY= 0xb0b0b0;  // toutes les autres pièces (gris clair)
 // Numéros de pièces (suffixe OBJ) à colorer en gris foncé — commun à tous les fichiers
 const PARTS_DARKGRAY = ['089','094','092','091','093','088'];
 // Numéros de pièces à colorer en beige — uniquement pour les fichiers turbine (pas boucle chaude)
-const PARTS_BEIGE_TURBINE = ['005'];
+const PARTS_BEIGE_TURBINE = ['005','5005'];
 // Numéros de pièces à forcer en noir (capteurs, petites pièces identifiées individuellement)
 const PARTS_BLACK = ['099','098','026','027','032','030','087','106','107','105','031','104','086'];
 
@@ -2115,7 +2115,8 @@ const PARTS_DARKGRAY_ORC = [
   // Évaporateur + Condensateur (step orc3)
   '842','085','1140','179','1169','161','174','160','176','164','162','185',
   // Volutes + Turbines (step orc4)
-  '158','003','159','001','175','004','177','002','1005','1247','1038','034'
+  '158','003','159','001','175','004','177','002','1005','1247','1038','034',
+  '175','5004','177','5002'
 ];
 // Visserie Cycle ORC → noir (petites pièces, diag < seuil géré aussi par taille)
 
@@ -2144,7 +2145,7 @@ const PARTS_BLACK_BOUCLECHAUDE = [
 
 // GRIS CLAIR : cylindres creux / raccords (mindim 30-90mm, allongés)
 const PARTS_GRAY_BOUCLECHAUDE = [
-  '006','008',
+  '006','008','5006',
   '011','018','022',
   '037','038','039','040','041','042','043',
   '072','073','074','075','076','077','078',
@@ -2154,7 +2155,7 @@ const PARTS_GRAY_BOUCLECHAUDE = [
 
 // GRIS FONCE : grosses pièces structurelles (min>160mm) + pièce 117 base
 // (null = pièce 117 sans suffixe, gérée séparément dans getBaseColorForPart)
-const PARTS_DARKGRAY_BOUCLECHAUDE = ['001','002','003','004','005','009','010'];
+const PARTS_DARKGRAY_BOUCLECHAUDE = ['001','002','003','004','005','009','010','5002','5004','5005'];
 // Seuil de taille (diagonale de la bounding box) sous lequel une pièce est
 // considérée comme une "petite pièce" (vis, capteur, raccord...) → noir
 const SMALL_PART_DIAG_THRESHOLD = 60;
