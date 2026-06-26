@@ -1896,11 +1896,51 @@ function removeOrcArrows(){
   orcArrows=[];
 }
 
+function _makeArrow(ox,oy,oz, dx,dy,dz, len){
+  const dir=new THREE.Vector3(dx,dy,dz).normalize();
+  const origin=new THREE.Vector3(ox,oy,oz);
+  const head=len*0.38;
+  const headW=len*0.26;
+  const arrow=new THREE.ArrowHelper(dir,origin,len,0xe05555,head,headW);
+  // épaissir le shaft (line)
+  if(arrow.line && arrow.line.material) arrow.line.material.linewidth=4;
+  threeScene.add(arrow);
+  orcArrows.push(arrow);
+}
+
+// Config flèches par sous-étape (coordonnées dans l'espace OBJ avant centrage)
+// Chaque entrée = [ [ox,oy,oz, dx,dy,dz, len], ... ]
+// Les coords sont dans le repère OBJ brut ; on les transforme via threeModel.position (= -cx,-cy,-cz)
+function _orcArrowDefs(itemId){
+  // Pompe ORC : 3 flèches comme sur le schéma — entrée basse (-Z), sortie droite (+X), sortie gauche (-X)
+  if(['orc2','orc100_2','orc40_2','mtvorc2'].includes(itemId)) return [
+    // entrée basse de la pompe → flux vers le bas (-Y)
+    [128, 60,  1132,   0,-1, 0,  220],
+    // sortie droite (+X)
+    [400, 212, 1132,   1, 0, 0,  200],
+    // sortie gauche (-X), connexion tuyauterie
+    [-150,212, 1132,  -1, 0, 0,  200],
+  ];
+  // Filtre : flux de gauche à droite (+X)
+  if(['orc5','orc100_5','mtvorc5'].includes(itemId)) return [
+    [-820, 220, -189,  1, 0, 0,  220],
+  ];
+  // Clapet anti-retour : flux en -Z (sens autorisé)
+  if(['orc6','orc100_6','orc100_7','mtvorc6'].includes(itemId)) return [
+    [508, 212, 1050,   0, 0,-1,  200],
+  ];
+  // ENO 40 filtre+clapet+bypass groupé
+  if(itemId==='orc40_5') return [
+    [-820, 220, -189,  1, 0, 0,  200],
+    [508,  212, 1050,  0, 0,-1,  180],
+  ];
+  return [];
+}
+
 function addOrcArrows(toHighlight){
   removeOrcArrows();
   if(!isCycleORCOBJ() || toHighlight.length===0) return;
 
-  // Vérifier que la sous-étape active nécessite une flèche
   if(!session || !ACTIVE_STEPS || !ACTIVE_STEPS[currentStep]) return;
   const step=ACTIVE_STEPS[currentStep];
   const sstate=session.steps[currentStep];
@@ -1910,35 +1950,13 @@ function addOrcArrows(toHighlight){
   }
   if(!activeItemId || !ORC_ARROW_STEPS.has(activeItemId)) return;
 
-  // Calculer la bounding box globale des pièces en rouge
-  let minX=Infinity,minY=Infinity,minZ=Infinity;
-  let maxX=-Infinity,maxY=-Infinity,maxZ=-Infinity;
-  let found=false;
+  // Offset lié au centrage du modèle (threeModel.position = -cx,-cy,-cz)
+  const off = threeModel ? threeModel.position : new THREE.Vector3(0,0,0);
 
-  toHighlight.forEach(num=>{
-    const mesh=namedMeshes[num];
-    if(!mesh) return;
-    mesh.geometry.computeBoundingBox();
-    const box=mesh.geometry.boundingBox.clone();
-    if(threeModel) box.applyMatrix4(threeModel.matrixWorld);
-    minX=Math.min(minX,box.min.x); minY=Math.min(minY,box.min.y); minZ=Math.min(minZ,box.min.z);
-    maxX=Math.max(maxX,box.max.x); maxY=Math.max(maxY,box.max.y); maxZ=Math.max(maxZ,box.max.z);
-    found=true;
+  const defs = _orcArrowDefs(activeItemId);
+  defs.forEach(([ox,oy,oz,dx,dy,dz,len])=>{
+    _makeArrow(ox+off.x, oy+off.y, oz+off.z, dx,dy,dz, len);
   });
-
-  if(!found) return;
-
-  const cx=(minX+maxX)/2;
-  const cy=minY - (maxY-minY)*0.35; // légèrement en dessous du groupe
-  const cz=(minZ+maxZ)/2;
-  const span=Math.max(maxX-minX, maxY-minY, maxZ-minZ);
-  const arrowLen=Math.max(span*0.55, 40);
-
-  const dir=new THREE.Vector3(1,0,0); // pointe vers la droite
-  const origin=new THREE.Vector3(cx - arrowLen*0.5, cy, cz);
-  const arrow=new THREE.ArrowHelper(dir, origin, arrowLen, 0xe05555, arrowLen*0.35, arrowLen*0.22);
-  threeScene.add(arrow);
-  orcArrows.push(arrow);
 }
 
 function isTurbineAStep(step){
