@@ -1881,6 +1881,65 @@ const TURBINE_A_STEP_PARTS = {
 // Objets nommés dans le viewer 3D (THREE.Mesh), par suffixe numérique
 let namedMeshes = {}; // { '008': Mesh, '110': Mesh, ... }
 let currentObjFilename = ''; // nom du fichier OBJ actuellement chargé (pour la coloration par fichier)
+let orcArrows = []; // flèches 3D injectées dans la scène pour Cycle ORC
+
+// IDs sous-étapes ORC nécessitant une flèche directionnelle rouge
+const ORC_ARROW_STEPS = new Set([
+  'orc2','orc100_2','orc40_2','mtvorc2',          // Pompe ORC
+  'orc5','orc100_5','mtvorc5',                     // Filtre
+  'orc6','orc100_6','orc100_7','mtvorc6',          // Clapet
+  'orc40_5'                                        // Filtre + Clapet + Bypass (ENO 40)
+]);
+
+function removeOrcArrows(){
+  orcArrows.forEach(a=>{ if(threeScene) threeScene.remove(a); });
+  orcArrows=[];
+}
+
+function addOrcArrows(toHighlight){
+  removeOrcArrows();
+  if(!isCycleORCOBJ() || toHighlight.length===0) return;
+
+  // Vérifier que la sous-étape active nécessite une flèche
+  if(!session || !ACTIVE_STEPS || !ACTIVE_STEPS[currentStep]) return;
+  const step=ACTIVE_STEPS[currentStep];
+  const sstate=session.steps[currentStep];
+  let activeItemId=null;
+  for(let i=0;i<step.items.length;i++){
+    if(!sstate.items[i].opDone){ activeItemId=step.items[i].id; break; }
+  }
+  if(!activeItemId || !ORC_ARROW_STEPS.has(activeItemId)) return;
+
+  // Calculer la bounding box globale des pièces en rouge
+  let minX=Infinity,minY=Infinity,minZ=Infinity;
+  let maxX=-Infinity,maxY=-Infinity,maxZ=-Infinity;
+  let found=false;
+
+  toHighlight.forEach(num=>{
+    const mesh=namedMeshes[num];
+    if(!mesh) return;
+    mesh.geometry.computeBoundingBox();
+    const box=mesh.geometry.boundingBox.clone();
+    if(threeModel) box.applyMatrix4(threeModel.matrixWorld);
+    minX=Math.min(minX,box.min.x); minY=Math.min(minY,box.min.y); minZ=Math.min(minZ,box.min.z);
+    maxX=Math.max(maxX,box.max.x); maxY=Math.max(maxY,box.max.y); maxZ=Math.max(maxZ,box.max.z);
+    found=true;
+  });
+
+  if(!found) return;
+
+  const cx=(minX+maxX)/2;
+  const cy=minY - (maxY-minY)*0.35; // légèrement en dessous du groupe
+  const cz=(minZ+maxZ)/2;
+  const span=Math.max(maxX-minX, maxY-minY, maxZ-minZ);
+  const arrowLen=Math.max(span*0.55, 40);
+
+  const dir=new THREE.Vector3(1,0,0); // pointe vers la droite
+  const origin=new THREE.Vector3(cx - arrowLen*0.5, cy, cz);
+  const arrow=new THREE.ArrowHelper(dir, origin, arrowLen, 0xe05555, arrowLen*0.35, arrowLen*0.22);
+  threeScene.add(arrow);
+  orcArrows.push(arrow);
+}
 
 function isTurbineAStep(step){
   return step && (
@@ -1960,6 +2019,8 @@ function applyPartHighlights(){
       mesh.material.shininess=25;
     }
   });
+
+  addOrcArrows(toHighlight);
 }
 
 // Palette de couleurs pour le rendu du modèle 3D
@@ -2196,6 +2257,7 @@ function showPlaceholderMesh(msg){
 
 function placeModel(obj){
   if(threeModel&&threeScene)threeScene.remove(threeModel);
+  removeOrcArrows();
   threeModel=obj;
   threeScene.add(threeModel);
   resetCamera();
