@@ -2278,10 +2278,12 @@ function loadOBJ(buf){
       }
     }
 
-    // Track bounds
-    const box=partBox;
-    allMinX=Math.min(allMinX,box.min.x);allMinY=Math.min(allMinY,box.min.y);allMinZ=Math.min(allMinZ,box.min.z);
-    allMaxX=Math.max(allMaxX,box.max.x);allMaxY=Math.max(allMaxY,box.max.y);allMaxZ=Math.max(allMaxZ,box.max.z);
+    // Track bounds — exclure les pièces turbineAcomplèteInes (positionnées en éclaté loin du centre)
+    if(!obj.name.startsWith('turbineAcompl')){
+      const box=partBox;
+      allMinX=Math.min(allMinX,box.min.x);allMinY=Math.min(allMinY,box.min.y);allMinZ=Math.min(allMinZ,box.min.z);
+      allMaxX=Math.max(allMaxX,box.max.x);allMaxY=Math.max(allMaxY,box.max.y);allMaxZ=Math.max(allMaxZ,box.max.z);
+    }
   });
 
   if(grp.children.length===0){showPlaceholderMesh('OBJ vide ou non supporté');return;}
