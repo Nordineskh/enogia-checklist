@@ -2289,8 +2289,9 @@ function loadOBJ(buf){
       }
     }
 
-    // Track bounds — exclure les pièces turbineAcomplèteInes (positionnées en éclaté loin du centre)
-    if(!obj.name.startsWith('turbineAcompl')){
+    // Track bounds — exclure les pièces turbineAcomplèteInes ET les pièces 5xxx (positionnées en éclaté loin du centre)
+    const isFarPart = obj.name.startsWith('turbineAcompl') || (isCycleORCOBJ() && partNum && parseInt(partNum) >= 5000);
+    if(!isFarPart){
       const box=partBox;
       allMinX=Math.min(allMinX,box.min.x);allMinY=Math.min(allMinY,box.min.y);allMinZ=Math.min(allMinZ,box.min.z);
       allMaxX=Math.max(allMaxX,box.max.x);allMaxY=Math.max(allMaxY,box.max.y);allMaxZ=Math.max(allMaxZ,box.max.z);
