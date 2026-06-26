@@ -2270,8 +2270,9 @@ function loadOBJ(buf){
     // Extract numeric suffix (e.g. "turbineAcomplèteInes.008" → "008")
     // Pour le fichier Cycle ORC : ignorer les objets turbineA qui écraseraient les pièces ORC
     if(partNum){
-      if(isCycleORCOBJ() && !obj.name.startsWith('Nouveau-Pi')){
+      if(isCycleORCOBJ() && !obj.name.startsWith('Nouveau-Pi') && parseInt(partNum) < 5000){
         // objet parasite (ex: turbineAcomplèteInes.001) → ne pas écraser la vraie pièce ORC
+        // Exception : pièces 5001-5006 (turbine/clapet nouvelles) → on les enregistre
       } else {
         namedMeshes[partNum] = mesh;
       }
