@@ -1575,13 +1575,56 @@ function initThree(){
   });
   c.addEventListener('mousemove',e=>{
     const dx=e.clientX-prevMouse.x, dy=e.clientY-prevMouse.y;
-    if(isDragging){rotY+=dx*0.5;rotX+=dy*0.5;}
-    if(isRightDragging){panOffset.x+=dx*0.005;panOffset.y-=dy*0.005;}
+    if(isDragging){rotY+=dx*0.5;rotX+=dy*0.5;rotX=Math.max(-89,Math.min(89,rotX));}
+    if(isRightDragging){
+      // Pan proportionnel au zoomDist pour un déplacement cohérent quelle que soit la distance
+      const panSpd=zoomDist*0.0012;
+      const r=rotY*Math.PI/180;
+      // Déplacer dans le plan perpendiculaire à la vue (X écran = droit caméra, Y écran = haut caméra)
+      panOffset.x += (-Math.cos(r)*dx + 0)*panSpd;
+      panOffset.z  = (panOffset.z||0) + Math.sin(r)*dx*panSpd;
+      panOffset.y += dy*panSpd;
+    }
     prevMouse={x:e.clientX,y:e.clientY};
   });
   c.addEventListener('mouseup',()=>{isDragging=false;isRightDragging=false;});
   c.addEventListener('mouseleave',()=>{isDragging=false;isRightDragging=false;});
-  c.addEventListener('wheel',e=>{const spd=Math.max(0.05, zoomDist*0.0012);zoomDist=Math.max(0.5,Math.min(50000,zoomDist+e.deltaY*spd));e.preventDefault();},{passive:false});
+
+  // Zoom vers le curseur souris
+  c.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const rect=c.getBoundingClientRect();
+    // Position souris normalisée [-1,1]
+    const mx=((e.clientX-rect.left)/rect.width)*2-1;
+    const my=-((e.clientY-rect.top)/rect.height)*2+1;
+
+    const spd=Math.max(0.05, zoomDist*0.0012);
+    const delta=e.deltaY*spd;
+    const factor=delta/zoomDist; // fraction du zoom à déplacer le pivot
+
+    // Direction caméra → centre de la scène dans l'espace monde
+    const r=rotY*Math.PI/180, rx=rotX*Math.PI/180;
+    const camX=Math.sin(r)*Math.cos(rx)*zoomDist+panOffset.x;
+    const camY=Math.sin(rx)*zoomDist+panOffset.y;
+    const camZ=Math.cos(r)*Math.cos(rx)*zoomDist+(panOffset.z||0);
+
+    // Vecteur "droite" et "haut" de la caméra
+    const rightX=Math.cos(r), rightZ=-Math.sin(r);
+    const upX=-Math.sin(r)*Math.sin(rx), upY=Math.cos(rx), upZ=-Math.cos(r)*Math.sin(rx);
+
+    // Point dans la scène sous le curseur (approximation plan focal)
+    const worldX=panOffset.x + mx*rightX*zoomDist*0.8 + my*upX*zoomDist*0.8;
+    const worldY=panOffset.y + my*upY*zoomDist*0.8;
+    const worldZ=(panOffset.z||0) + mx*rightZ*zoomDist*0.8 + my*upZ*zoomDist*0.8;
+
+    // Décaler le pivot vers le point sous le curseur proportionnellement au zoom
+    const t=Math.min(0.35, Math.abs(factor)*1.2) * Math.sign(delta);
+    panOffset.x += (worldX-panOffset.x)*t*(-1);
+    panOffset.y += (worldY-panOffset.y)*t*(-1);
+    panOffset.z  = (panOffset.z||0) + (worldZ-(panOffset.z||0))*t*(-1);
+
+    zoomDist=Math.max(0.5,Math.min(50000,zoomDist+delta));
+  },{passive:false});
   c.addEventListener('contextmenu',e=>e.preventDefault());
 
   // Touch
@@ -1622,14 +1665,15 @@ function animate(){
   requestAnimationFrame(animate);
   if(autoRotate)rotY+=0.3;
   const r=rotY*Math.PI/180,rx=rotX*Math.PI/180;
+  const pz=panOffset.z||0;
   threeCamera.position.x=Math.sin(r)*Math.cos(rx)*zoomDist+panOffset.x;
   threeCamera.position.y=Math.sin(rx)*zoomDist+panOffset.y;
-  threeCamera.position.z=Math.cos(r)*Math.cos(rx)*zoomDist;
-  threeCamera.lookAt(panOffset.x,panOffset.y,0);
+  threeCamera.position.z=Math.cos(r)*Math.cos(rx)*zoomDist+pz;
+  threeCamera.lookAt(panOffset.x,panOffset.y,pz);
   threeRenderer.render(threeScene,threeCamera);
 }
 
-function resetCamera(){rotX=20;rotY=30;zoomDist=modelZoomDist;panOffset={x:0,y:0};}
+function resetCamera(){rotX=20;rotY=30;zoomDist=modelZoomDist;panOffset={x:0,y:0,z:0};}
 function toggleWire(){
   wireframe=!wireframe;
   if(threeModel)threeModel.traverse(c=>{if(c.isMesh&&c.material)c.material.wireframe=wireframe;});
