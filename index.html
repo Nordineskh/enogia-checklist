@@ -1771,12 +1771,14 @@ async function fetchModel3D(stepIndex){
     if(!snap.exists()) return null;
     const data=snap.data();
 
+    const texts=new Array(data.totalChunks).fill('');
     const chunkPromises=[];
     for(let i=0;i<data.totalChunks;i++){
-      chunkPromises.push(window._fsGetDoc(window._fsDoc(db,'stepModelChunks', baseId+'_'+i)));
+      const idx=i;
+      chunkPromises.push(window._fsGetDoc(window._fsDoc(db,'stepModelChunks', baseId+'_'+idx)).then(s=>{ if(s.exists()) texts[idx]=s.data().text; }));
     }
-    const chunkSnaps=await Promise.all(chunkPromises);
-    const text=chunkSnaps.map(s=>s.exists()?s.data().text:'').join('');
+    await Promise.all(chunkPromises);
+    const text=texts.join('');
 
     const buf=new TextEncoder().encode(text).buffer;
     return {name:data.name,buf,ext:data.ext};
@@ -1831,12 +1833,14 @@ async function fetchMachineModel3D(modelId,stepIndex){
     if(!snap.exists()) return null;
     const data=snap.data();
 
+    const texts=new Array(data.totalChunks).fill('');
     const chunkPromises=[];
     for(let i=0;i<data.totalChunks;i++){
-      chunkPromises.push(window._fsGetDoc(window._fsDoc(db,'machineModelFileChunks', baseId+'_'+i)));
+      const idx=i;
+      chunkPromises.push(window._fsGetDoc(window._fsDoc(db,'machineModelFileChunks', baseId+'_'+idx)).then(s=>{ if(s.exists()) texts[idx]=s.data().text; }));
     }
-    const chunkSnaps=await Promise.all(chunkPromises);
-    const text=chunkSnaps.map(s=>s.exists()?s.data().text:'').join('');
+    await Promise.all(chunkPromises);
+    const text=texts.join('');
 
     const buf=new TextEncoder().encode(text).buffer;
     return {name:data.name,buf,ext:data.ext};
@@ -2030,9 +2034,12 @@ function isTurbineAStep(step){
 
 // Retourne true si le fichier OBJ chargé est celui du Cycle ORC
 function isCycleORCOBJ(){
-  return currentObjFilename.toLowerCase().includes('cycleorc') ||
-         currentObjFilename.toLowerCase().includes('cycle_orc') ||
-         currentObjFilename.toLowerCase().includes('orc_cycle');
+  const n = currentObjFilename.toLowerCase();
+  return n.includes('cycleorc') ||
+         n.includes('cycle_orc') ||
+         n.includes('orc_cycle') ||
+         n.includes('orc') ||          // ex: "éclaté_ORC_etape3.obj"
+         n.includes('etape');           // sécurité supplémentaire pour les vues éclatées par étape
 }
 
 function getHighlightedParts(){
@@ -2289,8 +2296,9 @@ function loadOBJ(buf){
       }
     }
 
-    // Track bounds — exclure les pièces turbineAcomplèteInes ET les pièces 5xxx (positionnées en éclaté loin du centre)
-    const isFarPart = obj.name.startsWith('turbineAcompl') || (isCycleORCOBJ() && partNum && parseInt(partNum) >= 5000);
+    // Track bounds — exclure les pièces 5xxx (positionnées en éclaté loin du centre)
+    // (l'ancien check "turbineAcompl" est supprimé, les noms ont changé)
+    const isFarPart = (isCycleORCOBJ() && partNum && parseInt(partNum) >= 5000);
     if(!isFarPart){
       const box=partBox;
       allMinX=Math.min(allMinX,box.min.x);allMinY=Math.min(allMinY,box.min.y);allMinZ=Math.min(allMinZ,box.min.z);
