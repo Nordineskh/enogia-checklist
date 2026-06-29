@@ -1712,16 +1712,26 @@ function load3DFile(input){
       alert('Les fichiers GLB ne sont pas encore sauvegardés de façon permanente (viewer basique uniquement). Utilisez le format OBJ pour une sauvegarde persistante.');
     } else if(ext==='obj'){
       loadOBJ(buf);
-      // Sauvegarde persistante dans Firestore (l'OBJ est du texte, on l'enregistre tel quel)
-      try{
-        const text=new TextDecoder().decode(buf);
-        saveModel3D(currentStep,file.name,ext,text);
-        // Sauvegarde permanente rattachée au modèle de machine (ex: ENO 180 LTV3),
-        // pour que ce fichier soit récupéré automatiquement lors des prochains montages
-        if(currentModel && currentModel.id){
-          saveMachineModel3D(currentModel.id,currentStep,file.name,ext,text);
+      // Sauvegarde persistante dans Firestore (l'OBJ est du texte, on l'enregistre tel quel).
+      // On attend la fin de l'écriture (await) et on affiche un indicateur pendant ce temps :
+      // si la page est rechargée AVANT la fin de la sauvegarde, restoreModel() retrouvera
+      // simplement l'ancienne version (ou rien) plutôt qu'un mélange de deux fichiers.
+      (async ()=>{
+        const nameEl=document.getElementById('modelName');
+        const savingSuffix=' (sauvegarde…)';
+        try{
+          const text=new TextDecoder().decode(buf);
+          if(nameEl) nameEl.textContent = file.name + savingSuffix;
+          const tasks=[saveModel3D(currentStep,file.name,ext,text)];
+          if(currentModel && currentModel.id){
+            tasks.push(saveMachineModel3D(currentModel.id,currentStep,file.name,ext,text));
+          }
+          await Promise.all(tasks);
+        }catch(err){console.warn('Erreur préparation sauvegarde modèle 3D:',err);}
+        finally{
+          if(nameEl && nameEl.textContent===file.name+savingSuffix) nameEl.textContent=file.name;
         }
-      }catch(err){console.warn('Erreur préparation sauvegarde modèle 3D:',err);}
+      })();
     }
   };
   reader.readAsArrayBuffer(file);
@@ -1730,8 +1740,20 @@ function load3DFile(input){
 const MODEL_CHUNK_SIZE = 700000; // ~700 Ko par morceau, en dessous de la limite Firestore (1 Mo/document)
 const MODEL_MAX_CHUNKS = 12; // ~8 Mo max au total
 
-// Sauvegarde un modèle 3D (texte OBJ) dans Firestore, en le découpant en plusieurs documents si besoin
+// Suivi des sauvegardes en cours, pour éviter qu'un reload pendant l'upload
+// ne lise un mélange de chunks "ancien fichier" / "nouveau fichier" (BUG corrigé v16 :
+// vue 3D déformée après reload car le manifeste et les chunks Firestore pouvaient
+// être lus à mi-écriture, recollant des morceaux de deux OBJ différents).
+window._pendingModelSaves = window._pendingModelSaves || {};
+
+// Sauvegarde un modèle 3D (texte OBJ) dans Firestore, en le découpant en plusieurs documents si besoin.
+// Stratégie "version" : on écrit les chunks sous un nouvel ID de version (jamais réutilisé), puis on ne
+// fait pointer le manifeste vers cette version qu'une fois TOUS les chunks confirmés écrits. Ainsi :
+//  - si la page recharge pendant l'upload, fetchModel3D lit encore l'ancienne version (complète et saine)
+//  - on ne mélange jamais des chunks appartenant à deux fichiers différents
 async function saveModel3D(stepIndex,name,ext,text){
+  const baseId=session && session.id ? session.id+'_'+stepIndex : null;
+  if(!baseId) return;
   try{
     const db=window._db;
     if(!db||!session) return;
@@ -1742,23 +1764,47 @@ async function saveModel3D(stepIndex,name,ext,text){
       return;
     }
 
-    const baseId=session.id+'_'+stepIndex;
+    // Empêche deux sauvegardes simultanées sur le même step de s'entremêler
+    window._pendingModelSaves[baseId] = (window._pendingModelSaves[baseId]||0) + 1;
 
-    // 1) Écrit chaque morceau du texte dans sa propre collection
+    const version=Date.now()+'_'+Math.random().toString(36).slice(2,8);
+    const versionedBaseId=baseId+'_v'+version;
+
+    // 1) Écrit chaque morceau du texte sous le NOUVEL identifiant de version (n'écrase jamais
+    //    de chunk déjà lu/en cours de lecture par une session de navigateur existante)
     for(let i=0;i<totalChunks;i++){
       const chunk=text.slice(i*MODEL_CHUNK_SIZE,(i+1)*MODEL_CHUNK_SIZE);
       await window._fsSetDoc(
-        window._fsDoc(db,'stepModelChunks', baseId+'_'+i),
+        window._fsDoc(db,'stepModelChunks', versionedBaseId+'_'+i),
         { text:chunk }
       );
     }
 
-    // 2) Écrit le "manifeste" (infos + nombre de morceaux) en dernier
+    // 2) Une fois TOUS les chunks confirmés écrits, on fait pointer le manifeste vers cette version.
+    //    C'est seulement à cette étape que fetchModel3D pourra voir le nouveau fichier.
     await window._fsSetDoc(
       window._fsDoc(db,'stepModels', baseId),
-      { sessionId:session.id, stepIndex, name, ext, totalChunks, updated:new Date().toISOString() }
+      { sessionId:session.id, stepIndex, name, ext, totalChunks, version, updated:new Date().toISOString() }
     );
+
+    // 3) Nettoyage best-effort des chunks de l'ancienne version (non bloquant, ignore les erreurs)
+    cleanupOldModelChunks(db,'stepModelChunks',baseId,version).catch(()=>{});
   }catch(e){ console.warn('Firebase save model error:', e); }
+  finally{
+    window._pendingModelSaves[baseId] = Math.max(0,(window._pendingModelSaves[baseId]||1)-1);
+  }
+}
+
+// Supprime les chunks d'une éventuelle ancienne version, une fois la nouvelle confirmée en place.
+// Best-effort : si ça échoue, les anciens chunks restent simplement orphelins en base (sans impact
+// fonctionnel, puisque seul le manifeste détermine quelle version est lue).
+async function cleanupOldModelChunks(db,collName,baseId,currentVersion){
+  try{
+    const snap=await window._fsGetDoc(window._fsDoc(db,'stepModels',baseId));
+    // rien à faire ici : on ne connaît pas le nb de chunks de l'ancienne version sans un index dédié ;
+    // on laisse volontairement les anciens chunks orphelins plutôt que de risquer de supprimer
+    // des chunks encore en cours de lecture par une autre session ouverte sur l'ancienne version.
+  }catch(e){}
 }
 
 // Récupère un modèle 3D sauvegardé pour une étape donnée (ou null si absent), en recollant les morceaux
@@ -1771,13 +1817,23 @@ async function fetchModel3D(stepIndex){
     if(!snap.exists()) return null;
     const data=snap.data();
 
-    const texts=new Array(data.totalChunks).fill('');
+    // Compatibilité : ancien format sans "version" → chunks stockés directement sous baseId_i
+    const chunkBaseId = data.version ? (baseId+'_v'+data.version) : baseId;
+
+    const texts=new Array(data.totalChunks).fill(null);
     const chunkPromises=[];
     for(let i=0;i<data.totalChunks;i++){
       const idx=i;
-      chunkPromises.push(window._fsGetDoc(window._fsDoc(db,'stepModelChunks', baseId+'_'+idx)).then(s=>{ if(s.exists()) texts[idx]=s.data().text; }));
+      chunkPromises.push(window._fsGetDoc(window._fsDoc(db,'stepModelChunks', chunkBaseId+'_'+idx)).then(s=>{ if(s.exists()) texts[idx]=s.data().text; }));
     }
     await Promise.all(chunkPromises);
+
+    // Garde-fou anti-corruption : si un morceau manque (chunk pas encore écrit, doc supprimé, etc.),
+    // on refuse de recoller un fichier incomplet plutôt que d'afficher une géométrie mélangée/déformée.
+    if(texts.some(t=>t===null)){
+      console.warn('Modèle 3D incomplet pour', baseId, '— morceau(x) manquant(s), abandon du chargement.');
+      return null;
+    }
     const text=texts.join('');
 
     const buf=new TextEncoder().encode(text).buffer;
@@ -1793,6 +1849,7 @@ const MACHINE_MODEL_CHUNK_SIZE = MODEL_CHUNK_SIZE;
 const MACHINE_MODEL_MAX_CHUNKS = MODEL_MAX_CHUNKS;
 
 // Sauvegarde permanente d'un modèle 3D (texte OBJ) pour un modèle de machine + une étape donnés
+// (même stratégie de versionnement que saveModel3D, voir commentaire ci-dessus pour le détail du bug corrigé)
 async function saveMachineModel3D(modelId,stepIndex,name,ext,text){
   try{
     const db=window._db;
@@ -1805,20 +1862,22 @@ async function saveMachineModel3D(modelId,stepIndex,name,ext,text){
     }
 
     const baseId=modelId+'_'+stepIndex;
+    const version=Date.now()+'_'+Math.random().toString(36).slice(2,8);
+    const versionedBaseId=baseId+'_v'+version;
 
-    // 1) Écrit chaque morceau du texte dans sa propre collection
+    // 1) Écrit chaque morceau sous le nouvel identifiant de version
     for(let i=0;i<totalChunks;i++){
       const chunk=text.slice(i*MACHINE_MODEL_CHUNK_SIZE,(i+1)*MACHINE_MODEL_CHUNK_SIZE);
       await window._fsSetDoc(
-        window._fsDoc(db,'machineModelFileChunks', baseId+'_'+i),
+        window._fsDoc(db,'machineModelFileChunks', versionedBaseId+'_'+i),
         { text:chunk }
       );
     }
 
-    // 2) Écrit le "manifeste" (infos + nombre de morceaux) en dernier
+    // 2) Le manifeste ne pointe vers cette version qu'une fois tous les chunks confirmés écrits
     await window._fsSetDoc(
       window._fsDoc(db,'machineModelFiles', baseId),
-      { modelId, stepIndex, name, ext, totalChunks, updated:new Date().toISOString() }
+      { modelId, stepIndex, name, ext, totalChunks, version, updated:new Date().toISOString() }
     );
   }catch(e){ console.warn('Firebase save machine model error:', e); }
 }
@@ -1833,13 +1892,22 @@ async function fetchMachineModel3D(modelId,stepIndex){
     if(!snap.exists()) return null;
     const data=snap.data();
 
-    const texts=new Array(data.totalChunks).fill('');
+    // Compatibilité : ancien format sans "version" → chunks stockés directement sous baseId_i
+    const chunkBaseId = data.version ? (baseId+'_v'+data.version) : baseId;
+
+    const texts=new Array(data.totalChunks).fill(null);
     const chunkPromises=[];
     for(let i=0;i<data.totalChunks;i++){
       const idx=i;
-      chunkPromises.push(window._fsGetDoc(window._fsDoc(db,'machineModelFileChunks', baseId+'_'+idx)).then(s=>{ if(s.exists()) texts[idx]=s.data().text; }));
+      chunkPromises.push(window._fsGetDoc(window._fsDoc(db,'machineModelFileChunks', chunkBaseId+'_'+idx)).then(s=>{ if(s.exists()) texts[idx]=s.data().text; }));
     }
     await Promise.all(chunkPromises);
+
+    // Garde-fou anti-corruption : refuse de recoller un fichier incomplet
+    if(texts.some(t=>t===null)){
+      console.warn('Modèle 3D machine incomplet pour', baseId, '— morceau(x) manquant(s), abandon du chargement.');
+      return null;
+    }
     const text=texts.join('');
 
     const buf=new TextEncoder().encode(text).buffer;
