@@ -2385,10 +2385,14 @@ async function restoreModel(){
     document.getElementById('modelName').textContent=m.name;
     currentObjFilename = m.name; // pour la coloration par fichier
     if(!threeRenderer)initThree();
-    resizeRenderer(); // s'assurer des bonnes dimensions avant le chargement
-    if(m.ext==='obj')loadOBJ(m.buf);
-    else loadGLB(m.buf);
-    setTimeout(resizeRenderer, 50); // re-resize après rendu
+    // Attendre que le navigateur ait rendu le canvas avant de charger le modèle
+    // (sinon clientWidth=0 → aspect ratio NaN → vue déformée au rechargement)
+    requestAnimationFrame(()=>{
+      resizeRenderer();
+      if(m.ext==='obj')loadOBJ(m.buf);
+      else loadGLB(m.buf);
+      setTimeout(resizeRenderer, 100);
+    });
     // Highlights appliqués dans loadOBJ lui-même (setTimeout)
   } else {
     document.getElementById('loading3d').style.display='none';
