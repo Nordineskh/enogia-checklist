@@ -1648,7 +1648,6 @@ function initThree(){
   },{passive:false});
   c.addEventListener('touchend',()=>{isDragging=false;lastDist=null;});
 
-  resizeRenderer();
   animate();
 }
 
@@ -1700,6 +1699,7 @@ function load3DFile(input){
   currentObjFilename = file.name; // pour la coloration par fichier
 
   if(!threeRenderer)initThree();
+  resizeRenderer();
 
   const reader=new FileReader();
   reader.onload=e=>{
