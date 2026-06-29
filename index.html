@@ -620,6 +620,11 @@ textarea{height:52px;resize:none;font-size:12px}
 <!-- Three.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
+<!-- Données embarquées : modèle 3D permanent de référence pour l'étape "Cycle ORC" (ENO 180 LTV3).
+     Voir bootstrapPermanentModels() ci-dessous : ce fichier remplace/nettoie automatiquement
+     toute ancienne version (ex: cycle_ORC_test_reduced.obj) sauvegardée pour cette étape. -->
+<script src="orc_etape3_data.js"></script>
+
 <!-- Firebase CDN -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
@@ -698,6 +703,8 @@ textarea{height:52px;resize:none;font-size:12px}
       document.dispatchEvent(new Event('firebaseReady'));
       // Render model grid now that DOM is visible
       setTimeout(()=>{ if(typeof renderModelGrid==='function') renderModelGrid(); }, 100);
+      // Installe/nettoie le modèle 3D permanent de référence pour Cycle ORC (ENO 180 LTV3)
+      setTimeout(()=>{ if(typeof bootstrapPermanentModels==='function') bootstrapPermanentModels(); }, 150);
     } else {
       window._currentUser = null;
       document.getElementById('scLogin').style.display = 'flex';
@@ -1920,6 +1927,87 @@ function loadGLB(buf){
   // Manual GLB parser for Three.js r128 (no GLTFLoader available on CDN)
   // Fallback: show placeholder mesh with message
   showPlaceholderMesh('GLB chargé — viewer basique actif\n(Pour un rendu complet, utilisez le format OBJ)');
+}
+
+// ---- Bootstrap du modèle 3D permanent de référence pour l'étape "Cycle ORC" (ENO 180 LTV3) ----
+// Demande explicite : éclaté_ORC_etape3.obj doit être LE fichier permanent rechargé automatiquement
+// pour tous les montages futurs de cette machine, à la place de toute version antérieure
+// (ex: cycle_ORC_test_reduced.obj ou autre fichier pas à jour) qui aurait pu être sauvegardée avant.
+//
+// Stratégie : au démarrage, on compare le nom du modèle permanent actuellement enregistré en base
+// pour (eno180ltv3, step Cycle ORC) au nom de référence embarqué. S'ils diffèrent (ou si rien
+// n'est enregistré), on écrase avec les données embarquées via saveMachineModel3D (qui utilise déjà
+// le mécanisme de versionnement anti-corruption), puis on nettoie toute ancienne sauvegarde de
+// SESSION pour cette étape (qui aurait pu pointer vers un fichier obsolète et passer devant
+// le modèle permanent lors de restoreModel()).
+const PERMANENT_MODEL_REFS = [
+  {
+    modelId: 'eno180ltv3',
+    stepId: 'cycleORC',
+    refName: () => (window.ORC_ETAPE3_OBJ_NAME || null),
+    refText: () => (window.ORC_ETAPE3_OBJ_TEXT || null),
+  }
+];
+
+function findStepIndexById(modelId, stepId){
+  const m = MODELS[modelId];
+  if(!m) return -1;
+  const steps = m.getSteps();
+  return steps.findIndex(s=>s.id===stepId);
+}
+
+async function bootstrapPermanentModels(){
+  const db = window._db;
+  if(!db) return;
+  for(const ref of PERMANENT_MODEL_REFS){
+    try{
+      const refName = ref.refName();
+      const refText = ref.refText();
+      if(!refName || !refText) continue; // fichier de données pas chargé (ne bloque pas l'appli)
+
+      const stepIndex = findStepIndexById(ref.modelId, ref.stepId);
+      if(stepIndex < 0) continue;
+
+      const baseId = ref.modelId+'_'+stepIndex;
+      const snap = await window._fsGetDoc(window._fsDoc(db,'machineModelFiles', baseId));
+      const upToDate = snap.exists() && snap.data().name === refName;
+
+      if(!upToDate){
+        console.log('[bootstrapPermanentModels] Mise à jour du modèle permanent', baseId, '→', refName);
+        await saveMachineModel3D(ref.modelId, stepIndex, refName, 'obj', refText);
+      }
+
+      // Nettoyage : toute sauvegarde de SESSION (pas seulement machine) pour cette étape, sur
+      // TOUTES les sessions, qui ne porte pas le nom de référence est supprimée. Cela évite qu'une
+      // ancienne session garde un fichier obsolète (ex: cycle_ORC_test_reduced.obj) qui serait lu
+      // par restoreModel() en priorité sur le modèle permanent (voir logique de restoreModel : la
+      // sauvegarde de session est toujours vérifiée avant la sauvegarde permanente machine).
+      await purgeStaleSessionModels(ref.modelId, stepIndex, refName);
+    }catch(e){ console.warn('[bootstrapPermanentModels] erreur pour', ref.modelId, ref.stepId, e); }
+  }
+}
+
+// Supprime les sauvegardes de session obsolètes (nom ≠ refName) pour un step donné, sur toutes
+// les sessions appartenant à ce modèle de machine. Best-effort : les erreurs sont ignorées,
+// une sauvegarde non supprimée reste simplement orpheline sans impact si son nom ne correspond
+// plus à rien d'actuel (mais on tente la suppression pour éviter toute confusion future).
+async function purgeStaleSessionModels(modelId, stepIndex, refName){
+  const db = window._db;
+  if(!db || !window._fsGetDocs || !window._fsCollection) return;
+  try{
+    const snaps = await window._fsGetDocs(window._fsCollection(db,'stepModels'));
+    const toDelete = [];
+    snaps.forEach(s=>{
+      const data = s.data();
+      if(data && data.stepIndex===stepIndex && data.name && data.name!==refName){
+        toDelete.push(s.id);
+      }
+    });
+    for(const id of toDelete){
+      try{ await window._fsDeleteDoc(window._fsDoc(db,'stepModels', id)); }catch(e){}
+    }
+    if(toDelete.length) console.log('[purgeStaleSessionModels] supprimé', toDelete.length, 'sauvegarde(s) de session obsolète(s) pour le step', stepIndex);
+  }catch(e){ console.warn('[purgeStaleSessionModels] erreur:', e); }
 }
 
 // Mapping étapes Turbine A → numéros de pièces OBJ à mettre en rouge
