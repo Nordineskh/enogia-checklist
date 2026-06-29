@@ -2038,8 +2038,14 @@ function isCycleORCOBJ(){
   return n.includes('cycleorc') ||
          n.includes('cycle_orc') ||
          n.includes('orc_cycle') ||
-         n.includes('orc') ||          // ex: "éclaté_ORC_etape3.obj"
-         n.includes('etape');           // sécurité supplémentaire pour les vues éclatées par étape
+         n.includes('orc') ||
+         n.includes('etape');
+}
+
+// Vue éclatée : pièces dispersées → on réduit le zoom pour voir l'ensemble depuis moins loin
+function isExplodedOBJ(){
+  const n = currentObjFilename.toLowerCase();
+  return n.includes('eclat') || n.includes('éclat') || n.includes('explod');
 }
 
 function getHighlightedParts(){
@@ -2301,8 +2307,11 @@ function loadOBJ(buf){
   const cx=(allMinX+allMaxX)/2, cy=(allMinY+allMaxY)/2, cz=(allMinZ+allMaxZ)/2;
   const maxD=Math.max(allMaxX-allMinX, allMaxY-allMinY, allMaxZ-allMinZ);
   grp.position.set(-cx,-cy,-cz);
-  // Zoom beaucoup plus éloigné pour la boucle chaude ou le cycle ORC (vue éclatée grande)
-  modelZoomDist = (isBoucleChaudeOBJ() || isCycleORCOBJ()) ? maxD * 1.25 : maxD * 1.8;
+  // Zoom : éclaté → pièces très dispersées, on divise par le nombre de "groupes" spatial
+  // Assemblé ORC/BoucleChd → maxD*1.25 | Éclaté → maxD*0.7 | Autre → maxD*1.8
+  if(isExplodedOBJ())      modelZoomDist = maxD * 0.7;
+  else if(isBoucleChaudeOBJ() || isCycleORCOBJ()) modelZoomDist = maxD * 1.25;
+  else                     modelZoomDist = maxD * 1.8;
   zoomDist = modelZoomDist;
 
   placeModel(grp);
@@ -2385,14 +2394,14 @@ async function restoreModel(){
     document.getElementById('modelName').textContent=m.name;
     currentObjFilename = m.name; // pour la coloration par fichier
     if(!threeRenderer)initThree();
-    // Attendre que le navigateur ait rendu le canvas avant de charger le modèle
-    // (sinon clientWidth=0 → aspect ratio NaN → vue déformée au rechargement)
-    requestAnimationFrame(()=>{
+    // Double requestAnimationFrame : le premier laisse le navigateur rendre le canvas visible,
+    // le second garantit que les dimensions sont calculées avant resize + chargement OBJ
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
       resizeRenderer();
       if(m.ext==='obj')loadOBJ(m.buf);
       else loadGLB(m.buf);
-      setTimeout(resizeRenderer, 100);
-    });
+      setTimeout(resizeRenderer, 150);
+    }));
     // Highlights appliqués dans loadOBJ lui-même (setTimeout)
   } else {
     document.getElementById('loading3d').style.display='none';
@@ -2744,8 +2753,8 @@ function renderStep(){
   document.getElementById('btnPrev').style.visibility=currentStep===0?'hidden':'visible';
   document.getElementById('btnNext').textContent=currentStep===ACTIVE_STEPS.length-1?'📄 Rapport final ▶':'Suivant ▶';
 
-  // 3D viewer
-  setTimeout(async()=>{ resizeRenderer(); await restoreModel(); setTimeout(resizeRenderer,100); },100);
+  // 3D viewer — laisser restoreModel gérer le resize lui-même après avoir rendu le canvas visible
+  setTimeout(async()=>{ await restoreModel(); },50);
   // (restoreTimer supprimé — les timers sont gérés par restoreActionTimers dans loadSession)
   // Mise à jour highlight pièces 3D (si modèle déjà chargé)
   setTimeout(applyPartHighlights, 120);
