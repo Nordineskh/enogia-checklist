@@ -1946,6 +1946,12 @@ const PERMANENT_MODEL_REFS = [
     stepId: 'cycleORC',
     refName: () => (window.ORC_ETAPE3_OBJ_NAME || null),
     refText: () => (window.ORC_ETAPE3_OBJ_TEXT || null),
+  },
+  {
+    modelId: 'eno180ltv3',
+    stepId: 'instrORC',
+    refName: () => (window.ORC_ETAPE3_OBJ_NAME || null),
+    refText: () => (window.ORC_ETAPE3_OBJ_TEXT || null),
   }
 ];
 
@@ -2082,6 +2088,11 @@ const TURBINE_A_STEP_PARTS = {
   'mtvorc5': ['118','119'],
   'mtvorc6': ['120','5005','5006'],
   'mtvorc7': ['120','5005','5006'],
+
+  // ===== INSTRUMENTATION CYCLE ORC — ENO 180 LTV3 (étape 4, fichier éclaté_ORC_etape3.obj) =====
+  'ins1': ['190','193','199','196'],             // Vannes remplissage/vidange (VA)
+  'ins3': ['202','206','203','210','213','209'], // Capteur pression (PT)
+  'ins4': ['216','218','217'],                    // Sondes TT — Cycle ORC
 };
 
 // Objets nommés dans le viewer 3D (THREE.Mesh), par suffixe numérique
@@ -2184,7 +2195,10 @@ function isTurbineAStep(step){
     step.id === 'boucleChd_40' ||
     // Cycle ORC — toutes gammes
     step.id === 'cycleORC' || step.id === 'cycleORC_100' ||
-    step.id === 'cycleORC_40' || step.id === 'cycleORC_mtv3'
+    step.id === 'cycleORC_40' || step.id === 'cycleORC_mtv3' ||
+    // Instrumentation Cycle ORC — toutes gammes
+    step.id === 'instrORC' || step.id === 'instrORC_100' ||
+    step.id === 'instrORC_40' || step.id === 'instrORC_mtv3'
   );
 }
 
