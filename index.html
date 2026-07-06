@@ -4161,11 +4161,66 @@ function vsmRender(){
   ln(jnX,R1+BH/2,xm['reception'],R1+BH/2);
   after.forEach((id,i)=>{if(i<after.length-1)ln(xm[id]+BW,R1+BH/2,xm[after[i+1]],R1+BH/2);});
 
-  // Info flows
+  // Flux info verticaux : Pôle Ordo → Production ORC
+  // ordo est dans before[], prod_orc est en parallèle
+  // On trace depuis le bas de la boîte ordo vers le haut de prod_orc, avec un crochet
+  {
+    const ox=xm['ordo']+BW/2;         // centre X ordo
+    const orcX=xm['prod_orc']+BW/2;  // centre X prod_orc
+    const orcX2=xm['prod_turb']+BW/2; // centre X prod_turb (même X)
+    const startY=R1+BH;               // bas de la boîte ordo
+    const midY=(R1+BH+R2)/2;          // point intermédiaire
+    const endOrcY=R2;                  // haut prod_orc
+    const endTurbY=R3;                 // haut prod_turb
+
+    // Flux OMT : ordo bas → descend → prod_orc haut
+    // Chemin : descend depuis ordo, dévie vers droite, pointe sur prod_orc
+    const omtPath='M'+ox+','+startY+' L'+ox+','+(startY+20)+' L'+orcX+','+(startY+20)+' L'+orcX+','+endOrcY;
+    pt(omtPath,'#7c5cbf','5,3','url(#vsm-arri)');
+    // Label OMT — centré sur le segment horizontal
+    const omtMx=(ox+orcX)/2;
+    const omtLbl='OMT';
+    const omtLen=omtLbl.length*5.5+6;
+    const omtBg=vsmEl('rect',{x:omtMx-omtLen/2,y:startY+12,width:omtLen,height:13,rx:'3',fill:'#00455a'});
+    svg.appendChild(omtBg);
+    const omtTx=vsmEl('text',{x:omtMx,y:startY+21,fill:'#c8a8f0','font-size':'9','font-family':'Roboto,sans-serif','text-anchor':'middle','font-weight':'500'});
+    omtTx.textContent=omtLbl;svg.appendChild(omtTx);
+
+    // Flux Fiche cond. : ordo bas → descend → prod_turb haut (légèrement décalé à droite pour ne pas superposer)
+    const condOffX=ox+14;
+    const condPath='M'+condOffX+','+startY+' L'+condOffX+','+(startY+34)+' L'+orcX2+','+(startY+34)+' L'+orcX2+','+endTurbY;
+    pt(condPath,'#7c5cbf','5,3','url(#vsm-arri)');
+    // Label Fiche cond.
+    const condMx=(condOffX+orcX2)/2;
+    const condLbl='Fiche cond.';
+    const condLen=condLbl.length*5.2+6;
+    const condBg=vsmEl('rect',{x:condMx-condLen/2,y:startY+26,width:condLen,height:13,rx:'3',fill:'#00455a'});
+    svg.appendChild(condBg);
+    const condTx=vsmEl('text',{x:condMx,y:startY+35,fill:'#c8a8f0','font-size':'9','font-family':'Roboto,sans-serif','text-anchor':'middle','font-weight':'500'});
+    condTx.textContent=condLbl;svg.appendChild(condTx);
+  }
+
+  // Info flows — hauteurs échelonnées pour éviter les chevauchements
+  // commercial<->produit sur piste haute (arc remonte à 50px du haut de R1)
+  // achat<->ordo sur piste basse (arc remonte à 65px du haut de R1)
+  const IFLOW_TRACKS = {
+    'produit-commercial': { depth: 50, lblOff: 8  },
+    'commercial-produit': { depth: 50, lblOff: 8  },
+    'achat-ordo':         { depth: 68, lblOff: 26 },
+    'ordo-achat':         { depth: 68, lblOff: 26 },
+  };
   VSM_IFLOWS.forEach(f=>{
-    const x1=xm[f.from]+BW/2,x2=xm[f.to]+BW/2;
-    pt(`M${x1},44 C${x1},16 ${x2},16 ${x2},44`,'#7c5cbf','4,3','url(#vsm-arri)');
-    const tx=vsmEl('text',{x:(x1+x2)/2,y:12,fill:'#9b7fd4','font-size':'9','font-family':'Roboto,sans-serif','text-anchor':'middle'});
+    const key=f.from+'-'+f.to;
+    const track=IFLOW_TRACKS[key]||{depth:58,lblOff:16};
+    const x1=xm[f.from]+BW/2, x2=xm[f.to]+BW/2;
+    const arcY=R1-track.depth;
+    const lblY=R1-track.depth+track.lblOff;
+    const midX=(x1+x2)/2;
+    pt('M'+x1+','+R1+' C'+x1+','+arcY+' '+x2+','+arcY+' '+x2+','+R1,'#7c5cbf','5,3','url(#vsm-arri)');
+    const lblLen=f.lbl.length*5.2;
+    const bg=vsmEl('rect',{x:midX-lblLen/2-3,y:lblY-9,width:lblLen+6,height:13,rx:'3',fill:'#00455a'});
+    svg.appendChild(bg);
+    const tx=vsmEl('text',{x:midX,y:lblY,fill:'#c8a8f0','font-size':'9','font-family':'Roboto,sans-serif','text-anchor':'middle','font-weight':'500'});
     tx.textContent=f.lbl;svg.appendChild(tx);
   });
 
@@ -4176,8 +4231,14 @@ function vsmRender(){
     const bc=bot?'#e8930a':s.va?'#2aa99e':'#0086c280';
     const r=vsmEl('rect',{x:bx,y:by,width:BW,height:BH,rx:'7',fill:s.type==='ext'?'#00364a':'var(--surface2)',stroke:bc,'stroke-width':bot?'2':'1'});
     g.appendChild(r);
-    if(s.va){const vs=vsmEl('rect',{x:bx,y:by+BH-5,width:BW,height:5,rx:'3',fill:'rgba(42,169,158,0.5)'});g.appendChild(vs);}
-    if(bot){const tri=vsmEl('polygon',{points:`${bx+BW-13},${by} ${bx+BW},${by} ${bx+BW},${by+13}`,fill:'rgba(232,147,10,0.85)'});g.appendChild(tri);}
+    if(s.va){
+      // Barre verte bas
+      const vs=vsmEl('rect',{x:bx,y:by+BH-5,width:BW,height:5,rx:'3',fill:'rgba(42,169,158,0.5)'});g.appendChild(vs);
+      // Badge "VA" en haut à gauche
+      const vab=vsmEl('rect',{x:bx+3,y:by+3,width:20,height:11,rx:'3',fill:'rgba(42,169,158,0.85)'});g.appendChild(vab);
+      const vat=vsmEl('text',{x:bx+13,y:by+11,fill:'#fff','font-size':'8','font-weight':'700','font-family':'Roboto,sans-serif','text-anchor':'middle'});vat.textContent='VA';g.appendChild(vat);
+    }
+    if(bot){const tri=vsmEl('polygon',{points:String(bx+BW-13)+','+String(by)+' '+String(bx+BW)+','+String(by)+' '+String(bx+BW)+','+String(by+13),fill:'rgba(232,147,10,0.85)'});g.appendChild(tri);}
     const words=s.name.split(' ');
     if(s.name.length>14&&words.length>1){
       const mid=Math.ceil(words.length/2);
