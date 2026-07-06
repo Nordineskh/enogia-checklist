@@ -297,6 +297,7 @@ textarea{height:52px;resize:none;font-size:12px}
     <button class="menu-item" onclick="closeAppMenu();showDashboard()"><span class="menu-item-icon">📊</span> Tableau de bord</button>
     <div class="menu-divider"></div>
     <button class="menu-item" onclick="closeAppMenu();showConditionnement()"><span class="menu-item-icon">📦</span> Conditionnement</button>
+    <button class="menu-item" onclick="closeAppMenu();showVSM()"><span class="menu-item-icon">🗺️</span> Value Stream Map</button>
     <div class="menu-divider"></div>
     <button class="menu-item" onclick="closeAppMenu();window._signOut()"><span class="menu-item-icon">⎋</span> Déconnexion</button>
   </div>
@@ -3922,6 +3923,341 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 });
 </script>
+
+<!-- ════════════════════════════════════════
+     SCREEN VSM
+════════════════════════════════════════ -->
+<div class="screen" id="scVSM" style="padding:0;max-width:100%;margin:0">
+<div style="display:flex;height:calc(100vh - 97px)">
+
+  <!-- SIDEBAR VSM -->
+  <div style="width:300px;min-width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0">
+    <div style="display:flex;border-bottom:1px solid var(--border)">
+      <div class="vsm-stab active" id="vsm-stab-data" onclick="vsmShowTab('data')" style="flex:1;padding:9px 0;text-align:center;font-size:12px;font-weight:500;color:var(--accent);border-bottom:2px solid var(--accent);cursor:pointer">Données</div>
+      <div class="vsm-stab" id="vsm-stab-kpi" onclick="vsmShowTab('kpi')" style="flex:1;padding:9px 0;text-align:center;font-size:12px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer">KPIs</div>
+      <div class="vsm-stab" id="vsm-stab-analyse" onclick="vsmShowTab('analyse')" style="flex:1;padding:9px 0;text-align:center;font-size:12px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer">Analyse</div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:10px" id="vsm-tab-data">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:6px 0 5px;border-bottom:1px solid var(--border);margin-bottom:8px">Étapes du flux</div>
+      <div id="vsm-slist"></div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:10px;display:none" id="vsm-tab-kpi">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:6px 0 5px;border-bottom:1px solid var(--border);margin-bottom:8px">Indicateurs clés</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px" id="vsm-kgrid"></div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:10px;display:none" id="vsm-tab-analyse">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:6px 0 5px;border-bottom:1px solid var(--border);margin-bottom:8px">Goulots & irritants</div>
+      <div id="vsm-blist"></div>
+    </div>
+  </div>
+
+  <!-- MAIN VSM -->
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+    <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:7px 14px;display:flex;align-items:center;gap:12px;font-size:11px;color:var(--text3);flex-wrap:wrap">
+      <span><span style="width:9px;height:9px;border-radius:50%;display:inline-block;background:#2aa99e;margin-right:3px"></span>Valeur ajoutée</span>
+      <span><span style="width:9px;height:9px;border-radius:50%;display:inline-block;background:#c94b2a;margin-right:3px"></span>Non VA</span>
+      <span><span style="width:9px;height:9px;border-radius:50%;display:inline-block;background:#e8930a;margin-right:3px"></span>Goulot</span>
+      <span><span style="width:9px;height:9px;border-radius:50%;display:inline-block;background:#7c5cbf;margin-right:3px"></span>Flux info</span>
+      <span style="margin-left:auto;color:var(--text2)">Clic = éditer · Survol = détail</span>
+      <button onclick="vsmExport()" style="background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:var(--font)">⬇ SVG</button>
+    </div>
+    <div style="flex:1;overflow:auto"><svg id="vsm-canvas"></svg></div>
+  </div>
+</div>
+</div>
+
+<!-- TOOLTIP VSM -->
+<div id="vsm-tt" style="position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:11px;pointer-events:none;z-index:200;min-width:180px;display:none;box-shadow:0 4px 20px #0008"></div>
+
+<script>
+// ════════════════════════════════════════
+// VSM MODULE
+// ════════════════════════════════════════
+(function(){
+const NS='http://www.w3.org/2000/svg';
+const VSM_STEPS=[
+  {id:'client',    name:'Client',              type:'ext',color:'#3a7fd5',tc:0,   ta:0,   op:0,qual:100,va:false,info:'Commande / cahier des charges'},
+  {id:'commercial',name:'Service Commercial',  type:'int',color:'#0086c2',tc:120, ta:1440,op:2,qual:95, va:false,info:'BUEPC — réception commande, revue contrat'},
+  {id:'produit',   name:'Pôle Produit',        type:'int',color:'#2aa99e',tc:480, ta:2880,op:3,qual:90, va:true, info:'BU ORC — conception, dimensionnement, plans BE'},
+  {id:'ordo',      name:'Pôle Ordo.',          type:'int',color:'#7c5cbf',tc:90,  ta:1440,op:1,qual:95, va:false,info:'BU ORC — planning production, OF, jalons ST'},
+  {id:'achat',     name:'Pôle Achat',          type:'int',color:'#e8930a',tc:120, ta:2880,op:2,qual:92, va:false,info:'BU ORC — consultation, commande ST, suivi délais'},
+  {id:'prod_orc',  name:'Production ORC',      type:'sup',color:'#c94b2a',tc:2880,ta:7200,op:4,qual:85, va:true, info:'Fabrication châssis + assemblage ORC chez ST'},
+  {id:'prod_turb', name:'Production Turbines', type:'sup',color:'#c94b2a',tc:1440,ta:4320,op:3,qual:88, va:true, info:'Fabrication turbines chez ST'},
+  {id:'reception', name:'Réception',           type:'int',color:'#0086c2',tc:180, ta:1440,op:1,qual:90, va:false,info:'Contrôle réception, Supplier Acceptance Sheet'},
+  {id:'montage',   name:'Montage',             type:'int',color:'#2aa99e',tc:2400,ta:480, op:4,qual:92, va:true, info:'Assemblage ORC — 3 machines / 4 techniciens'},
+  {id:'controle',  name:'Contrôle / Banc',     type:'int',color:'#2aa99e',tc:480, ta:480, op:2,qual:96, va:true, info:'Tests fonctionnels, banc d\'essai, acceptation'},
+  {id:'expedition',name:'Expédition',          type:'int',color:'#0086c2',tc:240, ta:1440,op:1,qual:99, va:false,info:'Emballage, transport, livraison client'},
+  {id:'clie2',     name:'Client',              type:'ext',color:'#3a7fd5',tc:0,   ta:0,   op:0,qual:100,va:false,info:'Réception & mise en service'},
+];
+const VSM_PAR=['prod_orc','prod_turb'];
+const VSM_IFLOWS=[
+  {from:'achat',to:'ordo',lbl:'Confirmation délais'},
+  {from:'ordo',to:'achat',lbl:'Planning ST'},
+  {from:'produit',to:'commercial',lbl:'Faisabilité technique'},
+  {from:'commercial',to:'produit',lbl:'Specs client'},
+];
+
+function vsmFmt(m){if(m<=0)return'-';if(m<60)return m+'min';if(m<1440)return(m/60).toFixed(1)+'h';return(m/1440).toFixed(1)+'j';}
+function vsmEl(t,a={}){const e=document.createElementNS(NS,t);Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));return e;}
+
+window.vsmShowTab=function(t){
+  ['data','kpi','analyse'].forEach(id=>{
+    document.getElementById('vsm-tab-'+id).style.display=id===t?'block':'none';
+    const s=document.getElementById('vsm-stab-'+id);
+    if(s){s.style.color=id===t?'var(--accent)':'var(--text3)';s.style.borderBottom=id===t?'2px solid var(--accent)':'2px solid transparent';}
+  });
+  if(t==='kpi')vsmUpdateKPIs();
+  if(t==='analyse')vsmUpdateAnalyse();
+};
+
+function vsmBuildList(){
+  const c=document.getElementById('vsm-slist');c.innerHTML='';
+  VSM_STEPS.forEach(s=>{
+    if(s.id==='clie2')return;
+    const el=document.createElement('div');
+    el.style.cssText='background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer';
+    el.id='vsm-si-'+s.id;
+    const tl={'ext':'externe','int':'interne','sup':'sous-traitant'}[s.type]||s.type;
+    const dis=s.type==='ext'?'disabled':'';
+    el.innerHTML=`<div onclick="vsmToggleStep('${s.id}')" style="display:flex;align-items:center;gap:7px;padding:9px 11px">
+      <span style="width:9px;height:9px;border-radius:50%;flex-shrink:0;background:${s.color}"></span>
+      <span style="font-size:12px;font-weight:500;flex:1;color:var(--text)">${s.name}</span>
+      <span style="font-size:10px;color:var(--text3);background:#00364a;border-radius:3px;padding:1px 5px">${tl}</span>
+    </div>
+    <div id="vsm-sb-${s.id}" style="display:none;padding:0 11px 10px">
+      <div style="display:flex;gap:7px;margin-bottom:7px">
+        <div style="flex:1"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Temps cycle (min)</div><input type="number" min="0" value="${s.tc}" oninput="vsmUpd('${s.id}','tc',this.value)" ${dis} style="width:100%;background:#00364a;border:1px solid var(--border);border-radius:5px;padding:5px 9px;color:var(--text);font-size:12px;font-family:var(--font)"></div>
+        <div style="flex:1"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Attente (min)</div><input type="number" min="0" value="${s.ta}" oninput="vsmUpd('${s.id}','ta',this.value)" ${dis} style="width:100%;background:#00364a;border:1px solid var(--border);border-radius:5px;padding:5px 9px;color:var(--text);font-size:12px;font-family:var(--font)"></div>
+      </div>
+      <div style="display:flex;gap:7px;margin-bottom:7px">
+        <div style="flex:1"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Opérateurs</div><input type="number" min="0" value="${s.op}" oninput="vsmUpd('${s.id}','op',this.value)" ${dis} style="width:100%;background:#00364a;border:1px solid var(--border);border-radius:5px;padding:5px 9px;color:var(--text);font-size:12px;font-family:var(--font)"></div>
+        <div style="flex:1"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Qualité (%)</div><input type="number" min="0" max="100" value="${s.qual}" oninput="vsmUpd('${s.id}','qual',this.value)" ${dis} style="width:100%;background:#00364a;border:1px solid var(--border);border-radius:5px;padding:5px 9px;color:var(--text);font-size:12px;font-family:var(--font)"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="vsm-va-${s.id}" ${s.va?'checked':''} onchange="vsmUpd('${s.id}','va',this.checked)" ${dis} style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer"><label for="vsm-va-${s.id}" style="font-size:12px;color:var(--text2);cursor:pointer">Valeur ajoutée</label></div>
+    </div>`;
+    c.appendChild(el);
+  });
+}
+
+window.vsmToggleStep=function(id){
+  const b=document.getElementById('vsm-sb-'+id);
+  const open=b.style.display==='block';
+  document.querySelectorAll('[id^="vsm-sb-"]').forEach(x=>x.style.display='none');
+  document.querySelectorAll('[id^="vsm-si-"]').forEach(x=>x.style.border='1px solid var(--border)');
+  if(!open){b.style.display='block';document.getElementById('vsm-si-'+id).style.border='1px solid var(--accent)';}
+  vsmRender();
+};
+
+window.vsmUpd=function(id,key,val){
+  const s=VSM_STEPS.find(x=>x.id===id);if(!s)return;
+  s[key]=key==='va'?val:(parseFloat(val)||0);
+  vsmRender();vsmUpdateKPIs();vsmUpdateAnalyse();
+};
+
+function vsmGetKPIs(){
+  const main=VSM_STEPS.filter(s=>!VSM_PAR.includes(s.id)&&s.id!=='clie2');
+  const par=VSM_STEPS.filter(s=>VSM_PAR.includes(s.id));
+  const lt=main.reduce((a,s)=>a+s.tc+s.ta,0)+Math.max(...par.map(s=>s.tc+s.ta));
+  const vaTC=[...main,...par].filter(s=>s.va).reduce((a,s)=>a+s.tc,0);
+  const ratio=lt>0?Math.round(vaTC/lt*100):0;
+  const actv=[...main,...par].filter(s=>s.type!=='ext');
+  const avgQ=actv.length?Math.round(actv.reduce((a,s)=>a+s.qual,0)/actv.length*10)/10:0;
+  return{lt,vaTC,nva:lt-vaTC,ratio,avgQ,ta:main.reduce((a,s)=>a+s.ta,0)};
+}
+
+function vsmUpdateKPIs(){
+  const k=vsmGetKPIs();
+  document.getElementById('vsm-kgrid').innerHTML=`
+    <div style="grid-column:1/-1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px">
+      <div style="font-size:20px;font-weight:700;color:var(--accent2)">${vsmFmt(k.lt)}</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:1px">Lead Time total</div>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px">
+      <div style="font-size:18px;font-weight:700;color:#2aa99e">${vsmFmt(k.vaTC)}</div>
+      <div style="font-size:10px;color:var(--text3)">Temps VA</div>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px">
+      <div style="font-size:18px;font-weight:700;color:#c94b2a">${vsmFmt(k.nva)}</div>
+      <div style="font-size:10px;color:var(--text3)">Temps NVA</div>
+    </div>
+    <div style="grid-column:1/-1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px">
+      <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:var(--text2)">Ratio VA / Lead Time</span><span style="font-size:18px;font-weight:700;color:${k.ratio>30?'#2aa99e':'#c94b2a'}">${k.ratio}%</span></div>
+      <div style="background:#00364a;border-radius:3px;height:7px;margin-top:6px;overflow:hidden"><div style="height:100%;border-radius:3px;background:#2aa99e;width:${k.ratio}%;transition:.4s"></div></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:3px">Objectif Lean : > 30%</div>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px">
+      <div style="font-size:18px;font-weight:700;color:var(--text)">${k.avgQ}%</div>
+      <div style="font-size:10px;color:var(--text3)">Qualité moy.</div>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px">
+      <div style="font-size:18px;font-weight:700;color:var(--text)">${vsmFmt(k.ta)}</div>
+      <div style="font-size:10px;color:var(--text3)">Total attentes</div>
+    </div>`;
+}
+
+function vsmUpdateAnalyse(){
+  const all=VSM_STEPS.filter(s=>s.type!=='ext'&&s.id!=='clie2');
+  const mTC=Math.max(...all.map(s=>s.tc));
+  const mTA=Math.max(...all.map(s=>s.ta));
+  const scored=all.map(s=>{
+    const sc=(s.tc/mTC)*.5+(s.ta/mTA)*.3+((100-s.qual)/100)*.2;
+    const tag=sc>.6?'r':sc>.35?'a':'g';
+    const lbl=sc>.6?'Goulot':sc>.35?'À surveiller':'OK';
+    const tc={r:'background:rgba(224,85,85,.2);color:#e05555;border:1px solid rgba(224,85,85,.4)',a:'background:rgba(240,165,0,.2);color:var(--yellow);border:1px solid rgba(240,165,0,.4)',g:'background:rgba(42,169,158,.2);color:var(--accent);border:1px solid rgba(42,169,158,.4)'}[tag];
+    return{s,lbl,tc};
+  }).sort((a,b)=>{const o={r:0,a:1,g:2};return o[a.tag]-(o[b.tag]||2)||0;});
+  document.getElementById('vsm-blist').innerHTML=scored.map(x=>`
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;margin-bottom:5px;display:flex;align-items:center;gap:7px;font-size:12px">
+      <span style="width:9px;height:9px;border-radius:50%;flex-shrink:0;background:${x.s.color}"></span>
+      <span style="flex:1;color:var(--text)">${x.s.name}</span>
+      <span style="font-size:10px;border-radius:3px;padding:1px 5px;font-weight:600;${x.tc}">${x.lbl}</span>
+    </div>
+    <div style="font-size:10px;color:var(--text3);padding:0 10px 6px;display:flex;gap:10px">
+      <span>TC:${vsmFmt(x.s.tc)}</span><span>Att:${vsmFmt(x.s.ta)}</span><span>Q:${x.s.qual}%</span>
+    </div>`).join('');
+}
+
+function vsmRender(){
+  const svg=document.getElementById('vsm-canvas');
+  svg.innerHTML='';
+  const BW=112,BH=54,GX=58,PAD=40;
+  const R1=95,R2=210,R3=295,TY=405;
+  const before=['client','commercial','produit','ordo','achat'];
+  const after=['reception','montage','controle','expedition','clie2'];
+  const xm={};
+  before.forEach((id,i)=>xm[id]=PAD+i*(BW+GX));
+  const parX=xm['achat']+BW+GX;
+  xm['prod_orc']=parX;xm['prod_turb']=parX;
+  const afterX=parX+BW+GX;
+  after.forEach((id,i)=>xm[id]=afterX+i*(BW+GX));
+  const TW=xm['clie2']+BW+PAD;
+  const TH=TY+70;
+  svg.setAttribute('width',TW);svg.setAttribute('height',TH);
+  svg.setAttribute('viewBox',`0 0 ${TW} ${TH}`);
+  svg.style.background='var(--bg)';
+
+  const defs=vsmEl('defs');
+  function mkM(id,col){const m=vsmEl('marker',{id,viewBox:'0 0 8 6',refX:'7',refY:'3',markerWidth:'5',markerHeight:'5',orient:'auto'});const p=vsmEl('path',{d:'M0,0 L8,3 L0,6 Z',fill:col});m.appendChild(p);return m;}
+  defs.appendChild(mkM('vsm-arr','#3a5272'));defs.appendChild(mkM('vsm-arri','#7c5cbf'));
+  svg.appendChild(defs);
+
+  const actv=VSM_STEPS.filter(s=>s.type!=='ext'&&s.id!=='clie2');
+  const mTC2=Math.max(...actv.map(s=>s.tc));
+  const mTA2=Math.max(...actv.map(s=>s.ta));
+  function isBot(s){if(s.type==='ext')return false;return((s.tc/mTC2)*.5+(s.ta/mTA2)*.3+((100-s.qual)/100)*.2)>.6;}
+
+  function ln(x1,y1,x2,y2,c='#2a3f5a',d='',me='url(#vsm-arr)'){svg.appendChild(vsmEl('line',{x1,y1,x2,y2,stroke:c,'stroke-width':'1.5','stroke-dasharray':d,'marker-end':me}));}
+  function pt(d,c='#2a3f5a',d2='',me='url(#vsm-arr)'){svg.appendChild(vsmEl('path',{d,fill:'none',stroke:c,'stroke-width':'1.5','stroke-dasharray':d2,'marker-end':me}));}
+
+  // Main flow
+  before.forEach((id,i)=>{if(i<before.length-1)ln(xm[id]+BW,R1+BH/2,xm[before[i+1]],R1+BH/2);});
+  const fkX=xm['achat']+BW+16,fkY=R1+BH/2;
+  ln(xm['achat']+BW,fkY,fkX,fkY,'#2a3f5a','','none');
+  ln(fkX,fkY,fkX,R2+BH/2,'#2a3f5a','','none');ln(fkX,R2+BH/2,parX,R2+BH/2);
+  ln(fkX,fkY,fkX,R3+BH/2,'#2a3f5a','','none');ln(fkX,R3+BH/2,parX,R3+BH/2);
+  const jnX=xm['reception']-16;
+  ln(parX+BW,R2+BH/2,jnX,R2+BH/2,'#2a3f5a','','none');ln(parX+BW,R3+BH/2,jnX,R3+BH/2,'#2a3f5a','','none');
+  ln(jnX,R2+BH/2,jnX,R1+BH/2,'#2a3f5a','','none');ln(jnX,R3+BH/2,jnX,R1+BH/2,'#2a3f5a','','none');
+  ln(jnX,R1+BH/2,xm['reception'],R1+BH/2);
+  after.forEach((id,i)=>{if(i<after.length-1)ln(xm[id]+BW,R1+BH/2,xm[after[i+1]],R1+BH/2);});
+
+  // Info flows
+  VSM_IFLOWS.forEach(f=>{
+    const x1=xm[f.from]+BW/2,x2=xm[f.to]+BW/2;
+    pt(`M${x1},44 C${x1},16 ${x2},16 ${x2},44`,'#7c5cbf','4,3','url(#vsm-arri)');
+    const tx=vsmEl('text',{x:(x1+x2)/2,y:12,fill:'#9b7fd4','font-size':'9','font-family':'Roboto,sans-serif','text-anchor':'middle'});
+    tx.textContent=f.lbl;svg.appendChild(tx);
+  });
+
+  // Boxes
+  function box(s,bx,by){
+    const g=vsmEl('g',{cursor:'pointer'});
+    const bot=isBot(s);
+    const bc=bot?'#e8930a':s.va?'#2aa99e':'#0086c280';
+    const r=vsmEl('rect',{x:bx,y:by,width:BW,height:BH,rx:'7',fill:s.type==='ext'?'#00364a':'var(--surface2)',stroke:bc,'stroke-width':bot?'2':'1'});
+    g.appendChild(r);
+    if(s.va){const vs=vsmEl('rect',{x:bx,y:by+BH-5,width:BW,height:5,rx:'3',fill:'rgba(42,169,158,0.5)'});g.appendChild(vs);}
+    if(bot){const tri=vsmEl('polygon',{points:`${bx+BW-13},${by} ${bx+BW},${by} ${bx+BW},${by+13}`,fill:'rgba(232,147,10,0.85)'});g.appendChild(tri);}
+    const words=s.name.split(' ');
+    if(s.name.length>14&&words.length>1){
+      const mid=Math.ceil(words.length/2);
+      [words.slice(0,mid).join(' '),words.slice(mid).join(' ')].forEach((txt,i)=>{
+        const t=vsmEl('text',{x:bx+BW/2,y:by+17+i*13,fill:'#e2eaf4','font-size':'11','font-weight':'600','font-family':'Roboto,sans-serif','text-anchor':'middle'});t.textContent=txt;g.appendChild(t);
+      });
+    } else {
+      const t=vsmEl('text',{x:bx+BW/2,y:by+BH/2-3,fill:'#e2eaf4','font-size':'11','font-weight':'600','font-family':'Roboto,sans-serif','text-anchor':'middle','dominant-baseline':'middle'});t.textContent=s.name;g.appendChild(t);
+    }
+    if(s.type!=='ext'){
+      const tc=vsmEl('text',{x:bx+5,y:by+BH-7,fill:'#5a7a9a','font-size':'9','font-family':'Roboto,sans-serif'});tc.textContent='TC:'+vsmFmt(s.tc);g.appendChild(tc);
+      const ta=vsmEl('text',{x:bx+BW-5,y:by+BH-7,fill:'#5a7a9a','font-size':'9','font-family':'Roboto,sans-serif','text-anchor':'end'});ta.textContent='A:'+vsmFmt(s.ta);g.appendChild(ta);
+    }
+    g.addEventListener('mouseenter',e=>vsmShowTT(e,s));
+    g.addEventListener('mousemove',vsmMoveTT);
+    g.addEventListener('mouseleave',vsmHideTT);
+    g.addEventListener('click',()=>{vsmToggleStep(s.id);vsmShowTab('data');});
+    svg.appendChild(g);
+  }
+
+  before.forEach(id=>box(VSM_STEPS.find(s=>s.id===id),xm[id],R1));
+  box(VSM_STEPS.find(s=>s.id==='prod_orc'),parX,R2);
+  box(VSM_STEPS.find(s=>s.id==='prod_turb'),parX,R3);
+  after.forEach(id=>box(VSM_STEPS.find(s=>s.id===id),xm[id],R1));
+
+  const pl=vsmEl('text',{x:parX+BW/2,y:R2-8,fill:'#5a7a9a','font-size':'10','font-family':'Roboto,sans-serif','text-anchor':'middle'});pl.textContent='Flux parallèles ST';svg.appendChild(pl);
+  [R2,R3].forEach(by=>{
+    const bd=vsmEl('rect',{x:parX+3,y:by+3,width:28,height:12,rx:'2',fill:'rgba(201,75,42,0.35)'});svg.appendChild(bd);
+    const bt=vsmEl('text',{x:parX+17,y:by+12,fill:'#e87c6c','font-size':'9','font-family':'Roboto,sans-serif','text-anchor':'middle'});bt.textContent='ST';svg.appendChild(bt);
+  });
+
+  // Timeline
+  const k=vsmGetKPIs();
+  const tW=xm['clie2']+BW-PAD;
+  let cx=PAD;
+  VSM_STEPS.filter(s=>s.id!=='clie2'&&s.id!=='client'&&!VSM_PAR.slice(1).includes(s.id)).forEach(s=>{
+    const tot=k.lt||1;
+    const wW=s.ta>0?Math.max(s.ta/tot*tW*.72,3):0;
+    const tWW=s.tc>0?Math.max(s.tc/tot*tW*.72,3):0;
+    if(wW){svg.appendChild(vsmEl('rect',{x:cx,y:TY,width:wW,height:14,fill:'rgba(201,75,42,0.55)',rx:'2'}));cx+=wW;}
+    if(tWW){svg.appendChild(vsmEl('rect',{x:cx,y:TY,width:tWW,height:14,fill:s.va?'rgba(42,169,158,0.7)':'rgba(0,134,194,0.45)',rx:'2'}));cx+=tWW;}
+  });
+  svg.appendChild(vsmEl('rect',{x:PAD,y:TY,width:Math.min(cx-PAD,tW),height:14,fill:'none',stroke:'#2a3f5a','stroke-width':'0.5',rx:'2'}));
+  const tlt=vsmEl('text',{x:PAD,y:TY-5,fill:'#5a7a9a','font-size':'10','font-family':'Roboto,sans-serif'});
+  tlt.textContent=`Timeline — LT: ${vsmFmt(k.lt)}  VA: ${vsmFmt(k.vaTC)}  NVA: ${vsmFmt(k.nva)}  Ratio VA: ${k.ratio}%`;
+  svg.appendChild(tlt);
+}
+
+function vsmShowTT(e,s){
+  const t=document.getElementById('vsm-tt');
+  t.innerHTML=`<strong style="display:block;font-size:12px;margin-bottom:5px;color:var(--text)">${s.name}</strong>
+    <div style="display:flex;justify-content:space-between;gap:14px;color:var(--text2);margin-bottom:2px"><span>Temps cycle</span><span style="color:var(--text);font-weight:500">${vsmFmt(s.tc)}</span></div>
+    <div style="display:flex;justify-content:space-between;gap:14px;color:var(--text2);margin-bottom:2px"><span>Attente</span><span style="color:var(--text);font-weight:500">${vsmFmt(s.ta)}</span></div>
+    <div style="display:flex;justify-content:space-between;gap:14px;color:var(--text2);margin-bottom:2px"><span>Opérateurs</span><span style="color:var(--text);font-weight:500">${s.op}</span></div>
+    <div style="display:flex;justify-content:space-between;gap:14px;color:var(--text2);margin-bottom:2px"><span>Qualité</span><span style="color:var(--text);font-weight:500">${s.qual}%</span></div>
+    <div style="display:flex;justify-content:space-between;gap:14px;color:var(--text2);margin-bottom:2px"><span>Valeur ajoutée</span><span style="color:var(--text);font-weight:500">${s.va?'✓ Oui':'✗ Non'}</span></div>
+    <div style="margin-top:5px;font-size:10px;color:var(--text3)">${s.info}</div>`;
+  t.style.display='block';vsmMoveTT(e);
+}
+function vsmMoveTT(e){const t=document.getElementById('vsm-tt');t.style.left=(e.clientX+12)+'px';t.style.top=(e.clientY-8)+'px';}
+function vsmHideTT(){document.getElementById('vsm-tt').style.display='none';}
+
+window.vsmExport=function(){
+  const svg=document.getElementById('vsm-canvas');
+  const blob=new Blob([svg.outerHTML],{type:'image/svg+xml'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='vsm_enogia.svg';a.click();
+};
+
+window.showVSM=function(){
+  showScreen('scVSM');
+  if(!document.getElementById('vsm-slist').children.length){
+    vsmBuildList();
+    vsmRender();
+    vsmUpdateKPIs();
+    vsmUpdateAnalyse();
+  }
+};
+})();
+</script>
+
 </div><!-- end appWrapper -->
 </body>
 </html>
