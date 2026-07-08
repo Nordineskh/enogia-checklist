@@ -2020,22 +2020,22 @@ async function purgeStaleSessionModels(modelId, stepIndex, refName){
 // Mapping étapes Turbine A → numéros de pièces OBJ à mettre en rouge
 // Format: stepId -> liste des suffixes numériques d'objets OBJ
 const TURBINE_A_STEP_PARTS = {
-  'tA1': ['110','012'],             // Génératrice - 180LTV3
+  'tA1': ['010','012'],             // Génératrice - 180LTV3
   'tA2': ['008'],             // Injecteurs - 180LTV3
   'tA3': ['102'],             // Capteur de vibration - 180LTV3
   'tA4': ['098','099','026','027'], // Capteurs de température - 180LTV3
   'tA5': ['030','087'],                  // Repérage phases - 180LTV3
-  'tB1': ['110','012'],             // Génératrice - 180LTV3 (Turbine B)
+  'tB1': ['010','012'],             // Génératrice - 180LTV3 (Turbine B)
   'tB2': ['008'],             // Injecteurs - 180LTV3 (Turbine B)
   'tB3': ['102'],             // Capteur de vibration - 180LTV3 (Turbine B)
   'tB4': ['098','099','026','027'], // Capteurs de température - 180LTV3 (Turbine B)
   'tB5': ['030','087'],                  // Repérage phases - 180LTV3 (Turbine B)
-  'mtvtA1': ['110','012'],           // Génératrice
+  'mtvtA1': ['010','012'],           // Génératrice
   'mtvtA2': ['008','020','021','019','022','024','001'],           // Injecteurs
   'mtvtA3': ['102'],           // Capteur de vibration
   'mtvtA4': ['098','099','026','027'], // Capteurs de température
   'mtvtA5': ['030','087'],                // Repérage phases (pas de pièce spécifique)
-  'mtvtB1': ['110','012'],           // Génératrice (Turbine B)
+  'mtvtB1': ['010','012'],           // Génératrice (Turbine B)
   'mtvtB2': ['008','020','021','019','022','024','001'],           // Injecteurs (Turbine B)
   'mtvtB3': ['102'],           // Capteur de vibration (Turbine B)
   'mtvtB4': ['098','099','026','027'], // Capteurs de température (Turbine B)
@@ -2284,14 +2284,15 @@ function applyPartHighlights(){
 
 // Palette de couleurs pour le rendu du modèle 3D
 const PART_COLOR_DARKGRAY = 0x4d4d4d;  // condensateurs, évaporateurs, turbines, volutes
-const PART_COLOR_BEIGE    = 0xd9c7a3;  // pièce 005 (turbine A uniquement)
+const PART_COLOR_BEIGE    = 0xd9c7a3;  // pièce 110 (turbine A/B uniquement)
 const PART_COLOR_BLACK    = 0x1a1a1a;  // visserie (petites pièces)
 const PART_COLOR_LIGHTGRAY= 0xb0b0b0;  // toutes les autres pièces (gris clair)
 
 // Numéros de pièces (suffixe OBJ) à colorer en gris foncé — commun à tous les fichiers
 const PARTS_DARKGRAY = ['089','094','092','091','093','088'];
 // Numéros de pièces à colorer en beige — uniquement pour les fichiers turbine (pas boucle chaude)
-const PARTS_BEIGE_TURBINE = ['005','5005'];
+// (003 et 005 restent en gris clair, couleur par défaut — cf. getBaseColorForPart)
+const PARTS_BEIGE_TURBINE = ['110','5005'];
 // Numéros de pièces à forcer en noir (capteurs, petites pièces identifiées individuellement)
 const PARTS_BLACK = ['099','098','026','027','032','030','087','106','107','105','031','104','086'];
 
