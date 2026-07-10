@@ -316,10 +316,6 @@ textarea{height:52px;resize:none;font-size:12px}
       <div><label>N° Projet</label><input id="inProjet" placeholder="ex: PJXXX-X" value=""></div>
       <div><label>N° Série machine</label><input id="inSerie" placeholder="ex: AAAA-XXX-180"></div>
     </div>
-    <div class="input-row">
-      <div><label>Opérateur (OP)</label><input id="inOp" placeholder="Nom opérateur"></div>
-      <div><label>Vérificateur (VE)</label><input id="inVe" placeholder="Nom vérificateur"></div>
-    </div>
     <div class="section-title">Planification & Stock</div>
     <div class="input-row">
       <div><label>Date début planifiée</label><input type="date" id="inPlannedStart"></div>
@@ -710,7 +706,6 @@ textarea{height:52px;resize:none;font-size:12px}
       document.getElementById('scLogin').style.display = 'none';
       document.getElementById('appWrapper').style.display = 'block';
       document.getElementById('userEmail').textContent = user.displayName || user.email;
-      document.getElementById('inOp').value = user.displayName || '';
       window._firebaseReady = true;
       document.dispatchEvent(new Event('firebaseReady'));
       // Render model grid now that DOM is visible
@@ -738,7 +733,7 @@ const STEPS_180LTV3=[
       {txt:'Vérification Sizer (injecteurs bouchés)',torque:null,qty:1}]},
     {id:'tA3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
     {id:'tA4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes (Ohm)',torque:null,qty:2}]},
-    {id:'tA5',label:'Repérage phases U,V,W',actions:[{txt:'Identifier et repérer l\'ordre des phases U, V, W',torque:null,qty:1}]},
+    {id:'tA5',label:'Identification d\'ordre des phases U, V, W',actions:[{txt:'Identification d\'ordre des phases U, V, W',torque:null,qty:1}]},
   ]},
   {id:'turbineB',name:'Turbine B (Brides)',icon:'⚙️',
    snComponents:['Génératrice','Injecteur','Capteur de vibration','Capteurs de température'],
@@ -750,7 +745,7 @@ const STEPS_180LTV3=[
       {txt:'Vérification Sizer',torque:null,qty:1}]},
     {id:'tB3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
     {id:'tB4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes',torque:null,qty:2}]},
-    {id:'tB5',label:'Repérage phases U,V,W',actions:[{txt:'Identifier l\'ordre des phases U, V, W',torque:null,qty:1}]},
+    {id:'tB5',label:'Identification d\'ordre des phases U, V, W',actions:[{txt:'Identification d\'ordre des phases U, V, W',torque:null,qty:1}]},
   ]},
   {id:'cycleORC',name:'Cycle ORC',icon:'🔄',items:[
     {id:'orc1',label:'Tuyauterie cycle',actions:[{txt:'Vérifier propreté intérieur/extérieur des tubes',torque:null,qty:1}]},
@@ -758,7 +753,7 @@ const STEPS_180LTV3=[
       {txt:'Vérifier le sens de la pompe',torque:null,qty:1},
       {txt:'Fixation boulons au châssis',torque:'40 Nm',qty:'4× M12x80'},
       {txt:'Mise en place joint DN80',torque:null,qty:2},
-      {txt:'Serrer les brides',torque:'40 Nm',qty:'16× M16x80'}]},
+      {txt:'Serrer les brides',torque:'76 Nm',qty:'16× M16x80'}]},
     {id:'orc3',label:'Évaporateur & Condenseurs',actions:[
       {txt:'Vérification 4 boulons châssis ×3',torque:'76 Nm',qty:'12× M16x60'},
       {txt:'Mise en place joints DN150',torque:null,qty:6},
@@ -927,7 +922,7 @@ const STEPS_180MTV3=[
       {txt:'Vérification Sizer',torque:null,qty:1}]},
     {id:'mtvtA3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
     {id:'mtvtA4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes',torque:null,qty:2}]},
-    {id:'mtvtA5',label:'Repérage phases U,V,W',actions:[{txt:'Identifier l\'ordre des phases',torque:null,qty:1}]},
+    {id:'mtvtA5',label:'Identification d\'ordre des phases U, V, W',actions:[{txt:'Identification d\'ordre des phases',torque:null,qty:1}]},
   ]},
   {id:'tB_mtv3',name:'Turbine B (Brides)',icon:'⚙️',
    snComponents:['Génératrice','Injecteur','Capteur de vibration','Capteurs de température'],
@@ -939,7 +934,7 @@ const STEPS_180MTV3=[
       {txt:'Vérification Sizer',torque:null,qty:1}]},
     {id:'mtvtB3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
     {id:'mtvtB4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes',torque:null,qty:2}]},
-    {id:'mtvtB5',label:'Repérage phases U,V,W',actions:[{txt:'Identifier l\'ordre des phases',torque:null,qty:1}]},
+    {id:'mtvtB5',label:'Identification d\'ordre des phases U, V, W',actions:[{txt:'Identification d\'ordre des phases',torque:null,qty:1}]},
   ]},
   {id:'cycleORC_mtv3',name:'Cycle ORC',icon:'🔄',items:[
     {id:'mtvorc1',label:'Tuyauterie cycle',actions:[{txt:'Vérifier propreté intérieur/extérieur des tubes',torque:null,qty:1}]},
@@ -1113,7 +1108,7 @@ const STEPS_100LTV3=[
       {txt:'Vérification Sizer',torque:null,qty:1}]},
     {id:'t100_3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
     {id:'t100_4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes',torque:null,qty:2}]},
-    {id:'t100_5',label:'Repérage phases U,V,W',actions:[{txt:'Identifier l\'ordre des phases',torque:null,qty:1}]},
+    {id:'t100_5',label:'Identification d\'ordre des phases U, V, W',actions:[{txt:'Identification d\'ordre des phases',torque:null,qty:1}]},
   ]},
   {id:'cycleORC_100',name:'Cycle ORC',icon:'🔄',items:[
     {id:'orc100_1',label:'Tuyauterie cycle',actions:[{txt:'Vérifier propreté intérieur/extérieur des tubes',torque:null,qty:1}]},
@@ -1276,7 +1271,7 @@ const STEPS_40LTV3=[
       {txt:'Vérification Sizer',torque:null,qty:1}]},
     {id:'t40_A3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
     {id:'t40_A4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes',torque:null,qty:2}]},
-    {id:'t40_A5',label:'Repérage phases U,V,W',actions:[{txt:'Identifier l\'ordre des phases',torque:null,qty:1}]},
+    {id:'t40_A5',label:'Identification d\'ordre des phases U, V, W',actions:[{txt:'Identification d\'ordre des phases',torque:null,qty:1}]},
   ]},
   {id:'tB_40',name:'Turbine B (Brides)',icon:'⚙️',
    snComponents:['Génératrice','Injecteur','Capteur de vibration','Capteurs de température'],
@@ -1288,7 +1283,7 @@ const STEPS_40LTV3=[
       {txt:'Vérification Sizer',torque:null,qty:1}]},
     {id:'t40_B3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
     {id:'t40_B4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes',torque:null,qty:2}]},
-    {id:'t40_B5',label:'Repérage phases U,V,W',actions:[{txt:'Identifier l\'ordre des phases',torque:null,qty:1}]},
+    {id:'t40_B5',label:'Identification d\'ordre des phases U, V, W',actions:[{txt:'Identification d\'ordre des phases',torque:null,qty:1}]},
   ]},
   {id:'cycleORC_40',name:'Cycle ORC',icon:'🔄',items:[
     {id:'orc40_1',label:'Tuyauterie cycle',actions:[{txt:'Vérifier propreté intérieur/extérieur des tubes',torque:null,qty:1}]},
@@ -2647,8 +2642,6 @@ function selectModel(modelId){
 }
 
 function startSession(){
-  const op=document.getElementById('inOp').value.trim();
-  if(!op){alert('Veuillez renseigner le nom de l\'opérateur.');return;}
   const plannedStart = document.getElementById('inPlannedStart').value || null;
   const plannedEnd = document.getElementById('inPlannedEnd').value || null;
   const stockTurbines = document.getElementById('inStockTurbines').checked;
@@ -2665,7 +2658,7 @@ function startSession(){
     stockOk, stockTurbines, stockPompes, stockVolutes,
     projet:document.getElementById('inProjet').value.trim()||'–',
     serie:document.getElementById('inSerie').value.trim()||'–',
-    op, ve:document.getElementById('inVe').value.trim(),
+    op:'', ve:'',
     date:new Date().toLocaleDateString('fr-FR'),
     started:new Date().toISOString(),
     completed:null, currentStep:0,
@@ -2678,7 +2671,7 @@ function startSession(){
         veDone:false,veName:'',veDate:'',veComment:'',
         ncReason:'',firstPassResult:null,ncCount:0,photos:[],actionTimers:{},photos:[],actionTimers:{},
       })),
-      snData:{},comment:'',
+      snData:{},comment:'',stepOp:'',stepVe:'',
     }))
   };
   sessions.unshift(session);
@@ -2701,7 +2694,7 @@ function loadSession(id){
   // Migration : synchroniser session.steps avec ACTIVE_STEPS (si structure modifiee)
   ACTIVE_STEPS.forEach((step, si) => {
     if(!session.steps[si]){
-      session.steps[si] = { id:step.id, items:(step.items||[]).map(it=>({id:it.id,actions:it.actions.map(()=>false),opDone:false,opName:'',opDate:'',opComment:'',veDone:false,veName:'',veDate:'',veComment:'',ncReason:'',firstPassResult:null,ncCount:0,photos:[],actionTimers:{}})), snData:{}, comment:''};
+      session.steps[si] = { id:step.id, items:(step.items||[]).map(it=>({id:it.id,actions:it.actions.map(()=>false),opDone:false,opName:'',opDate:'',opComment:'',veDone:false,veName:'',veDate:'',veComment:'',ncReason:'',firstPassResult:null,ncCount:0,photos:[],actionTimers:{}})), snData:{}, comment:'', stepOp:'', stepVe:''};
     } else {
       session.steps[si].id = step.id;
       (step.items||[]).forEach((item, ii) => {
@@ -2822,10 +2815,22 @@ function renderStep(){
     <div class="step-num">Étape ${currentStep+1} / ${ACTIVE_STEPS.length}</div>
     <div class="step-name">${step.icon} ${step.name}</div>
     <div class="step-meta">
-      <span class="chip">OP: ${session.op}</span>
-      ${session.ve?`<span class="chip">VE: ${session.ve}</span>`:''}
       <span class="chip">${session.date}</span>
       <span class="chip">${session.projet}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+      <div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--accent2);margin-bottom:4px">✋ Opérateur (OP)</div>
+        <input type="text" value="${sstate.stepOp||''}" placeholder="Nom technicien OP"
+          oninput="saveStepOp(${currentStep},this.value)"
+          style="width:100%;background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 10px;font-size:13px;font-family:var(--font)">
+      </div>
+      <div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);margin-bottom:4px">🔍 Vérificateur (VE)</div>
+        <input type="text" value="${sstate.stepVe||''}" placeholder="Nom technicien VE"
+          oninput="saveStepVe(${currentStep},this.value)"
+          style="width:100%;background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 10px;font-size:13px;font-family:var(--font)">
+      </div>
     </div>`;
 
   // Checklist items
@@ -2869,7 +2874,7 @@ function renderStep(){
         <div class="val-section">
           <div class="val-box op">
             <h4>✋ Opérateur</h4>
-            <input type="text" value="${it.opName||session.op}" oninput="saveVal(${currentStep},${idx},'opName',this.value)" placeholder="Nom OP">
+            <input type="text" value="${it.opName||sstate.stepOp||''}" oninput="saveVal(${currentStep},${idx},'opName',this.value)" placeholder="Nom OP">
             <textarea placeholder="Commentaire…" oninput="saveVal(${currentStep},${idx},'opComment',this.value)" style="margin-top:6px">${it.opComment||''}</textarea>
             <button class="btn btn-primary btn-full mt8 btn-sm" onclick="validateOP(${currentStep},${idx})" ${it.opDone?'disabled':''}>
               ${it.opDone?'✅ Validé OP — '+it.opDate:'✋ Valider (OP)'}
@@ -2877,7 +2882,7 @@ function renderStep(){
           </div>
           <div class="val-box ve">
             <h4>🔍 Vérificateur</h4>
-            <input type="text" value="${it.veName||session.ve||''}" oninput="saveVal(${currentStep},${idx},'veName',this.value)" placeholder="Nom VE">
+            <input type="text" value="${it.veName||sstate.stepVe||''}" oninput="saveVal(${currentStep},${idx},'veName',this.value)" placeholder="Nom VE">
             <textarea placeholder="Commentaire…" oninput="saveVal(${currentStep},${idx},'veComment',this.value)" style="margin-top:6px">${it.veComment||''}</textarea>
             ${!it.opDone?'':`
             <select onchange="saveVal(${currentStep},${idx},'ncReason',this.value)" style="margin-top:6px;width:100%;background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px;font-size:12px" ${it.veDone?'disabled':''}>
@@ -2959,6 +2964,8 @@ function toggleAction(si,ii,ai){
   document.getElementById('body_'+ACTIVE_STEPS[si].items[ii].id).classList.add('open');
 }
 function saveVal(si,ii,key,val){session.steps[si].items[ii][key]=val;saveState();}
+function saveStepOp(si,val){session.steps[si].stepOp=val;saveState();}
+function saveStepVe(si,val){session.steps[si].stepVe=val;saveState();}
 function saveSN(key,val){session.steps[currentStep].snData[key]=val;saveState();}
 function scanSerialNumber(compKey, input) {
   if (!input.files || !input.files[0]) return;
@@ -3831,9 +3838,7 @@ function showConditionnement() {
   // Pré-remplir responsable depuis le champ opérateur (déjà rempli au login)
   const respField = document.getElementById('cond-resp');
   if (respField && !respField.value) {
-    const name = (window._currentUser && (window._currentUser.displayName || window._currentUser.email))
-                 || document.getElementById('inOp').value
-                 || '';
+    const name = (window._currentUser && (window._currentUser.displayName || window._currentUser.email)) || '';
     respField.value = name;
   }
   // Pré-remplir la date du jour si vide
