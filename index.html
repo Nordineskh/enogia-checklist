@@ -325,15 +325,26 @@ textarea{height:52px;resize:none;font-size:12px}
       <div><label>Date début planifiée</label><input type="date" id="inPlannedStart"></div>
       <div><label>Date fin souhaitée</label><input type="date" id="inPlannedEnd"></div>
     </div>
-    <div style="background:#00364a;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <div>
-        <div style="font-size:13px;font-weight:500;color:var(--text)">📦 Toutes les pièces sont disponibles</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px">Vérification avant démarrage du montage</div>
+    <div style="background:#00364a;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px">📦 Disponibilité des composants</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:7px 10px;background:#002e3e;border-radius:6px;border:1px solid var(--border)">
+          <input type="checkbox" id="inStockTurbines" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer" onchange="updateStockLabel()">
+          <span style="font-size:13px;color:var(--text)">⚙️ Turbines disponibles</span>
+          <span id="inStockTurbinesLabel" style="font-size:11px;color:var(--text3);margin-left:auto">Non confirmé</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:7px 10px;background:#002e3e;border-radius:6px;border:1px solid var(--border)">
+          <input type="checkbox" id="inStockPompes" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer" onchange="updateStockLabel()">
+          <span style="font-size:13px;color:var(--text)">🔄 Pompes disponibles</span>
+          <span id="inStockPompesLabel" style="font-size:11px;color:var(--text3);margin-left:auto">Non confirmé</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:7px 10px;background:#002e3e;border-radius:6px;border:1px solid var(--border)">
+          <input type="checkbox" id="inStockVolutes" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer" onchange="updateStockLabel()">
+          <span style="font-size:13px;color:var(--text)">🌀 Volutes disponibles</span>
+          <span id="inStockVolutesLabel" style="font-size:11px;color:var(--text3);margin-left:auto">Non confirmé</span>
+        </label>
       </div>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0">
-        <input type="checkbox" id="inStockOk" style="width:20px;height:20px;accent-color:var(--accent);cursor:pointer">
-        <span id="inStockOkLabel" style="font-size:12px;color:var(--text3)">Non confirmé</span>
-      </label>
+      <div id="inStockGlobalMsg" style="margin-top:8px;font-size:11px;color:var(--text3);text-align:right">En attente de confirmation</div>
     </div>
     <button class="btn btn-primary btn-full" onclick="startSession()">▶ Démarrer le montage</button>
   </div>
@@ -2640,7 +2651,10 @@ function startSession(){
   if(!op){alert('Veuillez renseigner le nom de l\'opérateur.');return;}
   const plannedStart = document.getElementById('inPlannedStart').value || null;
   const plannedEnd = document.getElementById('inPlannedEnd').value || null;
-  const stockOk = document.getElementById('inStockOk').checked;
+  const stockTurbines = document.getElementById('inStockTurbines').checked;
+  const stockPompes   = document.getElementById('inStockPompes').checked;
+  const stockVolutes  = document.getElementById('inStockVolutes').checked;
+  const stockOk = stockTurbines && stockPompes && stockVolutes;
   const ofRef = 'OF-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-5);
   session={
     id:Date.now(),
@@ -2648,7 +2662,7 @@ function startSession(){
     ofRef,
     plannedStart,
     plannedEnd,
-    stockOk,
+    stockOk, stockTurbines, stockPompes, stockVolutes,
     projet:document.getElementById('inProjet').value.trim()||'–',
     serie:document.getElementById('inSerie').value.trim()||'–',
     op, ve:document.getElementById('inVe').value.trim(),
@@ -3912,17 +3926,38 @@ function condReset() {
   condUpdateStats();
 }
 
-// Stock checkbox label
-document.addEventListener('DOMContentLoaded', ()=>{
-  const cb = document.getElementById('inStockOk');
-  const lbl = document.getElementById('inStockOkLabel');
-  if(cb && lbl){
-    cb.addEventListener('change', ()=>{
-      lbl.textContent = cb.checked ? '✅ Confirmé' : 'Non confirmé';
-      lbl.style.color = cb.checked ? 'var(--green)' : 'var(--text3)';
-    });
+// Stock checkboxes labels
+function updateStockLabel(){
+  const items = [
+    {cbId:'inStockTurbines', lblId:'inStockTurbinesLabel'},
+    {cbId:'inStockPompes',   lblId:'inStockPompesLabel'},
+    {cbId:'inStockVolutes',  lblId:'inStockVolutesLabel'},
+  ];
+  let allOk = true;
+  items.forEach(({cbId, lblId})=>{
+    const cb  = document.getElementById(cbId);
+    const lbl = document.getElementById(lblId);
+    if(!cb || !lbl) return;
+    if(cb.checked){
+      lbl.textContent = '✅ Confirmé';
+      lbl.style.color = 'var(--green)';
+    } else {
+      lbl.textContent = 'Non confirmé';
+      lbl.style.color = 'var(--text3)';
+      allOk = false;
+    }
+  });
+  const msg = document.getElementById('inStockGlobalMsg');
+  if(msg){
+    if(allOk){
+      msg.textContent = '✅ Tous les composants confirmés — montage autorisé';
+      msg.style.color = 'var(--green)';
+    } else {
+      msg.textContent = 'En attente de confirmation de tous les composants';
+      msg.style.color = 'var(--text3)';
+    }
   }
-});
+}
 </script>
 
 <!-- ════════════════════════════════════════
