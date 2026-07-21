@@ -68,6 +68,7 @@ select option{background:var(--surface)}
 .btn-sm{padding:6px 12px;font-size:12px}
 .btn-3d{background:linear-gradient(135deg,#003548,#00455a);border:1px solid var(--border);color:var(--text2)}
 .btn-3d:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled,.btn[disabled]{opacity:.4;cursor:not-allowed;filter:grayscale(60%);box-shadow:none;transform:none;pointer-events:none}
 
 .progress-bar-wrap{background:var(--surface);border-radius:var(--radius);padding:14px;margin-bottom:12px;border:1px solid var(--border)}
 .progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:6px}
@@ -342,7 +343,7 @@ textarea{height:52px;resize:none;font-size:12px}
       </div>
       <div id="inStockGlobalMsg" style="margin-top:8px;font-size:11px;color:var(--text3);text-align:right">En attente de confirmation</div>
     </div>
-    <button class="btn btn-primary btn-full" onclick="startSession()">▶ Démarrer le montage</button>
+    <button class="btn btn-primary btn-full" id="btnStartSession" onclick="startSession()" disabled title="Cochez la disponibilité de tous les composants pour démarrer">▶ Démarrer le montage</button>
   </div>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
     <div class="section-title" style="margin:0;flex:none"><span style="white-space:nowrap">Historique</span></div>
@@ -751,9 +752,9 @@ const STEPS_180LTV3=[
     {id:'orc1',label:'Tuyauterie cycle',actions:[{txt:'Vérifier propreté intérieur/extérieur des tubes',torque:null,qty:1}]},
     {id:'orc2',label:'Pompe ORC',actions:[
       {txt:'Vérifier le sens de la pompe',torque:null,qty:1},
-      {txt:'Fixation boulons au châssis',torque:'40 Nm',qty:'4× M12x80'},
+      {txt:'Fixation boulons au châssis',torque:'76 Nm',qty:'4× M12x80'},
       {txt:'Mise en place joint DN80',torque:null,qty:2},
-      {txt:'Serrer les brides',torque:'76 Nm',qty:'16× M16x80'}]},
+      {txt:'Serrer les brides',torque:'76 Nm',qty:'16× M16x70'}]},
     {id:'orc3',label:'Évaporateur & Condenseurs',actions:[
       {txt:'Vérification 4 boulons châssis ×3',torque:'76 Nm',qty:'12× M16x60'},
       {txt:'Mise en place joints DN150',torque:null,qty:6},
@@ -780,17 +781,16 @@ const STEPS_180LTV3=[
     {id:'ins1',label:'Vannes remplissage/vidange (VA)',actions:[
       {txt:'Fixer vannes 1/4NPT–3/8SAE à la Loctite 272',torque:null,qty:4},
       {txt:'Bouchon femelle 3/8SAE + coupelle cuivre 3/8',torque:null,qty:4}]},
-    {id:'ins2',label:'Retour lub',actions:[{txt:'Raccord 1/2NPT–1/2SAE à la Loctite 272',torque:null,qty:4}]},
     {id:'ins3',label:'Capteur pression (PT)',actions:[
       {txt:'Raccord 1/4NPT–1/4SAE à la Loctite 272',torque:null,qty:2},
       {txt:'Fixer capteur sur vanne MM 1/4SAE avec joint cuivre',torque:null,qty:2},
       {txt:'Fixer vannes MM 1/4SAE sur châssis',torque:null,qty:'4× M4'},
       {txt:'Connecter capillaire sans schrader',torque:null,qty:2}]},
     {id:'ins4',label:'Sondes TT — Cycle ORC',actions:[
-      {txt:'TT-01 — L70mm, Non cal. — Loctite 272',torque:null,qty:1},
+      {txt:'TT-01 — L60mm, Non cal. — Loctite 272',torque:null,qty:1},
       {txt:'TT-03A — L130mm, Calibrée — Loctite 272',torque:null,qty:1},
       {txt:'TT-03B — L130mm, Calibrée — Loctite 272',torque:null,qty:1},
-      {txt:'TT-04B — L130mm, Non cal. — Loctite 272',torque:null,qty:1}]},
+      {txt:'TT-04 — L130mm, Non cal. — Loctite 272',torque:null,qty:1}]},
     {id:'ins5',label:'Sondes TT — Cold/Hot/Cooling',actions:[
       {txt:'TT-11 Cold Loop — L150mm',torque:null,qty:1},
       {txt:'TT-13 Cold Loop — L150mm',torque:null,qty:1},
@@ -800,6 +800,7 @@ const STEPS_180LTV3=[
       {txt:'TT-31A Cooling — L150mm',torque:null,qty:1}]},
   ]},
   {id:'cycleLub',name:'Cycle Lub',icon:'🛢️',items:[
+    {id:'ins2',label:'Retour lub',actions:[{txt:'Raccord 1/2NPT–1/2SAE à la Loctite 272',torque:null,qty:4}]},
     {id:'lub1',label:'Départ de lub',actions:[
       {txt:'Raccord MM 1/2NPT–3/8SAE dans vanne FF 1/2NPT — Loctite 272',torque:null,qty:1},
       {txt:'Vanne FF 1/2NPT sur embout mâle 1/2NPT — Loctite 272',torque:null,qty:1}]},
@@ -971,7 +972,6 @@ const STEPS_180MTV3=[
     {id:'mtvins1',label:'Vannes remplissage/vidange (VA)',actions:[
       {txt:'Vannes 1/4NPT–3/8SAE à la Loctite 272',torque:null,qty:4},
       {txt:'Bouchon femelle 3/8SAE + coupelle cuivre',torque:null,qty:4}]},
-    {id:'mtvins2',label:'Retour lub',actions:[{txt:'Raccord 1/2NPT–1/2SAE Loctite 272 sur bossage 1/2NPT',torque:null,qty:4}]},
     {id:'mtvins3',label:'Capteur pression (PT)',actions:[
       {txt:'Raccord 1/4NPT–1/4SAE Loctite 272',torque:null,qty:2},
       {txt:'Capteur sur vanne MM 1/4SAE avec joint cuivre',torque:null,qty:2},
@@ -993,6 +993,7 @@ const STEPS_180MTV3=[
       {txt:'TT-51B in turbine bearings',torque:null,qty:1}]},
   ]},
   {id:'cycleLub_mtv3',name:'Cycle Lub',icon:'🛢️',items:[
+    {id:'mtvins2',label:'Retour lub',actions:[{txt:'Raccord 1/2NPT–1/2SAE Loctite 272 sur bossage 1/2NPT',torque:null,qty:4}]},
     {id:'mtvlub1',label:'Départ de lub',actions:[
       {txt:'Raccord MM 1/2NPT–3/8SAE dans vanne FF 1/2NPT — Loctite 272',torque:null,qty:1},
       {txt:'Vanne FF 1/2NPT sur embout mâle 1/2NPT — Loctite 272',torque:null,qty:1}]},
@@ -1148,7 +1149,6 @@ const STEPS_100LTV3=[
     {id:'ins100_1',label:'Vannes remplissage/vidange (VA)',actions:[
       {txt:'Vannes 1/4NPT–3/8SAE Loctite 272',torque:null,qty:4},
       {txt:'Bouchon femelle 3/8SAE + coupelle cuivre',torque:null,qty:4}]},
-    {id:'ins100_2',label:'Retour lub',actions:[{txt:'Raccord 1/2NPT–1/2SAE Loctite 272 sur bossage',torque:null,qty:2}]},
     {id:'ins100_3',label:'Capteur pression (PT)',actions:[
       {txt:'Raccord 1/4NPT–1/4SAE Loctite 272',torque:null,qty:2},
       {txt:'Capteur sur vanne MM 1/4SAE + joint cuivre',torque:null,qty:2},
@@ -1166,6 +1166,7 @@ const STEPS_100LTV3=[
       {txt:'TT-31 (L=70mm)',torque:null,qty:1}]},
   ]},
   {id:'cycleLub_100',name:'Cycle Lub',icon:'🛢️',items:[
+    {id:'ins100_2',label:'Retour lub',actions:[{txt:'Raccord 1/2NPT–1/2SAE Loctite 272 sur bossage',torque:null,qty:2}]},
     {id:'lub100_1',label:'Départ de lub',actions:[
       {txt:'Raccord MM 1/2NPT–3/8SAE dans vanne FF — Loctite 272',torque:null,qty:1},
       {txt:'Vanne FF 1/2NPT sur embout mâle — Loctite 272',torque:null,qty:1}]},
@@ -1315,8 +1316,7 @@ const STEPS_40LTV3=[
     {id:'ins40_1',label:'Vannes remplissage/vidange',actions:[
       {txt:'Vannes 1/4NPT–3/8SAE Loctite 272',torque:null,qty:4},
       {txt:'Bouchon femelle 3/8SAE + coupelle cuivre',torque:null,qty:4}]},
-    {id:'ins40_2',label:'Retour lub + Capteurs PT',actions:[
-      {txt:'Raccord 1/2NPT–1/2SAE Loctite 272 sur bossage 1/4NPT réservoir',torque:null,qty:2},
+    {id:'ins40_2',label:'Capteurs PT',actions:[
       {txt:'Raccord 1/4NPT–1/4SAE Loctite 272',torque:null,qty:2},
       {txt:'Capteur sur vanne MM 1/4SAE + joint cuivre',torque:null,qty:2},
       {txt:'2 vannes MM 1/4SAE sur châssis (4× M4)',torque:null,qty:1},
@@ -1334,6 +1334,7 @@ const STEPS_40LTV3=[
       {txt:'TT-31A Cooling (L=150mm)',torque:null,qty:1}]},
   ]},
   {id:'cycleLub_40',name:'Cycle Lub',icon:'🛢️',items:[
+    {id:'lub40_0',label:'Retour lub',actions:[{txt:'Raccord 1/2NPT–1/2SAE Loctite 272 sur bossage 1/4NPT réservoir',torque:null,qty:2}]},
     {id:'lub40_1',label:'Départ de lub',actions:[
       {txt:'Raccord MM 1/2NPT–3/8SAE dans vanne FF — Loctite 272',torque:null,qty:1},
       {txt:'Vanne FF 1/2NPT sur embout mâle — Loctite 272',torque:null,qty:1}]},
@@ -2639,6 +2640,7 @@ function selectModel(modelId){
   // Update home screen title
   document.getElementById('homeModelTitle').textContent = currentModel.name;
   document.getElementById('homeModelRef').textContent = currentModel.ref;
+  updateStockLabel();
 }
 
 function startSession(){
@@ -2648,6 +2650,7 @@ function startSession(){
   const stockPompes   = document.getElementById('inStockPompes').checked;
   const stockVolutes  = document.getElementById('inStockVolutes').checked;
   const stockOk = stockTurbines && stockPompes && stockVolutes;
+  if(!stockOk){ return; } // sécurité : impossible de démarrer tant que tous les composants ne sont pas confirmés disponibles
   const ofRef = 'OF-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-5);
   session={
     id:Date.now(),
@@ -2711,7 +2714,7 @@ function loadSession(id){
   renderStep();
 }
 
-function goHome(){showScreen('scHome');loadSessions().then(()=>renderHistory());}
+function goHome(){showScreen('scHome');loadSessions().then(()=>renderHistory());updateStockLabel();}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 
 // ===================== MENU APP (sous le logo) =====================
@@ -3961,6 +3964,11 @@ function updateStockLabel(){
       msg.textContent = 'En attente de confirmation de tous les composants';
       msg.style.color = 'var(--text3)';
     }
+  }
+  const btn = document.getElementById('btnStartSession');
+  if(btn){
+    btn.disabled = !allOk;
+    btn.title = allOk ? '' : 'Cochez la disponibilité de tous les composants pour démarrer';
   }
 }
 </script>
