@@ -763,7 +763,8 @@ const STEPS_180LTV3=[
       {txt:'Vérifier le sens de la pompe',torque:null,qty:1},
       {txt:'Fixation boulons au châssis',torque:'76 Nm',qty:'4× M12x80'},
       {txt:'Mise en place joint DN80',torque:null,qty:2},
-      {txt:'Serrer les brides',torque:'76 Nm',qty:'16× M16x70'}]},
+      {txt:'Serrer les brides',torque:'76 Nm',qty:'16× M16x70'},
+      {txt:'Vérifier l\'orientation de la plaque à bornes',torque:null,qty:1}]},
     {id:'orc3',label:'Évaporateur & Condenseurs',actions:[
       {txt:'Vérification 4 boulons châssis ×3',torque:'76 Nm',qty:'12× M16x60'},
       {txt:'Mise en place joints DN150',torque:null,qty:6},
@@ -785,6 +786,11 @@ const STEPS_180LTV3=[
       {txt:'Remplacement joints toriques',torque:null,qty:2},
       {txt:'Vérifier le sens du clapet',torque:null,qty:1},
       {txt:'Serrer les boulons',torque:'44 Nm',qty:1}]},
+    {id:'orcFlush',label:'Vanne flush / Vanne FCV01',actions:[
+      {txt:'Vérifier les joints du pilote (plat et toriques)',torque:null,qty:1},
+      {txt:'Installer le servo-moteur dans la vanne',torque:null,qty:1},
+      {txt:'Vérifier l\'état du joint',torque:null,qty:1},
+      {txt:'Visser',torque:'150 Nm',qty:1}]},
   ]},
   {id:'instrORC',name:'Instrumentation Cycle ORC',icon:'🌡️',items:[
     {id:'ins1',label:'Vannes remplissage/vidange (VA)',actions:[
@@ -952,7 +958,8 @@ const STEPS_180MTV3=[
       {txt:'Vérifier le sens des pompes',torque:null,qty:2},
       {txt:'Fixation boulons M12 au châssis',torque:'40 Nm',qty:8},
       {txt:'Mise en place joints inox DN50',torque:null,qty:4},
-      {txt:'Serrer les brides',torque:'130 Nm',qty:'32× M16x75'}]},
+      {txt:'Serrer les brides',torque:'130 Nm',qty:'32× M16x75'},
+      {txt:'Vérifier l\'orientation de la plaque à bornes',torque:null,qty:1}]},
     {id:'mtvorc3',label:'Évaporateur, Condenseurs & Régénérateur',actions:[
       {txt:'Vérification 4 boulons châssis ×3',torque:'76 Nm',qty:'12× M16x50'},
       {txt:'Joints PTFE DN150 PN25/40',torque:null,qty:6},
@@ -976,6 +983,11 @@ const STEPS_180MTV3=[
       {txt:'Serrer les boulons',torque:'44 Nm',qty:8}]},
     {id:'mtvorc7',label:'Vanne Bypass',actions:[
       {txt:'Vérifier le sens de la vanne',torque:null,qty:1}]},
+    {id:'mtvorcFlush',label:'Vanne flush / Vanne FCV01',actions:[
+      {txt:'Vérifier les joints du pilote (plat et toriques)',torque:null,qty:1},
+      {txt:'Installer le servo-moteur dans la vanne',torque:null,qty:1},
+      {txt:'Vérifier l\'état du joint',torque:null,qty:1},
+      {txt:'Visser',torque:'150 Nm',qty:1}]},
   ]},
   {id:'instrORC_mtv3',name:'Instrumentation Cycle ORC',icon:'🌡️',items:[
     {id:'mtvins1',label:'Vannes remplissage/vidange (VA)',actions:[
@@ -1126,7 +1138,8 @@ const STEPS_100LTV3=[
       {txt:'Vérifier le sens de la pompe',torque:null,qty:1},
       {txt:'Fixation boulons M12 au châssis',torque:'40 Nm',qty:4},
       {txt:'Joint plat INOX DN50',torque:null,qty:2},
-      {txt:'Serrer les brides',torque:'76 Nm',qty:'8× M16'}]},
+      {txt:'Serrer les brides',torque:'76 Nm',qty:'8× M16'},
+      {txt:'Vérifier l\'orientation de la plaque à bornes',torque:null,qty:1}]},
     {id:'orc100_3',label:'Évaporateur & Condenseur',actions:[
       {txt:'Vérification 4 boulons châssis ×2',torque:'76 Nm',qty:'8× M16'},
       {txt:'Serrer les brides',torque:'76 Nm / 100 Nm',qty:'16× M16 & 24× M20'}]},
@@ -1153,6 +1166,11 @@ const STEPS_100LTV3=[
     {id:'orc100_7',label:'Clapet anti-retour',actions:[
       {txt:'Vérifier le sens du clapet',torque:null,qty:1},
       {txt:'Serrer les boulons',torque:'44 Nm',qty:1}]},
+    {id:'orc100Flush',label:'Vanne flush / Vanne FCV01',actions:[
+      {txt:'Vérifier les joints du pilote (plat et toriques)',torque:null,qty:1},
+      {txt:'Installer le servo-moteur dans la vanne',torque:null,qty:1},
+      {txt:'Vérifier l\'état du joint',torque:null,qty:1},
+      {txt:'Visser',torque:'150 Nm',qty:1}]},
   ]},
   {id:'instrORC_100',name:'Instrumentation Cycle ORC',icon:'🌡️',items:[
     {id:'ins100_1',label:'Vannes remplissage/vidange (VA)',actions:[
@@ -1301,7 +1319,8 @@ const STEPS_40LTV3=[
       {txt:'Vérifier le sens de la pompe',torque:null,qty:1},
       {txt:'Fixation boulons M12x60 au châssis',torque:'40 Nm',qty:4},
       {txt:'Joint inox DN40',torque:null,qty:2},
-      {txt:'Serrer les brides',torque:'40 Nm',qty:'16× M16'}]},
+      {txt:'Serrer les brides',torque:'40 Nm',qty:'16× M16'},
+      {txt:'Vérifier l\'orientation de la plaque à bornes',torque:null,qty:1}]},
     {id:'orc40_3',label:'Évaporateur & Condenseurs',actions:[
       {txt:'Vérification 4 boulons châssis condenseur + 4 écrous M12 évaporateur',torque:'60 Nm',qty:'4× M16x50'},
       {txt:'Joints inox DN50',torque:null,qty:4},
@@ -1320,6 +1339,11 @@ const STEPS_40LTV3=[
       {txt:'Vérifier le sens du clapet',torque:null,qty:1},
       {txt:'Serrer les boulons du clapet',torque:'44 Nm',qty:1},
       {txt:'Vérifier le sens de la vanne bypass',torque:null,qty:1}]},
+    {id:'orc40Flush',label:'Vanne flush / Vanne FCV01',actions:[
+      {txt:'Vérifier les joints du pilote (plat et toriques)',torque:null,qty:1},
+      {txt:'Installer le servo-moteur dans la vanne',torque:null,qty:1},
+      {txt:'Vérifier l\'état du joint',torque:null,qty:1},
+      {txt:'Visser',torque:'150 Nm',qty:1}]},
   ]},
   {id:'instrORC_40',name:'Instrumentation Cycle ORC',icon:'🌡️',items:[
     {id:'ins40_1',label:'Vannes remplissage/vidange',actions:[
