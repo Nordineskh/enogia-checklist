@@ -164,6 +164,15 @@ textarea{height:52px;resize:none;font-size:12px}
 .nc-modal{position:fixed;inset:0;background:#000a;z-index:999;display:flex;align-items:center;justify-content:center}
 .nc-modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:420px;width:90%;box-shadow:0 20px 60px #000a}
 .nc-modal-title{font-family:var(--font-title);font-size:20px;color:#e05555;margin-bottom:16px}
+
+/* Popup rappel graissage des vis (léger, non intrusif) */
+.lube-reminder-overlay{position:fixed;inset:0;background:#00253099;backdrop-filter:blur(1px);z-index:998;display:flex;align-items:center;justify-content:center;animation:lubeFadeIn .2s ease-out;cursor:pointer}
+.lube-reminder-box{background:var(--surface2);border:1px solid var(--accent);border-radius:var(--radius);padding:20px 22px;max-width:320px;width:88%;box-shadow:0 15px 40px #0009;text-align:center;animation:lubePopIn .25s ease-out;cursor:default}
+.lube-reminder-icon{font-size:34px;margin-bottom:8px}
+.lube-reminder-title{font-family:var(--font-title);font-size:18px;color:var(--accent);letter-spacing:.5px;margin-bottom:6px}
+.lube-reminder-text{font-size:13px;color:var(--text2);line-height:1.5}
+@keyframes lubeFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes lubePopIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 .nc-select{width:100%;background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:10px;font-size:14px;margin-bottom:10px}
 
 /* GANTT */
@@ -3038,6 +3047,9 @@ function validateOP(si,ii){
   saveState();renderStep();
   // Mettre à jour la mise en rouge des pièces 3D
   setTimeout(applyPartHighlights, 100);
+  // Rappel graissage si la sous-étape suivante comporte des vis à serrer
+  const nextItemData=ACTIVE_STEPS[si]&&ACTIVE_STEPS[si].items&&ACTIVE_STEPS[si].items[ii+1];
+  if(nextItemData&&itemHasVis(nextItemData))showLubeReminder();
 }
 function validateVE(si,ii){
   const it=session.steps[si].items[ii];
@@ -3056,7 +3068,45 @@ function navStep(dir){
   const next=currentStep+dir;
   if(next<0)return;
   if(next>=ACTIVE_STEPS.length){showReport();return;}
+  const cameFromValidation=(dir>0);
   currentStep=next;session.currentStep=next;saveState();renderStep();window.scrollTo(0,0);
+  if(cameFromValidation){
+    const nextStepData=ACTIVE_STEPS[currentStep];
+    const firstItem=nextStepData&&nextStepData.items&&nextStepData.items[0];
+    if(firstItem&&itemHasVis(firstItem))showLubeReminder();
+  }
+}
+
+// ===================== POPUP RAPPEL GRAISSAGE DES VIS =====================
+// Détecte si une sous-étape comporte des actions de serrage de vis
+function itemHasVis(item){
+  if(!item||!item.actions)return false;
+  return item.actions.some(a=>/\bvis\b/i.test(a.txt||''));
+}
+function showLubeReminder(){
+  // Évite les doublons si déjà affiché
+  const existing=document.getElementById('lubeReminderOverlay');
+  if(existing)existing.remove();
+  const overlay=document.createElement('div');
+  overlay.id='lubeReminderOverlay';
+  overlay.className='lube-reminder-overlay';
+  overlay.innerHTML=`
+    <div class="lube-reminder-box">
+      <div class="lube-reminder-icon">🛢️</div>
+      <div class="lube-reminder-title">Petit rappel</div>
+      <div class="lube-reminder-text">N'oubliez pas de graisser les vis avant serrage.</div>
+    </div>`;
+  overlay.addEventListener('click',closeLubeReminder);
+  document.body.appendChild(overlay);
+  // Fermeture automatique douce après quelques secondes
+  overlay._autoClose=setTimeout(closeLubeReminder,4000);
+}
+function closeLubeReminder(){
+  const overlay=document.getElementById('lubeReminderOverlay');
+  if(!overlay)return;
+  if(overlay._autoClose)clearTimeout(overlay._autoClose);
+  overlay.style.animation='lubeFadeIn .18s ease-in reverse';
+  setTimeout(()=>overlay.remove(),150);
 }
 
 // ===================== REPORT =====================
