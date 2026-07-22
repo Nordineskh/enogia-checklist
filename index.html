@@ -2076,13 +2076,13 @@ const TURBINE_A_STEP_PARTS = {
   'tA2': ['008'],             // Injecteurs - 180LTV3
   'tA3': ['102'],             // Capteur de vibration - 180LTV3
   'tA4': ['098','099','026','027'], // Capteurs de température - 180LTV3
-  'tAvolute': ['089','091','092','093','094','110','005','003'], // Assemblage turbine avec volute - 180LTV3
+  'tAvolute': ['088','089','091','092','093','094','110','005','003'], // Assemblage turbine avec volute - 180LTV3
   'tA5': ['030','087'],                  // Repérage phases - 180LTV3
   'tB1': ['010','012'],             // Génératrice - 180LTV3 (Turbine B)
   'tB2': ['008'],             // Injecteurs - 180LTV3 (Turbine B)
   'tB3': ['102'],             // Capteur de vibration - 180LTV3 (Turbine B)
   'tB4': ['098','099','026','027'], // Capteurs de température - 180LTV3 (Turbine B)
-  'tBvolute': ['089','091','092','093','094','110','005','003'], // Assemblage turbine avec volute - 180LTV3 (Turbine B)
+  'tBvolute': ['088','089','091','092','093','094','110','005','003'], // Assemblage turbine avec volute - 180LTV3 (Turbine B)
   'tB5': ['030','087'],                  // Repérage phases - 180LTV3 (Turbine B)
   'mtvtA1': ['010','012'],           // Génératrice
   'mtvtA2': ['008','020','021','019','022','024','001'],           // Injecteurs
@@ -3012,6 +3012,12 @@ function toggleAction(si,ii,ai){
   }
   saveState();renderStep();
   document.getElementById('body_'+ACTIVE_STEPS[si].items[ii].id).classList.add('open');
+  // Rappel graissage si la sous-étape suivante immédiate comporte des vis/brides
+  if(checking){
+    const itemDef=ACTIVE_STEPS[si].items[ii];
+    const nextActionData=itemDef.actions[ai+1];
+    if(nextActionData&&actionTriggersLube(nextActionData,ACTIVE_STEPS[si]))showLubeReminder();
+  }
 }
 function saveVal(si,ii,key,val){session.steps[si].items[ii][key]=val;saveState();}
 function saveStepOp(si,val){session.steps[si].stepOp=val;saveState();}
@@ -3087,7 +3093,8 @@ function validateOP(si,ii){
   setTimeout(applyPartHighlights, 100);
   // Rappel graissage si la sous-étape suivante comporte des vis à serrer
   const nextItemData=ACTIVE_STEPS[si]&&ACTIVE_STEPS[si].items&&ACTIVE_STEPS[si].items[ii+1];
-  if(nextItemData&&itemHasVis(nextItemData,ACTIVE_STEPS[si]))showLubeReminder();
+  const nextActionData=nextItemData&&nextItemData.actions&&nextItemData.actions[0];
+  if(nextActionData&&actionTriggersLube(nextActionData,ACTIVE_STEPS[si]))showLubeReminder();
 }
 function validateVE(si,ii){
   const it=session.steps[si].items[ii];
@@ -3111,19 +3118,20 @@ function navStep(dir){
   if(cameFromValidation){
     const nextStepData=ACTIVE_STEPS[currentStep];
     const firstItem=nextStepData&&nextStepData.items&&nextStepData.items[0];
-    if(firstItem&&itemHasVis(firstItem,nextStepData))showLubeReminder();
+    const firstActionData=firstItem&&firstItem.actions&&firstItem.actions[0];
+    if(firstActionData&&actionTriggersLube(firstActionData,nextStepData))showLubeReminder();
   }
 }
 
 // ===================== POPUP RAPPEL GRAISSAGE DES VIS =====================
-// Détecte si une sous-étape comporte des actions de serrage de vis
-// (et, dans les étapes Boucle chaude / Cycle ORC, des actions mentionnant des brides)
-function itemHasVis(item,step){
-  if(!item||!item.actions)return false;
-  if(item.actions.some(a=>/\bvis\b/i.test(a.txt||'')))return true;
+// Détecte si une action (sous-étape) précise comporte du serrage de vis
+// (et, dans les étapes Boucle chaude / Cycle ORC, mentionne des brides)
+function actionTriggersLube(action,step){
+  if(!action)return false;
+  if(/\bvis\b/i.test(action.txt||''))return true;
   const stepName=step&&step.name;
   if(stepName==='Boucle chaude'||stepName==='Cycle ORC'){
-    return item.actions.some(a=>/\bbrides?\b/i.test(a.txt||''));
+    return /\bbrides?\b/i.test(action.txt||'');
   }
   return false;
 }
@@ -3138,7 +3146,7 @@ function showLubeReminder(){
     <div class="lube-reminder-box">
       <div class="lube-reminder-icon">🛢️</div>
       <div class="lube-reminder-title">Petit rappel</div>
-      <div class="lube-reminder-text">N'oubliez pas de graisser les vis avant serrage.</div>
+      <div class="lube-reminder-text">N'oubliez pas de graisser.</div>
     </div>`;
   overlay.addEventListener('click',closeLubeReminder);
   document.body.appendChild(overlay);
