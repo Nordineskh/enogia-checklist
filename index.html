@@ -80,7 +80,7 @@ select option{background:var(--surface)}
 .step-dot.done{border-color:var(--accent);background:#2aa99e22;color:var(--accent)}
 .step-dot.active{border-color:var(--accent2);background:#0086c222;color:#fff}
 
-.step-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px}
+.step-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px;align-items:start}
 @media(max-width:650px){.step-layout{grid-template-columns:1fr}}
 
 .step-header{background:linear-gradient(135deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px}
@@ -129,6 +129,10 @@ select option{background:var(--surface)}
 .action-check.checked{border-color:var(--accent);background:var(--accent);color:#fff}
 .action-text{font-size:12px;color:var(--text2);line-height:1.4}
 .action-torque{font-size:11px;font-weight:700;color:var(--yellow);white-space:nowrap}
+.action-ohm-row{display:flex;align-items:center;gap:6px;padding:0 0 8px 30px;margin-top:-3px}
+.action-ohm-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-right:auto}
+.action-ohm-input{width:72px;background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 7px;font-size:12px;font-family:var(--font);text-align:right}
+.action-ohm-unit{font-size:12px;color:var(--text2);font-weight:700;min-width:14px}
 .action-qty{font-size:11px;color:var(--text3);white-space:nowrap}
 
 .val-section{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
@@ -2719,7 +2723,7 @@ function startSession(){
         actions:it.actions.map(()=>false),
         opDone:false,opName:'',opDate:'',opComment:'',
         veDone:false,veName:'',veDate:'',veComment:'',
-        ncReason:'',firstPassResult:null,ncCount:0,photos:[],actionTimers:{},photos:[],actionTimers:{},
+        ncReason:'',firstPassResult:null,ncCount:0,photos:[],actionTimers:{},photos:[],actionTimers:{},ohmValues:{},
       })),
       snData:{},comment:'',stepOp:'',stepVe:'',
     }))
@@ -2744,12 +2748,12 @@ function loadSession(id){
   // Migration : synchroniser session.steps avec ACTIVE_STEPS (si structure modifiee)
   ACTIVE_STEPS.forEach((step, si) => {
     if(!session.steps[si]){
-      session.steps[si] = { id:step.id, items:(step.items||[]).map(it=>({id:it.id,actions:it.actions.map(()=>false),opDone:false,opName:'',opDate:'',opComment:'',veDone:false,veName:'',veDate:'',veComment:'',ncReason:'',firstPassResult:null,ncCount:0,photos:[],actionTimers:{}})), snData:{}, comment:'', stepOp:'', stepVe:''};
+      session.steps[si] = { id:step.id, items:(step.items||[]).map(it=>({id:it.id,actions:it.actions.map(()=>false),opDone:false,opName:'',opDate:'',opComment:'',veDone:false,veName:'',veDate:'',veComment:'',ncReason:'',firstPassResult:null,ncCount:0,photos:[],actionTimers:{},ohmValues:{}})), snData:{}, comment:'', stepOp:'', stepVe:''};
     } else {
       session.steps[si].id = step.id;
       (step.items||[]).forEach((item, ii) => {
         if(!session.steps[si].items[ii]){
-          session.steps[si].items[ii] = {id:item.id,actions:item.actions.map(()=>false),opDone:false,opName:'',opDate:'',opComment:'',veDone:false,veName:'',veDate:'',veComment:'',ncReason:'',firstPassResult:null,ncCount:0,photos:[],actionTimers:{}};
+          session.steps[si].items[ii] = {id:item.id,actions:item.actions.map(()=>false),opDone:false,opName:'',opDate:'',opComment:'',veDone:false,veName:'',veDate:'',veComment:'',ncReason:'',firstPassResult:null,ncCount:0,photos:[],actionTimers:{},ohmValues:{}};
         }
       });
       if(session.steps[si].items.length > (step.items||[]).length){
@@ -2912,13 +2916,19 @@ function renderStep(){
             if(tRunning){tLabel='⏹ Fin';tCls='running';}
             else if(tDone){tLabel='✓ Fait';tCls='done';}
             else{tLabel='▶ Début';tCls='idle';}
+            const showOhm = step.id.startsWith('instrORC') && item.label.startsWith('Sondes TT');
+            const ohmVal = (it.ohmValues && it.ohmValues[ai]) || '';
             return `<div class="action-row">
               <div class="action-check ${it.actions[ai]?'checked':''}" onclick="toggleAction(${currentStep},${idx},${ai})">${it.actions[ai]?'✓':''}</div>
               <div class="action-text">${act.txt}</div>
               <div class="action-torque">${act.torque||''}</div>
               <div class="action-qty">${act.qty?'×'+act.qty:''}</div>
               <button class="action-timer-btn ${tCls}" onclick="toggleActionTimer('${tKey}',${currentStep},${idx},${ai})">${tLabel}</button>
-            </div>`;
+            </div>${showOhm?`<div class="action-ohm-row">
+              <span class="action-ohm-label">Valeur mesurée</span>
+              <input type="text" inputmode="decimal" class="action-ohm-input" placeholder="0" value="${ohmVal}" oninput="saveOhmVal(${currentStep},${idx},${ai},this.value)">
+              <span class="action-ohm-unit">Ω</span>
+            </div>`:''}`;
           }).join('')}
         </div>
         <div class="val-section">
@@ -3020,6 +3030,7 @@ function toggleAction(si,ii,ai){
   }
 }
 function saveVal(si,ii,key,val){session.steps[si].items[ii][key]=val;saveState();}
+function saveOhmVal(si,ii,ai,val){const it=session.steps[si].items[ii];if(!it.ohmValues)it.ohmValues={};it.ohmValues[ai]=val;saveState();}
 function saveStepOp(si,val){session.steps[si].stepOp=val;saveState();}
 function saveStepVe(si,val){session.steps[si].stepVe=val;saveState();}
 function saveSN(key,val){session.steps[currentStep].snData[key]=val;saveState();}
