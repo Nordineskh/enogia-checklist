@@ -738,11 +738,17 @@ const STEPS_180LTV3=[
    items:[
     {id:'tA1',label:'Génératrice',actions:[{txt:'Enregistrer le numéro de série de la génératrice',torque:null,qty:1}]},
     {id:'tA2',label:'Injecteurs',actions:[
-      {txt:'Mise en place des entretoires fixées à la Loctite 272',torque:null,qty:6},
+      {txt:'Vérifier le sizer',torque:null,qty:1},
+      {txt:'Mise en place des entretoires fixées à la Loctite 272',torque:'7,5 Nm',qty:6},
       {txt:'Fixer injecteurs avec vis CHC M6x40',torque:'7,5 Nm',qty:6},
       {txt:'Vérification Sizer (injecteurs bouchés)',torque:null,qty:1}]},
     {id:'tA3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
     {id:'tA4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes (Ohm)',torque:null,qty:2}]},
+    {id:'tAvolute',label:'Assemblage turbine avec volute',actions:[
+      {txt:'Mise en place joint sur génératrice',torque:null,qty:1},
+      {txt:'Mise en place de l\'isolant thermique',torque:null,qty:1},
+      {txt:'Mise en place joint sur volute',torque:null,qty:1},
+      {txt:'Assemblage turbine dans volute',torque:'10 Nm',qty:'8× CHC M8x35'}]},
     {id:'tA5',label:'Identification d\'ordre des phases U, V, W',actions:[{txt:'Identification d\'ordre des phases U, V, W',torque:null,qty:1}]},
   ]},
   {id:'turbineB',name:'Turbine B (Brides)',icon:'⚙️',
@@ -750,34 +756,40 @@ const STEPS_180LTV3=[
    items:[
     {id:'tB1',label:'Génératrice',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
     {id:'tB2',label:'Injecteurs',actions:[
-      {txt:'Entretoires à la Loctite 272',torque:null,qty:6},
+      {txt:'Vérifier le sizer',torque:null,qty:1},
+      {txt:'Entretoires à la Loctite 272',torque:'7,5 Nm',qty:6},
       {txt:'Fixer injecteurs CHC M6x40',torque:'7,5 Nm',qty:6},
       {txt:'Vérification Sizer',torque:null,qty:1}]},
     {id:'tB3',label:'Capteur de vibration',actions:[{txt:'Enregistrer le numéro de série',torque:null,qty:1}]},
     {id:'tB4',label:'Capteurs de température',actions:[{txt:'Relever les valeurs des deux sondes',torque:null,qty:2}]},
+    {id:'tBvolute',label:'Assemblage turbine avec volute',actions:[
+      {txt:'Mise en place joint sur génératrice',torque:null,qty:1},
+      {txt:'Mise en place de l\'isolant thermique',torque:null,qty:1},
+      {txt:'Mise en place joint sur volute',torque:null,qty:1},
+      {txt:'Assemblage turbine dans volute',torque:'10 Nm',qty:'8× CHC M8x35'}]},
     {id:'tB5',label:'Identification d\'ordre des phases U, V, W',actions:[{txt:'Identification d\'ordre des phases U, V, W',torque:null,qty:1}]},
   ]},
   {id:'cycleORC',name:'Cycle ORC',icon:'🔄',items:[
     {id:'orc1',label:'Tuyauterie cycle',actions:[{txt:'Vérifier propreté intérieur/extérieur des tubes',torque:null,qty:1}]},
+    {id:'orcBossage',label:'Bossages',actions:[
+      {txt:'Vérifier l\'ensemble des bossages de la machine',torque:null,qty:1}]},
     {id:'orc2',label:'Pompe ORC',actions:[
       {txt:'Vérifier le sens de la pompe',torque:null,qty:1},
       {txt:'Fixation boulons au châssis',torque:'76 Nm',qty:'4× M12x80'},
       {txt:'Mise en place joint DN80',torque:null,qty:2},
       {txt:'Serrer les brides',torque:'76 Nm',qty:'16× M16x70'},
       {txt:'Vérifier l\'orientation de la plaque à bornes',torque:null,qty:1}]},
-    {id:'orc3',label:'Évaporateur & Condenseurs',actions:[
-      {txt:'Vérification 4 boulons châssis ×3',torque:'76 Nm',qty:'12× M16x60'},
-      {txt:'Mise en place joints DN150',torque:null,qty:6},
-      {txt:'Serrer brides partie haute',torque:'120 Nm',qty:'64× M20x60'},
-      {txt:'Mise en place joints DN100',torque:null,qty:3},
-      {txt:'Serrer brides partie basse',torque:'76 Nm',qty:'24× M16x80'}]},
     {id:'orc4',label:'Volutes + Turbines',actions:[
+      {txt:'Mise en place des patins ×4 avec 4 vis M6x16 à tête fraisée',torque:null,qty:4},
       {txt:'Mise en place joint plat DN150 & DN125',torque:null,qty:2},
       {txt:'Serrer brides DN125',torque:'76 Nm',qty:'16× M16x50'},
-      {txt:'Serrer brides DN150',torque:'120 Nm',qty:'16× M20x90'},
-      {txt:'Mise en place isolants intérieurs',torque:null,qty:2},
-      {txt:'Fixation isolants extérieurs + génératrice',torque:null,qty:'16× M6x35'},
-      {txt:'Joints toriques ID164.47×CS6.99',torque:null,qty:4}]},
+      {txt:'Serrer brides DN150',torque:'150 Nm',qty:'16× M20x90'}]},
+    {id:'orc3',label:'Évaporateur & Condenseurs',actions:[
+      {txt:'Vérification du couple de serrage',torque:'76 Nm',qty:'12× M16x60'},
+      {txt:'Vérification des joints DN150',torque:null,qty:6},
+      {txt:'Vérification du couple de serrage brides partie haute',torque:'120 Nm',qty:'64× M20x60'},
+      {txt:'Vérification des joints DN100',torque:null,qty:3},
+      {txt:'Vérification du couple de serrage brides partie basse',torque:'76 Nm',qty:'24× M16x80'}]},
     {id:'orc5',label:'Filtre',actions:[
       {txt:'Vérifier le sens du filtre',torque:null,qty:1},
       {txt:'Mise en place du tamis',torque:null,qty:1},
@@ -785,12 +797,12 @@ const STEPS_180LTV3=[
     {id:'orc6',label:'Clapet anti-retour',actions:[
       {txt:'Remplacement joints toriques',torque:null,qty:2},
       {txt:'Vérifier le sens du clapet',torque:null,qty:1},
-      {txt:'Serrer les boulons',torque:'44 Nm',qty:1}]},
+      {txt:'Serrer les boulons',torque:'44 Nm',qty:6}]},
     {id:'orcFlush',label:'Vanne flush / Vanne FCV01',actions:[
       {txt:'Vérifier les joints du pilote (plat et toriques)',torque:null,qty:1},
       {txt:'Installer le servo-moteur dans la vanne',torque:null,qty:1},
-      {txt:'Vérifier l\'état du joint',torque:null,qty:1},
-      {txt:'Visser',torque:'150 Nm',qty:1}]},
+      {txt:'Vérifier l\'état du joint du capot',torque:null,qty:1},
+      {txt:'Visser les vis M16x40',torque:'150 Nm',qty:1}]},
   ]},
   {id:'instrORC',name:'Instrumentation Cycle ORC',icon:'🌡️',items:[
     {id:'ins1',label:'Vannes remplissage/vidange (VA)',actions:[
@@ -802,17 +814,17 @@ const STEPS_180LTV3=[
       {txt:'Fixer vannes MM 1/4SAE sur châssis',torque:null,qty:'4× M4'},
       {txt:'Connecter capillaire sans schrader',torque:null,qty:2}]},
     {id:'ins4',label:'Sondes TT — Cycle ORC',actions:[
-      {txt:'TT-01 — L60mm, Non cal. — Loctite 272',torque:null,qty:1},
-      {txt:'TT-03A — L130mm, Calibrée — Loctite 272',torque:null,qty:1},
-      {txt:'TT-03B — L130mm, Calibrée — Loctite 272',torque:null,qty:1},
-      {txt:'TT-04 — L130mm, Non cal. — Loctite 272',torque:null,qty:1}]},
+      {txt:'TT-01 — 1/4 NPT, L60mm, Non cal. — Loctite 272',torque:null,qty:1},
+      {txt:'TT-03A — 1/4 NPT, L130mm, Calibrée — Loctite 272',torque:null,qty:1},
+      {txt:'TT-03B — 1/4 NPT, L130mm, Calibrée — Loctite 272',torque:null,qty:1},
+      {txt:'TT-04 — 1/4 NPT, L130mm, Non cal. — Loctite 272',torque:null,qty:1}]},
     {id:'ins5',label:'Sondes TT — Cold/Hot/Cooling',actions:[
-      {txt:'TT-11 Cold Loop — L150mm',torque:null,qty:1},
-      {txt:'TT-13 Cold Loop — L150mm',torque:null,qty:1},
-      {txt:'TT-21 Hot Loop — L150mm',torque:null,qty:1},
-      {txt:'TT-22 Hot Loop — L150mm',torque:null,qty:1},
-      {txt:'TT-30A Cooling — L150mm',torque:null,qty:1},
-      {txt:'TT-31A Cooling — L150mm',torque:null,qty:1}]},
+      {txt:'TT-11 Cold Loop — BSPP1/2, L150mm',torque:null,qty:1},
+      {txt:'TT-12 Cold Loop — BSPP1/2, L150mm',torque:null,qty:1},
+      {txt:'TT-21 Hot Loop — BSPP1/2, L150mm',torque:null,qty:1},
+      {txt:'TT-22 Hot Loop — BSPP1/2, L150mm',torque:null,qty:1},
+      {txt:'TT-30A Cooling — BSPP1/2, L150mm',torque:null,qty:1},
+      {txt:'TT-31A Cooling — BSPP1/2, L150mm',torque:null,qty:1}]},
   ]},
   {id:'cycleLub',name:'Cycle Lub',icon:'🛢️',items:[
     {id:'ins2',label:'Retour lub',actions:[{txt:'Raccord 1/2NPT–1/2SAE à la Loctite 272',torque:null,qty:4}]},
@@ -821,11 +833,11 @@ const STEPS_180LTV3=[
       {txt:'Vanne FF 1/2NPT sur embout mâle 1/2NPT — Loctite 272',torque:null,qty:1}]},
     {id:'lub2',label:'Vanne de vidange',actions:[
       {txt:'Raccord tournant cuivre sur té 3/8-1/4-3/8',torque:null,qty:2},
-      {txt:'Raccord tournant cuivre sur vanne MM 1/4SAE',torque:null,qty:2},
+      {txt:'Raccord tournant FF acier sur vanne MM 1/4SAE',torque:null,qty:2},
       {txt:'Fixer vanne avec boulons M4 sur châssis',torque:null,qty:2},
       {txt:'Bouchon F 1/4 avec joint sur vanne de vidange',torque:null,qty:1}]},
     {id:'lub3',label:'Pompe de lub',actions:[
-      {txt:'Positionner + fixer pompe avec support (4× vis+rondelle M6x16)',torque:null,qty:1},
+      {txt:'Positionner + fixer pompe avec support (2× vis+rondelle M6x16)',torque:null,qty:1},
       {txt:'Vérifier sens de montage (vers les turbines)',torque:null,qty:1}]},
     {id:'lub4',label:'Filtre + Flexibles 1–4',actions:[
       {txt:'Fixer filtre avec collier sur châssis (1× vis+rondelle M8x12)',torque:null,qty:1},
@@ -857,7 +869,7 @@ const STEPS_180LTV3=[
       {txt:'Mamelon MM 12x17–15x21 — Loctite 272',torque:null,qty:1}]},
     {id:'cp2',label:'Tube transparent + Pompe + Filtre',actions:[
       {txt:'Sertir 2 écrous tournants sur tube transparent (4 joints toriques)',torque:null,qty:1},
-      {txt:'Raccorder pompe aux écrous tournants 26x34 26F + 1"–1"1/2',torque:null,qty:1},
+      {txt:'Raccorder pompe avec raccord mamelons MF 1"–1"1/2',torque:null,qty:1},
       {txt:'Mamelons MM 26x34 sur filtre — Loctite 272',torque:null,qty:2}]},
   ]},
   {id:'coolingInst',name:'Cycle Cooling — Installation',icon:'❄️',items:[
@@ -904,7 +916,7 @@ const STEPS_180LTV3=[
       {txt:'Insérer vanne DN150 entre 2 brides',torque:null,qty:1},
       {txt:'Serrer brides en bloquant la vanne',torque:'140 Nm',qty:'8× M20'}]},
     {id:'bc4',label:'Sondes TT + Servo-moteurs',actions:[
-      {txt:'Sondes TT-11 & TT-13 — Loctite 272',torque:null,qty:2},
+      {txt:'Sondes TT-11 & TT-12 — Loctite 272',torque:null,qty:2},
       {txt:'Servo-moteurs ENO-FCV-11 & ENO-FCV-12 sur vannes',torque:null,qty:2}]},
     {id:'orc7',label:'Vanne Bypass',actions:[
       {txt:'Vérifier le sens de la vanne',torque:null,qty:1},
@@ -915,10 +927,10 @@ const STEPS_180LTV3=[
   {id:'boucleFrd',name:'Boucle froide',icon:'🧊',items:[
     {id:'bf1',label:'Condenseur — partie haute',actions:[
       {txt:'Joints bride DN100',torque:null,qty:2},
-      {txt:'Serrer les brides',torque:'72 Nm',qty:'16× M16'}]},
+      {txt:'Serrer les brides',torque:'100 Nm',qty:'16× M16'}]},
     {id:'bf2',label:'Condenseur — partie basse',actions:[
       {txt:'Joints bride DN100',torque:null,qty:2},
-      {txt:'Serrer les brides',torque:'72 Nm',qty:'16× M16'}]},
+      {txt:'Serrer les brides',torque:'100 Nm',qty:'16× M16'}]},
     {id:'bf3',label:'Sondes TT-21 & TT-22',actions:[
       {txt:'Visser sondes TT-21 & TT-22 — Loctite 272',torque:null,qty:2}]},
   ]},
@@ -2064,11 +2076,13 @@ const TURBINE_A_STEP_PARTS = {
   'tA2': ['008'],             // Injecteurs - 180LTV3
   'tA3': ['102'],             // Capteur de vibration - 180LTV3
   'tA4': ['098','099','026','027'], // Capteurs de température - 180LTV3
+  'tAvolute': ['089','091','092','093','094','110','005','003'], // Assemblage turbine avec volute - 180LTV3
   'tA5': ['030','087'],                  // Repérage phases - 180LTV3
   'tB1': ['010','012'],             // Génératrice - 180LTV3 (Turbine B)
   'tB2': ['008'],             // Injecteurs - 180LTV3 (Turbine B)
   'tB3': ['102'],             // Capteur de vibration - 180LTV3 (Turbine B)
   'tB4': ['098','099','026','027'], // Capteurs de température - 180LTV3 (Turbine B)
+  'tBvolute': ['089','091','092','093','094','110','005','003'], // Assemblage turbine avec volute - 180LTV3 (Turbine B)
   'tB5': ['030','087'],                  // Repérage phases - 180LTV3 (Turbine B)
   'mtvtA1': ['010','012'],           // Génératrice
   'mtvtA2': ['008','020','021','019','022','024','001'],           // Injecteurs
@@ -3073,7 +3087,7 @@ function validateOP(si,ii){
   setTimeout(applyPartHighlights, 100);
   // Rappel graissage si la sous-étape suivante comporte des vis à serrer
   const nextItemData=ACTIVE_STEPS[si]&&ACTIVE_STEPS[si].items&&ACTIVE_STEPS[si].items[ii+1];
-  if(nextItemData&&itemHasVis(nextItemData))showLubeReminder();
+  if(nextItemData&&itemHasVis(nextItemData,ACTIVE_STEPS[si]))showLubeReminder();
 }
 function validateVE(si,ii){
   const it=session.steps[si].items[ii];
@@ -3097,15 +3111,21 @@ function navStep(dir){
   if(cameFromValidation){
     const nextStepData=ACTIVE_STEPS[currentStep];
     const firstItem=nextStepData&&nextStepData.items&&nextStepData.items[0];
-    if(firstItem&&itemHasVis(firstItem))showLubeReminder();
+    if(firstItem&&itemHasVis(firstItem,nextStepData))showLubeReminder();
   }
 }
 
 // ===================== POPUP RAPPEL GRAISSAGE DES VIS =====================
 // Détecte si une sous-étape comporte des actions de serrage de vis
-function itemHasVis(item){
+// (et, dans les étapes Boucle chaude / Cycle ORC, des actions mentionnant des brides)
+function itemHasVis(item,step){
   if(!item||!item.actions)return false;
-  return item.actions.some(a=>/\bvis\b/i.test(a.txt||''));
+  if(item.actions.some(a=>/\bvis\b/i.test(a.txt||'')))return true;
+  const stepName=step&&step.name;
+  if(stepName==='Boucle chaude'||stepName==='Cycle ORC'){
+    return item.actions.some(a=>/\bbrides?\b/i.test(a.txt||''));
+  }
+  return false;
 }
 function showLubeReminder(){
   // Évite les doublons si déjà affiché
