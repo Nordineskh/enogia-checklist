@@ -78,6 +78,9 @@ select option{background:var(--surface)}
 .steps-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .step-dot{width:30px;height:30px;border-radius:50%;border:2px solid var(--border);background:var(--surface);color:var(--text3);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;flex-shrink:0}
 .step-dot.done{border-color:var(--accent);background:#2aa99e22;color:var(--accent)}
+.step-dot.complete{border-color:var(--green);background:#2aa99e22;color:var(--green)}
+.step-dot.started{border-color:var(--yellow);background:#f0a50022;color:var(--yellow)}
+.step-dot.empty{border-color:var(--red);background:#e0555522;color:var(--red)}
 .step-dot.active{border-color:var(--accent2);background:#0086c222;color:#fff}
 
 .step-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px;align-items:start}
@@ -2860,8 +2863,11 @@ function renderStep(){
   document.getElementById('sessionBadge').textContent=session.op;
 
   document.getElementById('stepsNav').innerHTML=ACTIVE_STEPS.map((s,i)=>{
-    const allOp=session.steps[i].items.every(it=>it.opDone);
-    const cls=i===currentStep?'active':(allOp?'done':'');
+    const stepItems=session.steps[i].items;
+    const allVe=stepItems.length>0&&stepItems.every(it=>it.veDone);
+    const anyProgress=stepItems.some(it=>it.opDone||it.veDone||(it.actions&&it.actions.some(Boolean)));
+    const statusCls=allVe?'complete':(anyProgress?'started':'empty');
+    const cls=i===currentStep?'active':statusCls;
     return `<div class="step-dot ${cls}" onclick="jumpStep(${i})" title="${s.name}">${i+1}</div>`;
   }).join('');
 
@@ -2936,9 +2942,12 @@ function renderStep(){
             <h4>✋ Opérateur</h4>
             <input type="text" value="${it.opName||sstate.stepOp||''}" oninput="saveVal(${currentStep},${idx},'opName',this.value)" placeholder="Nom OP">
             <textarea placeholder="Commentaire…" oninput="saveVal(${currentStep},${idx},'opComment',this.value)" style="margin-top:6px">${it.opComment||''}</textarea>
-            <button class="btn btn-primary btn-full mt8 btn-sm" onclick="validateOP(${currentStep},${idx})" ${it.opDone?'disabled':''}>
-              ${it.opDone?'✅ Validé OP — '+it.opDate:'✋ Valider (OP)'}
-            </button>
+            <div style="display:flex;gap:6px;margin-top:8px">
+              <button class="btn btn-primary btn-sm" style="flex:1" onclick="validateOP(${currentStep},${idx})" ${it.opDone?'disabled':''}>
+                ${it.opDone?'✅ Validé OP — '+it.opDate:'✋ Valider (OP)'}
+              </button>
+              ${it.opDone?`<button class="btn btn-outline btn-sm" title="Revenir en arrière (annuler la validation OP)" onclick="unvalidateOP(${currentStep},${idx})">↩</button>`:''}
+            </div>
           </div>
           <div class="val-box ve">
             <h4>🔍 Vérificateur</h4>
@@ -2961,9 +2970,12 @@ function renderStep(){
                 <label class="photo-add"><input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhoto(${currentStep},${idx},this)">＋</label>
               </div>
             </div>`:''}
-            <button class="btn ${it.veDone?'btn-success':'btn-outline'} btn-full mt8 btn-sm" onclick="validateVE(${currentStep},${idx})" ${it.veDone?'disabled':(!it.opDone?'disabled':'')}>
-              ${it.veDone?'✅ Validé VE — '+it.veDate:(it.opDone?'🔍 Valider (VE)':'⏳ Attente OP')}
-            </button>
+            <div style="display:flex;gap:6px;margin-top:8px">
+              <button class="btn ${it.veDone?'btn-success':'btn-outline'} btn-sm" style="flex:1" onclick="validateVE(${currentStep},${idx})" ${it.veDone?'disabled':(!it.opDone?'disabled':'')}>
+                ${it.veDone?'✅ Validé VE — '+it.veDate:(it.opDone?'🔍 Valider (VE)':'⏳ Attente OP')}
+              </button>
+              ${it.veDone?`<button class="btn btn-outline btn-sm" title="Revenir en arrière (annuler la validation VE)" onclick="unvalidateVE(${currentStep},${idx})">↩</button>`:''}
+            </div>
           </div>
         </div>
       </div>
@@ -3116,6 +3128,19 @@ function validateVE(si,ii){
   }
   it.veDone=true;it.veDate=new Date().toLocaleDateString('fr-FR');
   if(!it.veName)it.veName=session.ve||'–';
+  saveState();renderStep();
+}
+function unvalidateOP(si,ii){
+  const it=session.steps[si].items[ii];
+  if(it.veDone){alert('Annulez d\'abord la validation VE avant de revenir sur la validation OP.');return;}
+  if(!confirm('Revenir en arrière : annuler la validation OP de cette sous-étape ?'))return;
+  it.opDone=false;it.opDate='';
+  saveState();renderStep();
+}
+function unvalidateVE(si,ii){
+  const it=session.steps[si].items[ii];
+  if(!confirm('Revenir en arrière : annuler la validation VE de cette sous-étape ?'))return;
+  it.veDone=false;it.veDate='';
   saveState();renderStep();
 }
 function jumpStep(i){currentStep=i;session.currentStep=i;saveState();renderStep();window.scrollTo(0,0);}
