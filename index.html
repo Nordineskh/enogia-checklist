@@ -160,6 +160,25 @@ textarea{height:52px;resize:none;font-size:12px}
 .hist-info{flex:1}
 .hist-title{font-weight:600;margin-bottom:2px;font-family:var(--font)}
 .hist-meta{font-size:12px;color:var(--text2)}
+/* Historique / Production en cours */
+.home-model-tag{display:inline-block;font-size:11px;color:var(--text3);letter-spacing:1px;margin-bottom:2px}
+.hist-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.hist-tab{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:14px;font-weight:500;font-family:var(--font);cursor:pointer;transition:.2s}
+.hist-tab:hover{border-color:var(--accent);color:#fff}
+.hist-tab.active{background:var(--surface2);border-color:var(--accent);color:#fff;box-shadow:0 0 0 2px #2aa99e33}
+.hist-tab .hist-count{background:#ffffff1f;border-radius:20px;padding:2px 9px;font-size:12px}
+.hist-tab.active .hist-count{background:var(--accent);color:#fff}
+.hist-group{margin-bottom:12px}
+.hist-group-hdr{display:flex;align-items:center;gap:10px;width:100%;background:#00364a;border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--font-title);font-size:17px;letter-spacing:1px;cursor:pointer;text-align:left}
+.hist-group-hdr .hg-count{margin-left:auto;font-family:var(--font);font-size:12px;color:var(--text3)}
+.hist-group-hdr .hg-caret{font-size:11px;color:var(--text3);transition:.2s}
+.hist-group.closed .hg-caret{transform:rotate(-90deg)}
+.hist-group.closed .hist-group-body{display:none}
+.hist-group-body{padding-top:8px}
+.hist-group.current .hist-group-hdr{border-color:var(--accent)}
+.hg-current{font-family:var(--font);font-size:10px;background:var(--accent);color:#fff;border-radius:20px;padding:2px 8px;letter-spacing:0}
+.hist-bar{height:5px;background:#ffffff1a;border-radius:3px;margin-top:6px;overflow:hidden}
+.hist-bar>div{height:100%;background:var(--yellow);border-radius:3px}
 .empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
 .empty-state .emo{font-size:48px;margin-bottom:12px}
 .alert-warn{background:#f0a50015;border:1px solid #f0a50044;color:var(--yellow);padding:10px 13px;border-radius:8px;font-size:13px;margin-bottom:10px}
@@ -324,7 +343,7 @@ textarea{height:52px;resize:none;font-size:12px}
 <div class="screen" id="scHome">
   <div class="project-card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <div class="project-title" id="homeModelTitle">Sélectionnez une gamme</div>
+      <div><div class="home-model-tag">Gamme sélectionnée</div><div class="project-title" id="homeModelTitle">Sélectionnez une gamme</div></div>
       <button class="btn btn-outline btn-sm" onclick="showModelSelector()" style="flex-shrink:0">🔄 Changer</button>
     </div>
     <div class="project-sub" id="homeModelRef">Cliquez sur "Changer" pour choisir votre modèle</div>
@@ -362,8 +381,12 @@ textarea{height:52px;resize:none;font-size:12px}
     <button class="btn btn-primary btn-full" id="btnStartSession" onclick="startSession()" disabled title="Cochez la disponibilité de tous les composants pour démarrer">▶ Démarrer le montage</button>
   </div>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-    <div class="section-title" style="margin:0;flex:none"><span style="white-space:nowrap">Historique</span></div>
+    <div class="section-title" style="margin:0;flex:none"><span style="white-space:nowrap">Suivi des montages</span></div>
     <button class="btn btn-outline btn-sm" onclick="showDashboard()" style="margin-left:12px">📊 Tableau de bord</button>
+  </div>
+  <div class="hist-tabs">
+    <button class="hist-tab" id="tabEnCours" onclick="setHistTab('encours')">🛠 Production en cours <span class="hist-count" id="cntEnCours">0</span></button>
+    <button class="hist-tab" id="tabHisto" onclick="setHistTab('histo')">✅ Historique <span class="hist-count" id="cntHisto">0</span></button>
   </div>
   <div id="histList"></div>
 </div>
@@ -2872,8 +2895,8 @@ function selectModel(modelId){
   ACTIVE_STEPS = currentModel.getSteps();
   showScreen('scHome');
   // Update home screen title
-  document.getElementById('homeModelTitle').textContent = currentModel.name;
-  document.getElementById('homeModelRef').textContent = currentModel.ref;
+  refreshHomeModel();
+  renderHistory();
   updateStockLabel();
 }
 
@@ -2948,7 +2971,12 @@ function loadSession(id){
   renderStep();
 }
 
-function goHome(){showScreen('scHome');loadSessions().then(()=>renderHistory());updateStockLabel();}
+function goHome(){showScreen('scHome');refreshHomeModel();loadSessions().then(()=>renderHistory());updateStockLabel();}
+function refreshHomeModel(){
+  const t=document.getElementById('homeModelTitle'), r=document.getElementById('homeModelRef');
+  if(currentModel){ t.textContent=currentModel.name; r.textContent=currentModel.ref; }
+  else { t.textContent='Sélectionnez une gamme'; r.textContent='Cliquez sur "Changer" pour choisir votre modèle'; }
+}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 
 // ===================== MENU APP (sous le logo) =====================
@@ -2971,27 +2999,80 @@ document.addEventListener('click', (e)=>{
 });
 
 // ===================== HISTORY =====================
+let histTab = 'encours';          // onglet ouvert : 'encours' ou 'histo' (null = aucun)
+let histClosedGroups = {};        // gammes repliées, par onglet
+
+function setHistTab(tab){
+  histTab = (histTab === tab) ? null : tab;   // re-cliquer referme la liste
+  renderHistory();
+}
+function toggleHistGroup(key){
+  histClosedGroups[key] = !histClosedGroups[key];
+  renderHistory();
+}
+function sessionModelId(s){ return (s.modelId && MODELS[s.modelId]) ? s.modelId : 'eno180ltv3'; }
+function sessionModelName(s){ return (MODELS[sessionModelId(s)]||{}).name || s.modelName || 'ENO 180 LTV3'; }
+
 function renderHistory(){
   const el=document.getElementById('histList');
-  if(!sessions.length){el.innerHTML=`<div class="empty-state"><div class="emo">📋</div><p>Aucun montage enregistré</p></div>`;return;}
-  el.innerHTML=sessions.map(s=>{
-    const p=calcProgress(s);
-    const isAdmin = window._currentUser && window._currentUser.email === window._ADMIN_EMAIL;
-    const hasSerie = s.serie && s.serie !== '–';
-    const hasProjet = s.projet && s.projet !== '–';
-    const histTitle = (hasSerie || hasProjet)
-      ? `${hasSerie ? s.serie : 'Sans n° série'} — ${hasProjet ? s.projet : 'Sans n° projet'}`
-      : 'Montage sans référence';
-    return `<div class="hist-card">
-      <div style="font-size:24px">⚙️</div>
-      <div class="hist-info">
-        <div class="hist-title">${histTitle}</div>
-        <div class="hist-meta">${s.modelName||'ENO 180 LTV3'} | OP: ${s.op} | ${s.date} | ${p.pct}% complété</div>
-      </div>
-      <div style="display:flex;gap:6px;flex-shrink:0">
-        <button class="btn btn-outline btn-sm" onclick="loadSession(${s.id})">Reprendre</button>
-        ${isAdmin ? `<button class="btn btn-sm" style="background:#e0555522;border:1px solid #e0555544;color:#e05555" onclick="deleteSession(${s.id})">🗑</button>` : ''}
-      </div>
+  const enCours=[], finis=[];
+  sessions.forEach(s=>{ (calcProgress(s).pct>=100 ? finis : enCours).push(s); });
+  document.getElementById('cntEnCours').textContent=enCours.length;
+  document.getElementById('cntHisto').textContent=finis.length;
+  document.getElementById('tabEnCours').classList.toggle('active', histTab==='encours');
+  document.getElementById('tabHisto').classList.toggle('active', histTab==='histo');
+
+  if(!histTab){ el.innerHTML=''; return; }
+  const list = histTab==='histo' ? finis : enCours;
+  if(!list.length){
+    el.innerHTML = histTab==='histo'
+      ? `<div class="empty-state"><div class="emo">✅</div><p>Aucun montage finalisé à 100 %</p></div>`
+      : `<div class="empty-state"><div class="emo">🛠</div><p>Aucun montage en cours de fabrication</p></div>`;
+    return;
+  }
+  const isAdmin = window._currentUser && window._currentUser.email === window._ADMIN_EMAIL;
+
+  // Regroupement par gamme, dans l'ordre des gammes ; la gamme sélectionnée passe en premier
+  const groups={};
+  list.forEach(s=>{ const k=sessionModelId(s); (groups[k]=groups[k]||[]).push(s); });
+  let order=Object.keys(MODELS).filter(k=>groups[k]);
+  Object.keys(groups).forEach(k=>{ if(!order.includes(k)) order.push(k); });
+  const curId = currentModel && currentModel.id;
+  if(curId && groups[curId]) order=[curId, ...order.filter(k=>k!==curId)];
+
+  el.innerHTML = order.map(k=>{
+    const gKey = histTab+':'+k;
+    const isCur = k===curId;
+    const cards = groups[k].map(s=>{
+      const p=calcProgress(s);
+      const hasSerie = s.serie && s.serie !== '–';
+      const hasProjet = s.projet && s.projet !== '–';
+      const histTitle = (hasSerie || hasProjet)
+        ? `${hasSerie ? s.serie : 'Sans n° série'} — ${hasProjet ? s.projet : 'Sans n° projet'}`
+        : 'Montage sans référence';
+      const meta = histTab==='histo'
+        ? `Démarré le ${s.date}${s.completed ? ' · terminé le '+new Date(s.completed).toLocaleDateString('fr-FR') : ''}${s.op ? ' · OP : '+s.op : ''}`
+        : `Démarré le ${s.date}${s.op ? ' · OP : '+s.op : ''} · ${p.done}/${p.total} points · <b style="color:var(--yellow)">${p.pct} %</b>`;
+      return `<div class="hist-card">
+        <div style="font-size:22px">${histTab==='histo' ? '✅' : '⚙️'}</div>
+        <div class="hist-info">
+          <div class="hist-title">${histTitle}</div>
+          <div class="hist-meta">${meta}</div>
+          ${histTab==='encours' ? `<div class="hist-bar"><div style="width:${p.pct}%"></div></div>` : ''}
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn btn-outline btn-sm" onclick="loadSession(${s.id})">${histTab==='histo' ? 'Consulter' : 'Reprendre'}</button>
+          ${isAdmin ? `<button class="btn btn-sm" style="background:#e0555522;border:1px solid #e0555544;color:#e05555" onclick="deleteSession(${s.id})">🗑</button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="hist-group${histClosedGroups[gKey] ? ' closed' : ''}${isCur ? ' current' : ''}">
+      <button class="hist-group-hdr" onclick="toggleHistGroup('${gKey}')">
+        <span class="hg-caret">▼</span>${(MODELS[k]||{}).icon||'⚙️'} ${(MODELS[k]||{}).name||k}
+        ${isCur ? '<span class="hg-current">Gamme sélectionnée</span>' : ''}
+        <span class="hg-count">${groups[k].length} machine${groups[k].length>1?'s':''}</span>
+      </button>
+      <div class="hist-group-body">${cards}</div>
     </div>`;
   }).join('');
 }
