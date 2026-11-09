@@ -832,7 +832,7 @@ const STEPS_180LTV3=[
   {id:'cycleORC',name:'Cycle ORC',icon:'🔄',items:[
     {id:'orc1',label:'Tuyauterie cycle',actions:[{txt:'Vérifier propreté intérieur/extérieur des tubes',torque:null,qty:1}]},
     {id:'orcBossage',label:'Bossages',actions:[
-      {txt:'Vérifier l\'ensemble des bossages de la machine',torque:null,qty:1}]},
+      {txt:'Vérifier les emplacements et l\'état des bossages',torque:null,qty:1}]},
     {id:'orc2',label:'Pompe ORC',actions:[
       {txt:'Vérifier le sens de la pompe',torque:null,qty:1},
       {txt:'Fixation boulons au châssis',torque:'76 Nm',qty:'4× M12x80'},
@@ -840,22 +840,22 @@ const STEPS_180LTV3=[
       {txt:'Serrer les brides',torque:'76 Nm',qty:'16× M16x70'},
       {txt:'Vérifier l\'orientation de la plaque à bornes',torque:null,qty:1}]},
     {id:'orc4',label:'Volutes + Turbines',actions:[
-      {txt:'Mise en place des patins ×4 avec 4 vis M6x16 à tête fraisée',torque:null,qty:4},
-      {txt:'Mise en place joint plat DN150 & DN125',torque:null,qty:2},
+      {txt:'Mise en place joint plat DN150 PN25/40',torque:null},
+      {txt:'Mise en place joint plat DN125 PN25/40',torque:null},
       {txt:'Serrer brides DN125',torque:'76 Nm',qty:'16× M16x50'},
       {txt:'Serrer brides DN150',torque:'150 Nm',qty:'16× M20x90'}]},
     {id:'orc3',label:'Évaporateur & Condenseurs',actions:[
-      {txt:'Vérification du couple de serrage',torque:'76 Nm',qty:'12× M16x60'},
-      {txt:'Vérification des joints DN150',torque:null,qty:6},
-      {txt:'Vérification du couple de serrage brides partie haute',torque:'120 Nm',qty:'64× M20x60'},
-      {txt:'Vérification des joints DN100',torque:null,qty:3},
-      {txt:'Vérification du couple de serrage brides partie basse',torque:'76 Nm',qty:'24× M16x80'}]},
+      {txt:'Vérification du couple de serrage',torque:'76 Nm',qty:'12× M20x80'},
+      {txt:'Vérifiez la présence des joints DN150',torque:null,qty:6},
+      {txt:'Vérification du couple de serrage brides partie haute',torque:'120 Nm',qty:'64× M20x80'},
+      {txt:'Vérifiez la présence des joints DN125',torque:null,qty:3},
+      {txt:'Vérification du couple de serrage brides partie basse',torque:'76 Nm',qty:'24× M20x80'}]},
     {id:'orc5',label:'Filtre',actions:[
       {txt:'Vérifier le sens du filtre',torque:null,qty:1},
       {txt:'Mise en place du tamis',torque:null,qty:1},
       {txt:'Serrer les boulons',torque:'44 Nm',qty:4}]},
     {id:'orc6',label:'Clapet anti-retour',actions:[
-      {txt:'Remplacement joints toriques',torque:null,qty:2},
+      {txt:'Remplacement joints toriques',torque:null,info:'2 joints 126,6 × 5,33 mm'},
       {txt:'Vérifier le sens du clapet',torque:null,qty:1},
       {txt:'Serrer les boulons',torque:'44 Nm',qty:6}]},
     {id:'orcFlush',label:'Vanne flush / Vanne FCV01',actions:[
