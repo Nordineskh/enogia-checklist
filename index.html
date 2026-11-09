@@ -3413,8 +3413,15 @@ function scanSerialNumber(compKey, input) {
 
 function saveStepComment(si,val){session.steps[si].comment=val;saveState();}
 
+// Utilisateurs dispensés du blocage des valeurs ohmiques
+const OHM_EXEMPT_EMAILS=['nordine.sakhri@enogia.com'];
+function isOhmExempt(){
+  const e=(window._currentUser&&window._currentUser.email||'').toLowerCase();
+  return OHM_EXEMPT_EMAILS.includes(e);
+}
 // Sous-étapes à mesure ohmique obligatoire (requireOhm) : liste des manques
 function missingOhm(si){
+  if(isOhmExempt()) return [];
   const step=ACTIVE_STEPS[si]; const ss=session.steps[si]; const out=[];
   if(!step||!ss) return out;
   (step.items||[]).forEach((item,ii)=>{
@@ -3440,7 +3447,7 @@ function ohmBlocksTarget(target){
 function validateOP(si,ii){
   const it=session.steps[si].items[ii];
   const itemDef=ACTIVE_STEPS[si].items[ii];
-  if(itemDef&&itemDef.requireOhm){
+  if(itemDef&&itemDef.requireOhm&&!isOhmExempt()){
     const v=it.ohmValues||{};
     const miss=itemDef.actions.filter((a,ai)=>!String(v[ai]??'').trim()).map(a=>a.txt.replace(/^Mesure & montage\s*/,''));
     if(miss.length){ alert(`⛔ Validation impossible\n\nValeur ohmique manquante pour ${miss.join(', ')}.`); return; }
