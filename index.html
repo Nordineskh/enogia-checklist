@@ -287,12 +287,17 @@ textarea{height:52px;resize:none;font-size:12px}
 .photo-add:hover{border-color:var(--accent);color:var(--accent)}
 
 /* ACTION TIMER */
-.action-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
+.action-row{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
 .action-row:last-child{border:none}
 .action-timer-btn{background:#00364a;border:1px solid var(--border);color:var(--accent2);border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;white-space:nowrap;font-family:var(--font)}
 .action-timer-btn.idle{background:var(--accent2);color:#001824;border-color:var(--accent2);font-weight:700;font-size:11px;padding:5px 10px;box-shadow:0 0 0 2px #00c4ff33}
 .action-timer-btn.running{background:#e08a3c;color:#1a0d00;border-color:#e08a3c;font-weight:700;font-size:11px;padding:5px 10px}
 .action-timer-btn.done{background:#2aa99e22;color:var(--accent);border-color:var(--accent)}
+.item-start-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:2px 0 10px;padding:11px;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:700;letter-spacing:.3px;cursor:pointer;border:1px solid var(--accent2);background:var(--accent2);color:#001824;box-shadow:0 0 0 3px #00c4ff22}
+.item-start-btn.running{background:#e08a3c22;border-color:#e08a3c;color:#ffb877;box-shadow:none;cursor:default}
+.item-start-btn.running .pulse{width:9px;height:9px;border-radius:50%;background:#e08a3c;animation:itemPulse 1.2s infinite}
+.item-start-btn.done{background:#2aa99e1a;border-color:var(--accent);color:var(--accent);box-shadow:none;cursor:default}
+@keyframes itemPulse{0%,100%{opacity:1}50%{opacity:.25}}
 </style>
 </head>
 <body>
@@ -3204,6 +3209,10 @@ function renderStep(){
         </div>
       </div>
       <div class="item-body" id="body_${item.id}">
+        ${(()=>{const t=(it.actionTimers||{}).item;
+          if(t&&t.stopped) return `<div class="item-start-btn done">✓ Sous-étape terminée</div>`;
+          if(t&&t.started) return `<div class="item-start-btn running"><span class="pulse"></span>Sous-étape en cours</div>`;
+          return `<button class="item-start-btn" onclick="startItemTimer(${currentStep},${idx})">▶ Début étape</button>`;})()}
         <div class="actions-list">
           ${item.actions.map((act,ai)=>{
             const tKey=currentStep+'_'+idx+'_'+ai;
@@ -3223,7 +3232,6 @@ function renderStep(){
               <div class="action-check ${it.actions[ai]?'checked':''}" onclick="toggleAction(${currentStep},${idx},${ai})">${it.actions[ai]?'✓':''}</div>
               <div class="action-text">${act.txt}</div>
               <div class="action-spec">${act.torque?`<div class="action-torque">${act.torque}</div>`:''}${actionInfo(act)?`<div class="action-info">${actionInfo(act)}</div>`:''}</div>
-              <button class="action-timer-btn ${tCls}" onclick="toggleActionTimer('${tKey}',${currentStep},${idx},${ai})">${tLabel}</button>
             </div>${showOhm?`<div class="action-ohm-row">
               <span class="action-ohm-label">Valeur mesurée</span>
               <input type="text" inputmode="decimal" class="action-ohm-input${ohmReq&&!String(ohmVal).trim()?' required-empty':''}" placeholder="0" value="${ohmVal}" oninput="saveOhmVal(${currentStep},${idx},${ai},this.value);this.classList.toggle('required-empty',${ohmReq}&&!this.value.trim())">
@@ -3323,6 +3331,23 @@ function renderStep(){
 }
 
 function toggleItem(id){document.getElementById(id).classList.toggle('open');}
+// ===== Chrono par sous-étape (masqué) : Début étape → dernière ligne validée =====
+function startItemTimer(si,ii){
+  const it=session.steps[si].items[ii];
+  if(!it.actionTimers) it.actionTimers={};
+  if(it.actionTimers.item&&it.actionTimers.item.started) return;
+  it.actionTimers.item={seconds:0,started:new Date().toISOString(),stopped:null};
+  saveState();renderStep();
+  const b=document.getElementById('body_'+ACTIVE_STEPS[si].items[ii].id); if(b) b.classList.add('open');
+}
+function stopItemTimerIfDone(si,ii){
+  const it=session.steps[si].items[ii];
+  const t=it.actionTimers&&it.actionTimers.item;
+  if(!t||!t.started||t.stopped) return;
+  if(!it.actions.every(Boolean)) return;
+  t.stopped=new Date().toISOString();
+  t.seconds=Math.max(0,Math.round((new Date(t.stopped)-new Date(t.started))/1000));
+}
 function toggleAction(si,ii,ai){
   const checking = !session.steps[si].items[ii].actions[ai];
   session.steps[si].items[ii].actions[ai]=checking;
@@ -3331,6 +3356,7 @@ function toggleAction(si,ii,ai){
   if(checking && activeActionTimer && activeActionTimer.key===tKey){
     stopActionTimer(tKey, si, ii, ai);
   }
+  if(checking) stopItemTimerIfDone(si,ii);
   saveState();renderStep();
   document.getElementById('body_'+ACTIVE_STEPS[si].items[ii].id).classList.add('open');
   // Rappel graissage si la sous-étape suivante immédiate comporte des vis/brides
