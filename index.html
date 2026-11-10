@@ -204,6 +204,36 @@ textarea{height:52px;resize:none;font-size:12px}
 .lube-reminder-overlay{position:fixed;inset:0;background:#00253099;backdrop-filter:blur(1px);z-index:998;display:flex;align-items:center;justify-content:center;animation:lubeFadeIn .2s ease-out;cursor:pointer}
 .lube-reminder-box{background:var(--surface2);border:1px solid var(--accent);border-radius:var(--radius);padding:20px 22px;max-width:320px;width:88%;box-shadow:0 15px 40px #0009;text-align:center;animation:lubePopIn .25s ease-out;cursor:default}
 .lube-reminder-icon{font-size:34px;margin-bottom:8px}
+/* Requêtes terrain (qualité / stock) */
+.req-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.req-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 8px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;line-height:1.2}
+.req-btn.nc{background:#e0555518;border:1px solid #e0555577;color:#ffb3b3}
+.req-btn.stock{background:#f0a50018;border:1px solid #f0a50077;color:#ffd27a}
+.req-btn .req-n{background:#ffffff22;border-radius:20px;padding:1px 8px;font-size:11px}
+.req-list{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.req-item{display:flex;gap:8px;align-items:flex-start;background:#00364a;border:1px solid var(--border);border-left:3px solid var(--red);border-radius:6px;padding:7px 9px;font-size:12px}
+.req-item.stock{border-left-color:var(--yellow)}
+.req-item.closed{opacity:.55}
+.req-item .ri-main{flex:1;min-width:0}
+.req-item .ri-title{font-weight:700;color:var(--text)}
+.req-item .ri-meta{font-size:10px;color:var(--text3);margin-top:2px}
+.req-item .ri-desc{color:var(--text2);margin-top:2px;word-break:break-word}
+.req-status{font-size:10px;border-radius:20px;padding:2px 8px;white-space:nowrap;background:#e0555522;color:#ffb3b3}
+.req-status.closed{background:#2aa99e22;color:var(--accent)}
+.req-close{font-size:10px;background:none;border:1px solid var(--border);color:var(--text2);border-radius:4px;padding:2px 6px;cursor:pointer;margin-top:4px}
+.req-overlay{position:fixed;inset:0;background:#001a24cc;z-index:999;display:flex;align-items:center;justify-content:center;padding:14px}
+.req-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:440px;max-height:92vh;overflow:auto;padding:18px;box-shadow:0 15px 40px #0009}
+.req-box h3{font-family:var(--font-title);font-size:20px;letter-spacing:1px;margin-bottom:2px}
+.req-box .req-sub{font-size:12px;color:var(--text3);margin-bottom:12px}
+.req-box label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin:10px 0 4px}
+.req-box select,.req-box input,.req-box textarea{width:100%;background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:9px 10px;font-size:13px;font-family:var(--font)}
+.req-box textarea{min-height:70px;resize:vertical}
+.req-chips{display:flex;flex-wrap:wrap;gap:6px}
+.req-chip{border:1px solid var(--border);background:#00364a;color:var(--text2);border-radius:20px;padding:7px 11px;font-size:12px;cursor:pointer;font-family:var(--font)}
+.req-chip.on{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.req-actions{display:flex;gap:8px;margin-top:16px}
+.req-actions button{flex:1}
+.req-err{color:#ffb3b3;font-size:12px;margin-top:8px;min-height:14px}
 .lube-reminder-title{font-family:var(--font-title);font-size:18px;color:var(--accent);letter-spacing:.5px;margin-bottom:6px}
 .lube-reminder-text{font-size:13px;color:var(--text2);line-height:1.5}
 @keyframes lubeFadeIn{from{opacity:0}to{opacity:1}}
@@ -3190,7 +3220,8 @@ function renderStep(){
           oninput="saveStepVe(${currentStep},this.value)"
           style="width:100%;background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 10px;font-size:13px;font-family:var(--font)">
       </div>
-    </div>`;
+    </div>
+    ${renderStepRequests(currentStep)}`;
 
   // Checklist items
   const panel=document.getElementById('checklistPanel');
@@ -3331,6 +3362,85 @@ function renderStep(){
 }
 
 function toggleItem(id){document.getElementById(id).classList.toggle('open');}
+// ===================== REQUÊTES TERRAIN : NC qualité / manque stock =====================
+const NC_TYPES={assemblage:'Défaut d\'assemblage',piece_nc:'Pièce non conforme',tolerance:'Hors tolérance',gamme:'Erreur de gamme / doc',autre:'Autre'};
+const STOCK_CAUSES={rupture:'Manque en stock',nomenclature:'Non-respect de la nomenclature'};
+function stepRequests(si){ const ss=session.steps[si]; if(!ss.requests) ss.requests=[]; return ss.requests; }
+function sessionRequests(s){ return (s.steps||[]).flatMap((st,si)=>(st.requests||[]).map(r=>({...r,si}))); }
+function _esc(t){ return String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function renderStepRequests(si){
+  const reqs=(session.steps[si].requests||[]);
+  const nNc=reqs.filter(r=>r.kind==='nc').length, nSt=reqs.filter(r=>r.kind==='stock').length;
+  const isAdmin=window._currentUser&&window._currentUser.email===window._ADMIN_EMAIL;
+  const items=ACTIVE_STEPS[si].items;
+  return `<div class="req-btns">
+      <button class="req-btn nc" onclick="openRequestForm('nc')">⚠️ Requête qualité NC ${nNc?`<span class="req-n">${nNc}</span>`:''}</button>
+      <button class="req-btn stock" onclick="openRequestForm('stock')">📦 Manque pièce ${nSt?`<span class="req-n">${nSt}</span>`:''}</button>
+    </div>
+    ${reqs.length?`<div class="req-list">${reqs.slice().reverse().map(r=>{
+      const sub=(items.find(i=>i.id===r.itemId)||{}).label||'Étape entière';
+      const title=r.kind==='nc'?`NC — ${NC_TYPES[r.type]||r.type}`:`${STOCK_CAUSES[r.cause]||r.cause} — ${_esc(r.ref)}${r.qty?' ×'+_esc(r.qty):''}`;
+      return `<div class="req-item ${r.kind==='stock'?'stock':''} ${r.status==='closed'?'closed':''}">
+        <div class="ri-main"><div class="ri-title">${r.kind==='nc'?'⚠️':'📦'} ${title}</div>
+          <div class="ri-meta">${_esc(sub)} · ${new Date(r.date).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})} · ${_esc(r.by||'—')}</div>
+          ${r.desc?`<div class="ri-desc">${_esc(r.desc)}</div>`:''}
+          ${isAdmin&&r.status!=='closed'?`<button class="req-close" onclick="closeRequest(${si},'${r.id}')">Clôturer</button>`:''}</div>
+        <span class="req-status ${r.status==='closed'?'closed':''}">${r.status==='closed'?'Clôturée':'Ouverte'}</span>
+      </div>`;}).join('')}</div>`:''}`;
+}
+
+let _reqDraft=null;
+function openRequestForm(kind){
+  const si=currentStep, step=ACTIVE_STEPS[si];
+  const openItem=document.querySelector('.item-body.open');
+  const openId=openItem?openItem.id.replace(/^body_/,''):'';
+  _reqDraft={kind,type:null,cause:null};
+  const by=session.steps[si].stepOp||session.op||'';
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='reqOverlay';
+  ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()">
+    <h3>${kind==='nc'?'⚠️ Requête qualité — NC':'📦 Manque pièce'}</h3>
+    <div class="req-sub">Étape ${si+1} — ${step.name} · ${_esc(session.serie||'')} ${_esc(session.projet||'')}</div>
+    <label>Sous-étape concernée</label>
+    <select id="reqItem"><option value="">Étape entière</option>${step.items.map(i=>`<option value="${i.id}" ${i.id===openId?'selected':''}>${_esc(i.label)}</option>`).join('')}</select>
+    ${kind==='nc'?`<label>Type de non-conformité</label>
+      <div class="req-chips">${Object.entries(NC_TYPES).map(([k,v])=>`<button class="req-chip" data-k="${k}" onclick="pickReq('type','${k}',this)">${v}</button>`).join('')}</div>`
+    :`<label>Cause</label>
+      <div class="req-chips">${Object.entries(STOCK_CAUSES).map(([k,v])=>`<button class="req-chip" data-k="${k}" onclick="pickReq('cause','${k}',this)">${v}</button>`).join('')}</div>
+      <label>Référence / désignation de la pièce</label><input id="reqRef" placeholder="ex. Joint DN125 PN25/40" autocomplete="off">
+      <label>Quantité manquante</label><input id="reqQty" inputmode="numeric" placeholder="1" autocomplete="off">`}
+    <label>Description</label><textarea id="reqDesc" placeholder="${kind==='nc'?'Ce qui a été constaté…':'Précisions (optionnel)…'}"></textarea>
+    <label>Déclaré par</label><input id="reqBy" value="${_esc(by)}" autocomplete="off">
+    <div class="req-err" id="reqErr"></div>
+    <div class="req-actions"><button class="btn btn-outline" onclick="closeRequestForm()">Annuler</button><button class="btn btn-primary" onclick="submitRequest()">Envoyer</button></div>
+  </div>`;
+  ov.addEventListener('click',closeRequestForm);
+  document.body.appendChild(ov);
+}
+function pickReq(field,k,btn){ _reqDraft[field]=k; btn.parentNode.querySelectorAll('.req-chip').forEach(b=>b.classList.toggle('on',b===btn)); }
+function closeRequestForm(){ const o=document.getElementById('reqOverlay'); if(o) o.remove(); }
+function submitRequest(){
+  const d=_reqDraft, err=document.getElementById('reqErr'), v=id=>(document.getElementById(id)||{}).value||'';
+  const r={id:'r'+Date.now().toString(36),kind:d.kind,itemId:v('reqItem'),desc:v('reqDesc').trim(),by:v('reqBy').trim(),date:new Date().toISOString(),status:'open',
+           user:(window._currentUser&&window._currentUser.email)||''};
+  if(d.kind==='nc'){
+    if(!d.type){ err.textContent='Choisissez le type de non-conformité.'; return; }
+    if(!r.desc){ err.textContent='Décrivez la non-conformité.'; return; }
+    r.type=d.type;
+  } else {
+    if(!d.cause){ err.textContent='Choisissez la cause.'; return; }
+    r.ref=v('reqRef').trim(); r.qty=v('reqQty').trim();
+    if(!r.ref){ err.textContent='Indiquez la pièce manquante.'; return; }
+    r.cause=d.cause;
+  }
+  stepRequests(currentStep).push(r);
+  saveState(); closeRequestForm(); renderStep();
+}
+function closeRequest(si,id){
+  const r=(session.steps[si].requests||[]).find(x=>x.id===id); if(!r) return;
+  r.status='closed'; r.closedAt=new Date().toISOString(); saveState(); renderStep();
+}
+
 // ===== Chrono par sous-étape (masqué) : Début étape → dernière ligne validée =====
 function startItemTimer(si,ii){
   const it=session.steps[si].items[ii];
@@ -3686,8 +3796,10 @@ async function renderDashboard(){
   let fpTotal=0, fpPass=0, ncTotal=0;
   let ncErreurGameme=0, ncDefautAssemblage=0, ncPieceManquante=0, ncAutre=0;
   monthSessions.forEach(s=>{
-    s.steps.forEach(st=>st.items.forEach(it=>{
-      if(it.veDone){ fpTotal++; if(it.firstPassResult==='pass') fpPass++; }
+    const ncSet=new Set(sessionRequests(s).filter(r=>r.kind==='nc'&&r.itemId).map(r=>r.si+'_'+r.itemId));
+    ncTotal+=sessionRequests(s).filter(r=>r.kind==='nc').length;
+    s.steps.forEach((st,si)=>st.items.forEach(it=>{
+      if(it.veDone){ fpTotal++; if(it.firstPassResult==='pass'&&!ncSet.has(si+'_'+it.id)) fpPass++; }
       if(it.ncReason && it.ncReason!=='ok' && it.ncReason!==''){
         ncTotal++;
         if(it.ncReason==='erreur_gamme') ncErreurGameme++;
@@ -3711,17 +3823,23 @@ async function renderDashboard(){
   const kpiPlanif = sessionsWithPlan.length ? Math.round((startedOnTime+completedOnTime)/(sessionsWithPlan.length*2)*100) : null;
 
   // === KPI FIABILITE STOCK ===
-  const sessionsWithStock = monthSessions.filter(s=>s.stockOk!==undefined);
-  const stockOkCount = sessionsWithStock.filter(s=>s.stockOk===true).length;
+  // + manques déclarés en cours de montage (cause « Manque en stock »)
+  const hasRupture = s=>sessionRequests(s).some(r=>r.kind==='stock'&&r.cause==='rupture');
+  const sessionsWithStock = monthSessions.filter(s=>s.stockOk!==undefined||hasRupture(s));
+  const stockOkCount = sessionsWithStock.filter(s=>s.stockOk!==false&&!hasRupture(s)).length;
   const kpiStock = sessionsWithStock.length ? Math.round(stockOkCount/sessionsWithStock.length*100) : null;
 
   // === KPI NOMENCLATURE (% items VE sans NC gamme/assemblage) ===
-  let veTotal=0, veConform=0;
+  let veTotal=0, veConform=0, nomenReqTotal=0;
   monthSessions.forEach(s=>{
-    s.steps.forEach(st=>st.items.forEach(it=>{
-      if(it.veDone){
+    const nomReqs=sessionRequests(s).filter(r=>r.kind==='stock'&&r.cause==='nomenclature');
+    nomenReqTotal+=nomReqs.length;
+    const nomSet=new Set(nomReqs.map(r=>r.si+'_'+(r.itemId||'*')));
+    s.steps.forEach((st,si)=>st.items.forEach(it=>{
+      const flagged=nomSet.has(si+'_'+it.id)||nomSet.has(si+'_*');
+      if(it.veDone||flagged){
         veTotal++;
-        if(!it.ncReason||it.ncReason==='ok') veConform++;
+        if((!it.ncReason||it.ncReason==='ok')&&!flagged) veConform++;
       }
     }));
   });
@@ -3754,13 +3872,13 @@ async function renderDashboard(){
       <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">📦 Fiabilité Stock</div>
       <div style="font-size:28px;font-weight:700;color:${kpiStock===null?'var(--text3)':kpiStock>=80?'var(--green)':kpiStock>=60?'var(--yellow)':'#e05555'}">${kpiStock!==null?kpiStock+'%':'N/A'}</div>
       <div style="font-size:11px;color:var(--text3);margin-top:4px">Pièces disponibles au démarrage</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:2px">${stockOkCount}/${sessionsWithStock.length} machine(s) confirmées</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:2px">${stockOkCount}/${sessionsWithStock.length} machine(s) sans manque</div>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;border-top:3px solid #f0a500">
       <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">📐 Nomenclatures</div>
       <div style="font-size:28px;font-weight:700;color:${kpiNomencl===null?'var(--text3)':kpiNomencl>=90?'var(--green)':kpiNomencl>=70?'var(--yellow)':'#e05555'}">${kpiNomencl!==null?kpiNomencl+'%':'N/A'}</div>
       <div style="font-size:11px;color:var(--text3);margin-top:4px">Items VE sans NC gamme/assemblage</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:2px">📐${ncErreurGameme} gamme | 🔧${ncDefautAssemblage} assemblage | 📦${ncPieceManquante} pièce | 📝${ncAutre} autre</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:2px">📐${ncErreurGameme} gamme | 🔧${ncDefautAssemblage} assemblage | 📦${ncPieceManquante} pièce | 📝${ncAutre} autre | 📋${nomenReqTotal} non-respect nomencl.</div>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;border-top:3px solid #e05555">
       <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">⏱️ Retard OF</div>
@@ -3775,6 +3893,9 @@ async function renderDashboard(){
 
   // === NC BREAKDOWN CHART ===
   html += renderNCChart(monthSessions);
+
+  // === REQUÊTES TERRAIN (NC qualité / manques pièces) ===
+  html += renderRequestsSection(monthSessions);
 
   // === STEP TIME CHART (avg time per step across sessions) ===
   html += renderStepTimeChart(monthSessions);
@@ -3908,6 +4029,42 @@ function renderGantt(sessions, isAdmin){
   });
 
   html += '</div></div>';
+  return html;
+}
+
+function renderRequestsSection(sessions){
+  const all=[];
+  sessions.forEach(s=>{
+    const stepsDef=(MODELS[s.modelId]||MODELS.eno180ltv3).getSteps();
+    sessionRequests(s).forEach(r=>{
+      const sd=stepsDef[r.si]||{}; const sub=((sd.items||[]).find(i=>i.id===r.itemId)||{}).label||'Étape entière';
+      all.push({...r,machine:(s.serie&&s.serie!=='–'?s.serie:'—')+' · '+((MODELS[s.modelId]||{}).name||''),stepName:`${r.si+1}. ${sd.name||''}`,sub});
+    });
+  });
+  let html='<div class="dash-section-title">🧾 Requêtes terrain — qualité & stock</div>';
+  if(!all.length) return html+'<div class="empty-state" style="padding:16px 10px"><p style="font-size:12px;color:var(--text3)">Aucune requête déclarée ce mois-ci</p></div>';
+  const cnt=(f)=>all.filter(f).length;
+  const tile=(lbl,n,col)=>`<div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:10px;border-top:3px solid ${col}"><span class="kpi-label">${lbl}</span><span class="kpi-value" style="font-size:22px">${n}</span></div>`;
+  html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:10px">
+    ${tile('⚠️ NC qualité',cnt(r=>r.kind==='nc'),'var(--red)')}
+    ${tile('📦 Manques stock',cnt(r=>r.kind==='stock'&&r.cause==='rupture'),'var(--yellow)')}
+    ${tile('📋 Non-respect nomencl.',cnt(r=>r.kind==='stock'&&r.cause==='nomenclature'),'#f0a500')}
+    ${tile('🔓 Ouvertes',cnt(r=>r.status!=='closed'),'var(--accent2)')}
+  </div>`;
+  const byType={}; all.filter(r=>r.kind==='nc').forEach(r=>{byType[r.type]=(byType[r.type]||0)+1;});
+  if(Object.keys(byType).length) html+=`<div style="font-size:11px;color:var(--text3);margin-bottom:8px">NC par type : ${Object.entries(byType).map(([k,v])=>`${NC_TYPES[k]||k} <b style="color:#fff">${v}</b>`).join(' · ')}</div>`;
+  all.sort((a,b)=>b.date.localeCompare(a.date));
+  html+=`<div style="overflow-x:auto;margin-bottom:16px"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:640px">
+    <tr style="color:var(--text3);text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px"><th style="padding:6px">Date</th><th style="padding:6px">Machine</th><th style="padding:6px">Étape / sous-étape</th><th style="padding:6px">Type</th><th style="padding:6px">Détail</th><th style="padding:6px">Par</th><th style="padding:6px">Statut</th></tr>
+    ${all.map(r=>`<tr style="border-top:1px solid var(--border)">
+      <td style="padding:6px;white-space:nowrap;color:var(--text2)">${new Date(r.date).toLocaleDateString('fr-FR')}</td>
+      <td style="padding:6px">${_esc(r.machine)}</td>
+      <td style="padding:6px;color:var(--text2)">${_esc(r.stepName)}<br><span style="font-size:10px;color:var(--text3)">${_esc(r.sub)}</span></td>
+      <td style="padding:6px;color:${r.kind==='nc'?'#ffb3b3':'#ffd27a'}">${r.kind==='nc'?'NC — '+(NC_TYPES[r.type]||r.type):(STOCK_CAUSES[r.cause]||r.cause)}</td>
+      <td style="padding:6px;color:var(--text2)">${r.kind==='stock'?`<b>${_esc(r.ref)}</b>${r.qty?' ×'+_esc(r.qty):''}<br>`:''}${_esc(r.desc)}</td>
+      <td style="padding:6px;color:var(--text2)">${_esc(r.by||'—')}</td>
+      <td style="padding:6px"><span class="req-status ${r.status==='closed'?'closed':''}">${r.status==='closed'?'Clôturée':'Ouverte'}</span></td></tr>`).join('')}
+  </table></div>`;
   return html;
 }
 
@@ -4136,7 +4293,7 @@ function renderKPICard(s, isAdmin){
   const totalItems = s.steps.reduce((acc,st)=>acc+st.items.length,0);
   const opDone = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.opDone).length,0);
   const veDone = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.veDone).length,0);
-  const ncCount = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.ncReason&&it.ncReason!=='ok'&&it.ncReason!=='').length,0);
+  const ncCount = s.steps.reduce((acc,st)=>acc+st.items.filter(it=>it.ncReason&&it.ncReason!=='ok'&&it.ncReason!=='').length,0) + sessionRequests(s).filter(r=>r.kind==='nc').length;
   const fpItems = s.steps.flatMap(st=>st.items.filter(it=>it.firstPassResult));
   const fpRate = fpItems.length ? Math.round(fpItems.filter(it=>it.firstPassResult==='pass').length/fpItems.length*100) : null;
   const opPct = totalItems ? Math.round(opDone/totalItems*100) : 0;
