@@ -234,6 +234,30 @@ textarea{height:52px;resize:none;font-size:12px}
 .req-actions{display:flex;gap:8px;margin-top:16px}
 .req-actions button{flex:1}
 .req-err{color:#ffb3b3;font-size:12px;margin-top:8px;min-height:14px}
+.req-photos{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.req-cam{display:flex;align-items:center;justify-content:center;gap:8px;flex:1;min-width:150px;padding:12px;border-radius:8px;border:1px dashed var(--accent2);background:#0086c214;color:#9fdcff;font-weight:700;font-size:13px;cursor:pointer}
+.req-thumb{position:relative;width:62px;height:62px}
+.req-thumb img{width:100%;height:100%;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
+.req-thumb button{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:none;background:var(--red);color:#fff;font-size:12px;line-height:20px;cursor:pointer;padding:0}
+.req-mailnote{font-size:10px;color:var(--text3);margin-top:8px}
+.notif-bell{position:relative;background:#00364a;border:1px solid var(--border);border-radius:8px;font-size:17px;padding:4px 9px;cursor:pointer;line-height:1.2}
+.notif-bell.has{border-color:var(--red);animation:bellShake 2.5s ease-in-out infinite}
+.notif-badge{position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:700;line-height:18px;text-align:center}
+@keyframes bellShake{0%,88%,100%{transform:rotate(0)}91%{transform:rotate(-14deg)}94%{transform:rotate(12deg)}97%{transform:rotate(-6deg)}}
+.notif-panel{position:fixed;top:58px;right:10px;width:min(380px,calc(100vw - 20px));max-height:75vh;overflow:auto;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 15px 40px #000a;z-index:1000}
+.notif-panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface2)}
+.notif-panel-hdr b{font-family:var(--font-title);font-size:17px;letter-spacing:1px}
+.notif-panel-hdr button{background:none;border:none;color:var(--accent2);font-size:12px;cursor:pointer;font-family:var(--font)}
+.notif-row{display:flex;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer}
+.notif-row:hover{background:#ffffff08}
+.notif-row.unread{background:#0086c214}
+.notif-row .nr-ic{font-size:20px}
+.notif-row .nr-t{font-size:13px;font-weight:700}
+.notif-row .nr-b{font-size:12px;color:var(--text2);margin-top:2px}
+.notif-row .nr-m{font-size:10px;color:var(--text3);margin-top:3px}
+.notif-row .nr-dot{width:8px;height:8px;border-radius:50%;background:var(--accent2);margin-top:6px;flex-shrink:0}
+.notif-toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--red);border-radius:10px;padding:12px 16px;z-index:1001;box-shadow:0 10px 30px #000a;max-width:90vw;cursor:pointer;font-size:13px}
+.ri-photo{font-size:11px;background:none;border:1px solid var(--border);color:var(--text2);border-radius:4px;padding:2px 6px;cursor:pointer;margin-top:4px;margin-right:4px}
 .lube-reminder-title{font-family:var(--font-title);font-size:18px;color:var(--accent);letter-spacing:.5px;margin-bottom:6px}
 .lube-reminder-text{font-size:13px;color:var(--text2);line-height:1.5}
 @keyframes lubeFadeIn{from{opacity:0}to{opacity:1}}
@@ -361,6 +385,7 @@ textarea{height:52px;resize:none;font-size:12px}
   <div class="hdr-right">
     <span class="badge live">● EN LIGNE</span>
     <span class="badge" id="sessionBadge">–</span>
+    <button class="notif-bell" id="notifBell" onclick="toggleNotifPanel()" style="display:none" title="Notifications">🔔<span class="notif-badge" id="notifBadge" style="display:none">0</span></button>
     <span class="badge" id="userEmail" style="color:var(--accent)"></span>
     <button class="btn btn-outline btn-sm" onclick="window._signOut()" style="padding:4px 10px;font-size:11px">⎋ Déconnexion</button>
   </div>
@@ -727,7 +752,7 @@ window.CYCLE_LUB_OBJ_TEXT="o 101-Flexible1__Pi085-510-008-TeteDroiteFlexible_3_8
 <!-- Firebase CDN -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, orderBy, query, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, orderBy, query, deleteDoc, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -770,6 +795,8 @@ window.CYCLE_LUB_OBJ_TEXT="o 101-Flexible1__Pi085-510-008-TeteDroiteFlexible_3_8
   window._fsQuery = query;
   window._fsOrderBy = orderBy;
   window._fsDeleteDoc = deleteDoc;
+  window._fsOnSnapshot = onSnapshot;
+  window._fsWhere = where;
   window._ADMIN_EMAIL = 'nordine.sakhri@enogia.com';
 
   window._signIn = async () => {
@@ -3304,7 +3331,7 @@ function renderStep(){
             ${it.opDone?`<div style="margin-top:8px">
               <div style="font-size:10px;color:var(--text3);margin-bottom:4px">📸 Photos NC</div>
               <div class="photo-grid">
-                ${(it.photos||[]).map(p=>`<img src="${p}" class="photo-thumb" onclick="viewPhoto('${p}')">`).join('')}
+                ${(it.photos||[]).map(p=>String(p).startsWith('data:')?`<img src="${p}" class="photo-thumb" onclick="viewPhoto(this.src)">`:`<img data-pid="${p}" class="photo-thumb" onclick="viewPhotoId('${p}')" alt="📷">`).join('')}
                 <label class="photo-add"><input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhoto(${currentStep},${idx},this)">＋</label>
               </div>
             </div>`:''}
@@ -3385,6 +3412,7 @@ function renderStepRequests(si){
         <div class="ri-main"><div class="ri-title">${r.kind==='nc'?'⚠️':'📦'} ${title}</div>
           <div class="ri-meta">${_esc(sub)} · ${new Date(r.date).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})} · ${_esc(r.by||'—')}</div>
           ${r.desc?`<div class="ri-desc">${_esc(r.desc)}</div>`:''}
+          ${(r.photos||[]).map((pid,i)=>`<button class="ri-photo" onclick="viewPhotoId('${pid}')">📷 ${i+1}</button>`).join('')}
           ${isAdmin&&r.status!=='closed'?`<button class="req-close" onclick="closeRequest(${si},'${r.id}')">Clôturer</button>`:''}</div>
         <span class="req-status ${r.status==='closed'?'closed':''}">${r.status==='closed'?'Clôturée':'Ouverte'}</span>
       </div>`;}).join('')}</div>`:''}`;
@@ -3395,7 +3423,7 @@ function openRequestForm(kind){
   const si=currentStep, step=ACTIVE_STEPS[si];
   const openItem=document.querySelector('.item-body.open');
   const openId=openItem?openItem.id.replace(/^body_/,''):'';
-  _reqDraft={kind,type:null,cause:null};
+  _reqDraft={kind,type:null,cause:null,photos:[]};
   const by=session.steps[si].stepOp||session.op||'';
   const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='reqOverlay';
   ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()">
@@ -3410,12 +3438,27 @@ function openRequestForm(kind){
       <label>Référence / désignation de la pièce</label><input id="reqRef" placeholder="ex. Joint DN125 PN25/40" autocomplete="off">
       <label>Quantité manquante</label><input id="reqQty" inputmode="numeric" placeholder="1" autocomplete="off">`}
     <label>Description</label><textarea id="reqDesc" placeholder="${kind==='nc'?'Ce qui a été constaté…':'Précisions (optionnel)…'}"></textarea>
+    <label>Photos (${REQ_MAX_PHOTOS} max)</label>
+    <div class="req-photos" id="reqPhotos"></div>
     <label>Déclaré par</label><input id="reqBy" value="${_esc(by)}" autocomplete="off">
+    <div class="req-mailnote">🔔 Une notification sera envoyée à Nordine et Nicolas dans l'appli</div>
     <div class="req-err" id="reqErr"></div>
     <div class="req-actions"><button class="btn btn-outline" onclick="closeRequestForm()">Annuler</button><button class="btn btn-primary" onclick="submitRequest()">Envoyer</button></div>
   </div>`;
   ov.addEventListener('click',closeRequestForm);
   document.body.appendChild(ov);
+  renderReqPhotos();
+}
+function renderReqPhotos(){
+  const el=document.getElementById('reqPhotos'); if(!el) return;
+  const ph=_reqDraft.photos;
+  el.innerHTML=ph.map((d,i)=>`<div class="req-thumb"><img src="${d}" onclick="viewPhoto(this.src)"><button onclick="_reqDraft.photos.splice(${i},1);renderReqPhotos()">×</button></div>`).join('')
+    +(ph.length<REQ_MAX_PHOTOS?`<label class="req-cam"><input type="file" accept="image/*" capture="environment" style="display:none" onchange="addReqPhoto(this)">📷 Prendre une photo</label>`:'');
+}
+async function addReqPhoto(input){
+  const f=input.files&&input.files[0]; if(!f) return;
+  try{ _reqDraft.photos.push(await compressImage(f)); }catch(e){ alert('Photo illisible, réessayez.'); }
+  renderReqPhotos();
 }
 function pickReq(field,k,btn){ _reqDraft[field]=k; btn.parentNode.querySelectorAll('.req-chip').forEach(b=>b.classList.toggle('on',b===btn)); }
 function closeRequestForm(){ const o=document.getElementById('reqOverlay'); if(o) o.remove(); }
@@ -3433,8 +3476,139 @@ function submitRequest(){
     if(!r.ref){ err.textContent='Indiquez la pièce manquante.'; return; }
     r.cause=d.cause;
   }
-  stepRequests(currentStep).push(r);
+  const photos=d.photos.slice();
+  r.photos=photos.map((_,i)=>r.id+'_'+i);
+  const si=currentStep;
+  stepRequests(si).push(r);
   saveState(); closeRequestForm(); renderStep();
+  // Photos stockées à part (limite de taille Firestore par checklist)
+  photos.forEach((data,i)=>{ photoCache[r.photos[i]]=data; savePhotoDoc(r.photos[i],data); });
+  sendRequestNotif(r,si);
+}
+
+// ===== Notifications dans l'appli (collection « notifications ») =====
+const NOTIF_TO=['nordine.sakhri@enogia.com','nicolas.stamboul@enogia.com'];
+const REQ_MAX_PHOTOS=3;
+async function sendRequestNotif(r,si){
+  const step=ACTIVE_STEPS[si]; const sub=(step.items.find(i=>i.id===r.itemId)||{}).label||'Étape entière';
+  const model=(currentModel&&currentModel.name)||'';
+  const title=r.kind==='nc'?`⚠️ NC qualité — ${NC_TYPES[r.type]}`:`📦 ${STOCK_CAUSES[r.cause]} — ${r.ref}${r.qty?' ×'+r.qty:''}`;
+  const body=`${model} ${session.serie&&session.serie!=='–'?session.serie:''} · Étape ${si+1} ${step.name} › ${sub}${r.desc?' — '+r.desc:''}`;
+  try{
+    await window._fsSetDoc(window._fsDoc(window._db,'notifications',r.id),{
+      to:NOTIF_TO,kind:r.kind,title,body,by:r.by||'',user:r.user||'',photos:(r.photos||[]).length,
+      sessionId:session.id,si,itemId:r.itemId||'',requestId:r.id,createdAt:r.date,readBy:[]});
+  }catch(e){
+    console.warn('Notification non enregistrée :',e);
+    alert('La requête est enregistrée, mais la notification n\'a pas pu être envoyée (droits Firestore sur « notifications »).');
+  }
+}
+
+let notifList=[], notifUnsub=null, notifFirstLoad=true;
+function myEmail(){ return ((window._currentUser&&window._currentUser.email)||'').toLowerCase(); }
+function startNotifListener(){
+  const me=myEmail();
+  if(notifUnsub||!NOTIF_TO.includes(me)||!window._fsOnSnapshot) return;
+  document.getElementById('notifBell').style.display='';
+  const q=window._fsQuery(window._fsCollection(window._db,'notifications'),window._fsWhere('to','array-contains',me));
+  notifUnsub=window._fsOnSnapshot(q,snap=>{
+    const before=new Set(notifList.map(n=>n.id));
+    notifList=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+    if(!notifFirstLoad){
+      notifList.filter(n=>!before.has(n.id)&&!(n.readBy||[]).includes(me)).forEach(showNotifAlert);
+    }
+    notifFirstLoad=false;
+    updateNotifBadge();
+    if(document.getElementById('notifPanel')) renderNotifPanel();
+  },err=>console.warn('Écoute notifications impossible :',err));
+}
+function unreadNotifs(){ const me=myEmail(); return notifList.filter(n=>!(n.readBy||[]).includes(me)); }
+function updateNotifBadge(){
+  const n=unreadNotifs().length, b=document.getElementById('notifBadge'), bell=document.getElementById('notifBell');
+  b.textContent=n>99?'99+':n; b.style.display=n?'':'none'; bell.classList.toggle('has',n>0);
+}
+function showNotifAlert(n){
+  document.querySelectorAll('.notif-toast').forEach(t=>t.remove());
+  const t=document.createElement('div'); t.className='notif-toast';
+  t.innerHTML=`<b>${_esc(n.title)}</b><div style="font-size:12px;color:var(--text2);margin-top:3px">${_esc(n.body)}</div>`;
+  t.onclick=()=>{t.remove();openNotif(n.id);}; document.body.appendChild(t); setTimeout(()=>t.remove(),8000);
+  try{ if(navigator.vibrate) navigator.vibrate([200,100,200]); }catch(e){}
+  try{ if('Notification' in window&&Notification.permission==='granted'){ const sys=new Notification(n.title,{body:n.body,tag:n.id}); sys.onclick=()=>{window.focus();openNotif(n.id);}; } }catch(e){}
+}
+function toggleNotifPanel(){
+  const ex=document.getElementById('notifPanel'); if(ex){ ex.remove(); return; }
+  try{ if('Notification' in window&&Notification.permission==='default') Notification.requestPermission(); }catch(e){}
+  const p=document.createElement('div'); p.id='notifPanel'; p.className='notif-panel'; document.body.appendChild(p);
+  renderNotifPanel();
+  setTimeout(()=>document.addEventListener('click',_notifOutside),0);
+}
+function _notifOutside(e){
+  const p=document.getElementById('notifPanel');
+  if(!p){ document.removeEventListener('click',_notifOutside); return; }
+  if(!p.contains(e.target)&&!document.getElementById('notifBell').contains(e.target)){ p.remove(); document.removeEventListener('click',_notifOutside); }
+}
+function renderNotifPanel(){
+  const p=document.getElementById('notifPanel'); if(!p) return; const me=myEmail();
+  p.innerHTML=`<div class="notif-panel-hdr"><b>🔔 Notifications</b>${unreadNotifs().length?`<button onclick="markAllNotifsRead()">Tout marquer lu</button>`:''}</div>`
+   +(notifList.length?notifList.slice(0,60).map(n=>{const unread=!(n.readBy||[]).includes(me);
+     return `<div class="notif-row ${unread?'unread':''}" onclick="openNotif('${n.id}')">
+       <div class="nr-ic">${n.kind==='nc'?'⚠️':'📦'}</div>
+       <div style="flex:1;min-width:0"><div class="nr-t">${_esc(String(n.title).replace(/^(⚠️|📦)\s*/,''))}</div><div class="nr-b">${_esc(n.body)}</div>
+       <div class="nr-m">${new Date(n.createdAt).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})} · ${_esc(n.by||'—')}${n.photos?' · 📷 '+n.photos:''}</div></div>
+       ${unread?'<div class="nr-dot"></div>':''}</div>`;}).join('')
+     :'<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px">Aucune notification</div>');
+}
+async function markNotifRead(n){
+  const me=myEmail(); if((n.readBy||[]).includes(me)) return;
+  n.readBy=[...(n.readBy||[]),me]; updateNotifBadge();
+  try{ await window._fsSetDoc(window._fsDoc(window._db,'notifications',n.id),{readBy:n.readBy},{merge:true}); }catch(e){ console.warn(e); }
+}
+function markAllNotifsRead(){ unreadNotifs().forEach(markNotifRead); renderNotifPanel(); }
+async function openNotif(id){
+  const n=notifList.find(x=>x.id===id); if(!n) return;
+  markNotifRead(n);
+  const p=document.getElementById('notifPanel'); if(p) p.remove();
+  if(!sessions.find(s=>s.id===n.sessionId)) await loadSessions();
+  if(!sessions.find(s=>s.id===n.sessionId)){ alert('Checklist introuvable (supprimée ?).'); return; }
+  loadSession(n.sessionId);
+  currentStep=n.si; renderStep(); window.scrollTo(0,0);
+}
+document.addEventListener('firebaseReady',()=>setTimeout(startNotifListener,300));
+if(window._firebaseReady) setTimeout(startNotifListener,300);
+
+// ===== Photos : compression + stockage dans la collection « photos » =====
+const photoCache={};
+function compressImage(file,maxDim=1280,q=0.62){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{ const k=Math.min(1,maxDim/Math.max(img.width,img.height));
+      const c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg',q)); };
+    img.onerror=()=>{URL.revokeObjectURL(url);rej();}; img.src=url;
+  });
+}
+async function savePhotoDoc(id,data){
+  try{ await window._fsSetDoc(window._fsDoc(window._db,'photos',id),{data,sessionId:session.id,createdAt:new Date().toISOString()}); }
+  catch(e){ console.warn('Photo non enregistrée :',e); }
+}
+async function getPhoto(id){
+  if(String(id).startsWith('data:')) return id;
+  if(photoCache[id]) return photoCache[id];
+  try{ const snap=await window._fsGetDoc(window._fsDoc(window._db,'photos',id)); if(snap.exists()){ photoCache[id]=snap.data().data; return photoCache[id]; } }catch(e){}
+  return null;
+}
+async function viewPhotoId(id){ const d=await getPhoto(id); if(d) viewPhoto(d); else alert('Photo introuvable.'); }
+function hydratePhotos(){
+  document.querySelectorAll('img[data-pid]').forEach(async img=>{ const d=await getPhoto(img.dataset.pid); if(d) img.src=d; });
+}
+// Photos NC des sous-étapes (bouton ＋ sous « Photos NC »)
+async function addPhoto(si,ii,input){
+  const f=input.files&&input.files[0]; if(!f) return;
+  let data; try{ data=await compressImage(f); }catch(e){ alert('Photo illisible, réessayez.'); return; }
+  const it=session.steps[si].items[ii]; if(!it.photos) it.photos=[];
+  const id='p'+Date.now().toString(36); photoCache[id]=data; it.photos.push(id);
+  saveState(); savePhotoDoc(id,data); renderStep();
+  const b=document.getElementById('body_'+ACTIVE_STEPS[si].items[ii].id); if(b) b.classList.add('open');
 }
 function closeRequest(si,id){
   const r=(session.steps[si].requests||[]).find(x=>x.id===id); if(!r) return;
@@ -4061,7 +4235,7 @@ function renderRequestsSection(sessions){
       <td style="padding:6px">${_esc(r.machine)}</td>
       <td style="padding:6px;color:var(--text2)">${_esc(r.stepName)}<br><span style="font-size:10px;color:var(--text3)">${_esc(r.sub)}</span></td>
       <td style="padding:6px;color:${r.kind==='nc'?'#ffb3b3':'#ffd27a'}">${r.kind==='nc'?'NC — '+(NC_TYPES[r.type]||r.type):(STOCK_CAUSES[r.cause]||r.cause)}</td>
-      <td style="padding:6px;color:var(--text2)">${r.kind==='stock'?`<b>${_esc(r.ref)}</b>${r.qty?' ×'+_esc(r.qty):''}<br>`:''}${_esc(r.desc)}</td>
+      <td style="padding:6px;color:var(--text2)">${r.kind==='stock'?`<b>${_esc(r.ref)}</b>${r.qty?' ×'+_esc(r.qty):''}<br>`:''}${_esc(r.desc)}${(r.photos||[]).map((pid,i)=>` <button class="ri-photo" onclick="viewPhotoId('${pid}')">📷 ${i+1}</button>`).join('')}</td>
       <td style="padding:6px;color:var(--text2)">${_esc(r.by||'—')}</td>
       <td style="padding:6px"><span class="req-status ${r.status==='closed'?'closed':''}">${r.status==='closed'?'Clôturée':'Ouverte'}</span></td></tr>`).join('')}
   </table></div>`;
@@ -4386,6 +4560,10 @@ async function updateDash(sessionId, field, value){
   await saveDashData(sessionId, dashCache[key]);
 }
 
+
+// Recharge les miniatures photo après chaque affichage d'étape
+const _renderStepBase=renderStep;
+renderStep=function(){ _renderStepBase.apply(this,arguments); try{ hydratePhotos(); }catch(e){} };
 
 function viewPhoto(src){
   const m=document.createElement('div');
