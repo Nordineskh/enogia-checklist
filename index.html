@@ -352,6 +352,11 @@ textarea{height:52px;resize:none;font-size:12px}
 .item-start-btn.running .pulse{width:9px;height:9px;border-radius:50%;background:#e08a3c;animation:itemPulse 1.2s infinite}
 .item-start-btn.done{background:#2aa99e1a;border-color:var(--accent);color:var(--accent);box-shadow:none;cursor:default}
 @keyframes itemPulse{0%,100%{opacity:1}50%{opacity:.25}}
+.item-timer-bar{display:flex;gap:8px;margin:2px 0 10px}
+.item-timer-bar .item-start-btn{margin:0;flex:1}
+.item-start-btn.paused{background:#ffffff0d;border-color:var(--text3);color:var(--text2);box-shadow:none;cursor:default}
+.item-pause-btn{flex:0 0 auto;min-width:120px;padding:11px 14px;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;background:#00364a;border:1px solid #e08a3c;color:#ffb877}
+.item-pause-btn.resume{background:var(--accent2);border-color:var(--accent2);color:#001824}
 </style>
 </head>
 <body>
@@ -3269,7 +3274,8 @@ function renderStep(){
       <div class="item-body" id="body_${item.id}">
         ${(()=>{const t=(it.actionTimers||{}).item;
           if(t&&t.stopped) return `<div class="item-start-btn done">✓ Sous-étape terminée</div>`;
-          if(t&&t.started) return `<div class="item-start-btn running"><span class="pulse"></span>Sous-étape en cours</div>`;
+          if(t&&t.started&&t.paused) return `<div class="item-timer-bar"><div class="item-start-btn paused">⏸ En pause</div><button class="item-pause-btn resume" onclick="resumeItemTimer(${currentStep},${idx})">▶ Reprendre</button></div>`;
+          if(t&&t.started) return `<div class="item-timer-bar"><div class="item-start-btn running"><span class="pulse"></span>Sous-étape en cours</div><button class="item-pause-btn" onclick="pauseItemTimer(${currentStep},${idx})">⏸ Pause</button></div>`;
           return `<button class="item-start-btn" onclick="startItemTimer(${currentStep},${idx})">▶ Début étape</button>`;})()}
         <div class="actions-list">
           ${item.actions.map((act,ai)=>{
@@ -3620,17 +3626,42 @@ function startItemTimer(si,ii){
   const it=session.steps[si].items[ii];
   if(!it.actionTimers) it.actionTimers={};
   if(it.actionTimers.item&&it.actionTimers.item.started) return;
-  it.actionTimers.item={seconds:0,started:new Date().toISOString(),stopped:null};
+  const now=new Date().toISOString();
+  it.actionTimers.item={seconds:0,started:now,runningSince:now,paused:false,pauses:[],stopped:null};
   saveState();renderStep();
   const b=document.getElementById('body_'+ACTIVE_STEPS[si].items[ii].id); if(b) b.classList.add('open');
 }
+// Ajoute au cumul le temps écoulé depuis le dernier départ/reprise
+function _bankItemTime(t,nowIso){
+  const since=t.runningSince||(t.paused?null:t.started); // compatibilité anciens chronos
+  if(since) t.seconds=(t.seconds||0)+Math.max(0,Math.round((new Date(nowIso)-new Date(since))/1000));
+  t.runningSince=null;
+}
+function pauseItemTimer(si,ii){
+  const t=(session.steps[si].items[ii].actionTimers||{}).item;
+  if(!t||!t.started||t.stopped||t.paused) return;
+  const now=new Date().toISOString();
+  _bankItemTime(t,now); t.paused=true; (t.pauses=t.pauses||[]).push({from:now,to:null});
+  saveState(); renderStep(); _reopenItem(si,ii);
+}
+function resumeItemTimer(si,ii){
+  const t=(session.steps[si].items[ii].actionTimers||{}).item;
+  if(!t||!t.paused||t.stopped) return;
+  const now=new Date().toISOString();
+  t.paused=false; t.runningSince=now;
+  const last=(t.pauses||[]).slice(-1)[0]; if(last&&!last.to) last.to=now;
+  saveState(); renderStep(); _reopenItem(si,ii);
+}
+function _reopenItem(si,ii){ const b=document.getElementById('body_'+ACTIVE_STEPS[si].items[ii].id); if(b) b.classList.add('open'); }
 function stopItemTimerIfDone(si,ii){
   const it=session.steps[si].items[ii];
   const t=it.actionTimers&&it.actionTimers.item;
   if(!t||!t.started||t.stopped) return;
   if(!it.actions.every(Boolean)) return;
-  t.stopped=new Date().toISOString();
-  t.seconds=Math.max(0,Math.round((new Date(t.stopped)-new Date(t.started))/1000));
+  const now=new Date().toISOString();
+  if(!t.paused) _bankItemTime(t,now);
+  else { const last=(t.pauses||[]).slice(-1)[0]; if(last&&!last.to) last.to=now; t.paused=false; }
+  t.stopped=now;
 }
 function toggleAction(si,ii,ai){
   const checking = !session.steps[si].items[ii].actions[ai];
