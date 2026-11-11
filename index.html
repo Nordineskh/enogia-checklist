@@ -5442,7 +5442,7 @@ function i40State(){
   const alerts=stockList.filter(a=>['rupture','a_commander'].includes(stockStatus(a)));
   const feed=[...andonList].sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,8).map(a=>({t:a.createdAt,cls:a.color==='red'?'nc':'stock',txt:`${a.resolvedAt?'✓ Résolu · ':''}${a.sn||''} · ${a.stepName||''} — ${a.reason}`}));
   return {type:'enogia-state',machines:i40Machines(),andon:open.map(a=>({id:a.id,color:a.color,reason:a.reason,sn:a.sn,sessionId:a.sessionId,age:minsSince(a.createdAt),ack:!!a.ackAt})),
-    stock:{alerts:alerts.map(a=>({ref:a.ref,designation:a.designation,qty:a.qty,seuil:a.seuil,status:stockStatus(a)})),total:stockList.length},feed};
+    stock:{alerts:alerts.map(a=>({ref:a.ref,designation:a.designation,qty:a.qty,seuil:a.seuil,unit:a.unit||'',emplacement:a.emplacement||'',status:stockStatus(a)})),total:stockList.length},feed};
 }
 function i40Refresh(){
   const fr=document.getElementById('atelierFrame');
