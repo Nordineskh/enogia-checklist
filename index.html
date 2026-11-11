@@ -298,6 +298,31 @@ body.tv-mode .tv-exit:hover{opacity:1}
 .stk-meta{font-size:11px;color:var(--text3);margin-top:3px}
 .stk-warn{font-size:11px;color:#ffc46b;margin-top:4px}
 .stk-btns{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.bin-box{max-width:420px;position:relative}
+.bin-x{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:8px;border:none;background:#00364a;color:var(--text2);font-size:16px;cursor:pointer}
+.bin-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin:0 36px 12px 0}
+.bin-name{font-size:17px;font-weight:700;line-height:1.2}.bin-ref{font-size:12px;color:var(--text3);margin-top:3px}
+.bin-qty{text-align:right}.bin-qty b{display:block;font-size:30px;line-height:1}.bin-qty span{font-size:11px;color:var(--text3);white-space:nowrap}
+.bin-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.bin-tabs button{padding:12px 6px;border-radius:8px;border:1px solid var(--border);background:#00364a;color:var(--text2);font-weight:700;font-size:14px;font-family:var(--font);cursor:pointer}
+.bin-tabs button.on{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.bin-help{font-size:12px;color:var(--text3);margin:10px 0 6px}
+.bin-display{font-size:44px;font-weight:700;text-align:center;padding:8px;border-radius:10px;background:#00364a;border:1px solid var(--border);font-variant-numeric:tabular-nums}
+.bin-display.out{color:#ffc46b}.bin-display.in{color:#7fe3d8}.bin-display.inv{color:#9fdcff}
+.bin-quick{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}
+.bin-quick button{flex:1;padding:9px 6px;border-radius:8px;border:1px solid var(--border);background:#00364a;color:var(--text);font-size:14px;font-family:var(--font);cursor:pointer;white-space:nowrap}
+.bin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.bin-pad button{padding:14px;font-size:22px;font-weight:700;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font);cursor:pointer}
+.bin-pad button:active{background:var(--accent2)}
+.bin-lbl{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin:10px 0 4px}
+.bin-ok{width:100%;padding:14px;font-size:16px;margin-top:4px}
+.bin-empty{width:100%;margin-top:8px;padding:11px;border-radius:8px;border:1px solid #ff9f1a88;background:#ff9f1a14;color:#ffc46b;font-weight:700;font-family:var(--font);cursor:pointer}
+.bin-hist{margin-top:10px;font-size:11px;color:var(--text3);line-height:1.6}
+.stk-cats{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px}
+.stk-cats button{background:#00364a;border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font)}
+.stk-cats button.on{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.stk-cats button span{opacity:.7;margin-left:3px}
+.req-box select{width:100%;background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:9px 10px;font-size:13px;font-family:var(--font)}
 .stk-btns button{background:#00364a;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:var(--font)}
 .notif-bell{position:relative;background:#00364a;border:1px solid var(--border);border-radius:8px;font-size:17px;padding:4px 9px;cursor:pointer;line-height:1.2}
 .notif-bell.has{border-color:var(--red);animation:bellShake 2.5s ease-in-out infinite}
@@ -4939,8 +4964,9 @@ function updateStockLabel(){
 <div class="screen" id="scStock">
   <div class="stk-head">
     <div><div class="project-title" style="font-size:26px">Stock</div><div style="font-size:12px;color:var(--text3)"><span id="stockCount"></span> · relié aux manques pièces et aux Andon</div></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="stockSearch" placeholder="Rechercher une pièce…" oninput="stockFilter=this.value;renderStock()" autocomplete="off"><button class="btn btn-primary btn-sm" onclick="editStock()">+ Article</button></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="stockSearch" placeholder="Rechercher une pièce…" oninput="stockFilter=this.value;renderStock()" autocomplete="off"><button class="btn btn-outline btn-sm" onclick="scanBin()">📷 Scanner un bac</button><button class="btn btn-outline btn-sm" onclick="printBinLabels()">🏷️ Étiquettes des bacs</button><button class="btn btn-primary btn-sm" onclick="editStock()">+ Article</button></div>
   </div>
+  <div class="stk-cats" id="stockCats"></div>
   <div class="stk-board" id="stockBoard"></div>
 </div>
 <div class="screen" id="scVSM" style="padding:0;max-width:100%;margin:0">
@@ -5361,7 +5387,7 @@ function i40Start(){
   const F=fs();
   F.snap(F.col(F.db,'sessions'),s=>{ liveSessions=s.docs.map(d=>d.data()); i40Refresh(); },e=>console.warn('sessions live',e));
   F.snap(F.col(F.db,'andon'),s=>{ andonList=s.docs.map(d=>({id:d.id,...d.data()})); i40Refresh(); if(typeof renderStep==='function'&&session&&document.getElementById('scChecklist').classList.contains('active')) refreshAndonBar(); },e=>console.warn('andon live',e));
-  F.snap(F.col(F.db,'stock'),s=>{ stockList=s.docs.map(d=>({id:d.id,...d.data()})); i40Refresh(); if(document.getElementById('scStock').classList.contains('active')) renderStock(); refreshStockDatalist(); },e=>console.warn('stock live',e));
+  F.snap(F.col(F.db,'stock'),s=>{ stockList=s.docs.map(d=>({id:d.id,...d.data()})); i40Refresh(); openStockFromUrl(); if(document.getElementById('scStock').classList.contains('active')) renderStock(); refreshStockDatalist(); },e=>console.warn('stock live',e));
   F.snap(F.col(F.db,'machineFlow'),s=>{ flowMap={}; s.docs.forEach(d=>flowMap[d.id]=d.data()); i40Refresh(); },e=>console.warn('flow live',e));
   setInterval(andonEscalate,30000); setInterval(i40Refresh,5000);
 }
@@ -5410,7 +5436,7 @@ function i40Machines(){
   });
   return out.sort((a,b)=>String(a.started).localeCompare(String(b.started)));
 }
-function stockStatus(a){ if(a.qty==null) return 'inv'; if(a.manque||a.qty<=0) return 'rupture'; if(a.commande) return 'commande'; if(a.qty<=(a.seuil||0)) return 'a_commander'; return 'ok'; }
+function stockStatus(a){ if(a.qty==null) return 'inv'; if(a.manque||a.qty<=0) return 'rupture'; if(a.commande) return 'commande'; if(a.forceOrder) return 'a_commander'; if(a.qty<=(a.seuil||0)) return 'a_commander'; return 'ok'; }
 function i40State(){
   const open=andonList.filter(a=>!a.resolvedAt).sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)));
   const alerts=stockList.filter(a=>['rupture','a_commander'].includes(stockStatus(a)));
@@ -5530,50 +5556,54 @@ function flowButtons(s){
 
 // ---------- Stock (kanban) ----------
 const STOCK_COLS=[['rupture','🔴 Rupture / manque'],['a_commander','🟠 À commander'],['commande','🔵 Commandé'],['ok','🟢 En stock'],['inv','⚪ À inventorier']];
-let stockFilter='';
+let stockFilter='', stockCat='';
+const STOCK_CATS=['Sondes & capteurs','Flexibles','Joints','Visserie','Raccords','Consommables','Électrique','Divers'];
+function guessCat(d){ d=(d||'').toLowerCase(); if(/sonde|capteur|pt\b|tt-/.test(d)) return 'Sondes & capteurs'; if(/flexible/.test(d)) return 'Flexibles'; if(/joint/.test(d)) return 'Joints'; if(/vis|écrou|rondelle|entretoise|insert|boulon/.test(d)) return 'Visserie'; if(/raccord|vanne|té\b/.test(d)) return 'Raccords'; if(/loctite|graisse|film/.test(d)) return 'Consommables'; if(/câble|cable|résistance|bornier/.test(d)) return 'Électrique'; return 'Divers'; }
+const catOf=a=>a.cat||guessCat(a.designation);
+function setStockCat(c){ stockCat=stockCat===c?'':c; renderStock(); }
 function showStock(){ exitTv(); showScreen('scStock'); i40Start(); renderStock(); }
 function stockCover(a){ return a.parMachine>0&&a.qty!=null?Math.floor(a.qty/a.parMachine):null; }
 function renderStock(){
   const el=document.getElementById('stockBoard'); if(!el) return;
-  const q=stockFilter.toLowerCase(); const list=stockList.filter(a=>!q||(a.ref+' '+a.designation+' '+(a.emplacement||'')).toLowerCase().includes(q));
+  const q=stockFilter.toLowerCase(); const list=stockList.filter(a=>(!q||(a.ref+' '+a.designation+' '+(a.emplacement||'')+' '+catOf(a)).toLowerCase().includes(q))&&(!stockCat||catOf(a)===stockCat));
+  const cats=STOCK_CATS.filter(c=>stockList.some(a=>catOf(a)===c)); const ce=document.getElementById('stockCats');
+  if(ce) ce.innerHTML=cats.map(c=>`<button class="${stockCat===c?'on':''}" onclick="setStockCat('${c.replace(/'/g,"\\'")}')">${c} <span>${stockList.filter(a=>catOf(a)===c).length}</span></button>`).join('');
   document.getElementById('stockCount').textContent=`${stockList.length} article${stockList.length>1?'s':''}`;
   if(!stockList.length){ el.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="emo">📦</div><p>Aucun article. Créez vos articles un par un, ou partez de la liste de base tirée de vos checklists.</p><button class="btn btn-primary" style="margin-top:10px" onclick="seedStock()">Créer les articles de base</button></div>`; return; }
   el.innerHTML=STOCK_COLS.map(([k,t])=>{ const items=list.filter(a=>stockStatus(a)===k); return `<div class="stk-col ${k}"><div class="stk-col-h">${t}<span>${items.length}</span></div>${items.map(a=>{
     const cov=stockCover(a);
     return `<div class="stk-card"><div class="stk-top"><b>${_esc(a.designation)}</b><span class="stk-qty">${a.qty==null?'?':a.qty}${a.unit?' '+_esc(a.unit):''}</span></div>
-      <div class="stk-meta">${_esc(a.ref)}${a.emplacement?' · '+_esc(a.emplacement):''} · seuil ${a.seuil||0}${cov!=null?` · couvre <b>${cov}</b> machine${cov>1?'s':''}`:''}</div>
+      <div class="stk-meta">${_esc(catOf(a))} · ${_esc(a.ref)}${a.emplacement?' · '+_esc(a.emplacement):''} · seuil ${a.seuil||0}${a.parMachine?'':' · <span style="color:#9fdcff">hors nomenclature</span>'}${cov!=null?` · couvre <b>${cov}</b> machine${cov>1?'s':''}`:''}</div>
       ${a.manque&&(a.linked||[]).length?`<div class="stk-warn">⚠ Manque signalé : ${(a.linked||[]).map(l=>_esc(l.sn||'')).join(', ')}</div>`:''}
       ${a.aReferencer?`<div class="stk-warn">Créé depuis un manque pièce : à compléter</div>`:''}
-      <div class="stk-btns"><button onclick="stockMove('${a.id}',1)">+ Entrée</button><button onclick="stockMove('${a.id}',-1)">− Sortie</button>${k==='a_commander'||k==='rupture'?`<button onclick="stockSet('${a.id}',{commande:true})">Commandé</button>`:''}<button onclick="editStock('${a.id}')">✎</button></div></div>`; }).join('')}</div>`; }).join('');
+      <div class="stk-btns"><button onclick="openBin('${a.id}','out')">− Sortie</button><button onclick="openBin('${a.id}','in')">+ Entrée</button>${k==='inv'?`<button onclick="openBin('${a.id}','inv')">= Inventaire</button>`:''}<button onclick="printBinLabels(['${a.id}'])">🏷️</button>${k==='a_commander'||k==='rupture'?`<button onclick="stockSet('${a.id}',{commande:true})">Commandé</button>`:''}<button onclick="editStock('${a.id}')">✎</button></div></div>`; }).join('')}</div>`; }).join('');
 }
 async function stockSave(a){ const F=fs(); const i=stockList.findIndex(x=>x.id===a.id); if(i>=0) stockList[i]=a; else stockList.push(a); try{ await F.set(F.doc(F.db,'stock',a.id),a); }catch(e){ alert('Stock non enregistré (droits Firestore sur « stock »).'); console.warn(e); } renderStock(); i40Refresh(); }
 function stockSet(id,patch){ const a={...stockList.find(x=>x.id===id),...patch}; stockSave(a); }
-function stockMove(id,sign){
-  const a={...stockList.find(x=>x.id===id)}; const n=parseFloat(prompt(sign>0?`Entrée en stock — ${a.designation}\nQuantité reçue :`:`Sortie de stock — ${a.designation}\nQuantité prélevée :`,'1'));
-  if(!n||n<=0) return; a.qty=Math.max(0,(a.qty||0)+sign*n);
-  a.history=[{at:nowIso(),d:sign*n,by:(window._currentUser&&window._currentUser.email)||''},...(a.history||[])].slice(0,30);
-  if(sign>0){ if(a.qty>(a.seuil||0)) a.commande=false;
-    if(a.manque){ a.manque=false; (a.linked||[]).forEach(l=>{ andonList.filter(x=>!x.resolvedAt&&(x.reqId===l.reqId||(x.ref&&x.ref===a.ref))).forEach(x=>andonResolve(x.id,'Stock : pièce réapprovisionnée')); }); a.linked=[]; } }
-  stockSave(a);
-}
 function editStock(id){
-  const a=id?stockList.find(x=>x.id===id):{ref:'',designation:'',qty:0,seuil:0,parMachine:0,unit:'',emplacement:''};
+  const a=id?(stockList.find(x=>x.id===id)||window._stkDup):{ref:'',designation:'',qty:null,seuil:0,parMachine:0,unit:'pcs',emplacement:'',cat:stockCat||''};
+  if(id&&!stockList.find(x=>x.id===id)) id='';
   const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='stkOverlay';
   const f=(k,l,type='text')=>`<label>${l}</label><input id="stk_${k}" type="${type}" value="${_esc(a[k]==null?'':a[k])}" autocomplete="off">`;
   ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()"><h3>${id?'Modifier l’article':'Nouvel article'}</h3>
-    ${f('designation','Désignation')}${f('ref','Référence')}${f('emplacement','Emplacement (rack / niveau)')}
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 10px">${f('qty','Quantité en stock','number')}${f('unit','Unité (pcs, m…)')}${f('seuil','Seuil de commande','number')}${f('parMachine','Quantité par machine','number')}</div>
-    <div class="req-mailnote">La quantité par machine est prélevée automatiquement au démarrage de chaque nouvelle checklist, et sert à calculer combien de machines le stock couvre.</div>
-    <div class="req-actions">${id?`<button class="btn btn-outline" style="color:#e05555" onclick="deleteStock('${id}')">Supprimer</button>`:''}<button class="btn btn-outline" onclick="document.getElementById('stkOverlay').remove()">Annuler</button><button class="btn btn-primary" onclick="saveStockForm('${id||''}')">Enregistrer</button></div></div>`;
+    ${f('designation','Désignation')}${f('ref','Référence')}
+    <label>Famille</label><select id="stk_cat">${STOCK_CATS.map(c=>`<option ${catOf(a)===c&&a.designation||a.cat===c?'selected':''}>${c}</option>`).join('')}</select>
+    ${f('emplacement','Emplacement (rack / niveau)')}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 10px">${f('qty','Quantité en stock (réelle)','number')}${f('unit','Unité (pcs, m…)')}${f('seuil','Seuil de commande','number')}${f('parMachine','Quantité par machine','number')}</div>
+    <div class="req-mailnote">La <b>quantité en stock</b> est ce qu’il y a vraiment dans le bac, sans limite. La <b>quantité par machine</b> est seulement ce qu’une machine consomme : elle est prélevée au démarrage d’une checklist. Mettez 0 pour une pièce hors nomenclature (pièces de rechange, références alternatives…) : elle ne sera jamais déduite automatiquement. Le <b>seuil</b> déclenche le passage en « À commander ».</div>
+    <div class="req-actions">${id?`<button class="btn btn-outline" style="color:#e05555" onclick="deleteStock('${id}')">Supprimer</button><button class="btn btn-outline" onclick="dupStock('${id}')">Dupliquer</button>`:''}<button class="btn btn-outline" onclick="document.getElementById('stkOverlay').remove()">Annuler</button><button class="btn btn-primary" onclick="saveStockForm('${id||''}')">Enregistrer</button></div></div>`;
   ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov);
 }
 function saveStockForm(id){
   const v=k=>(document.getElementById('stk_'+k)||{}).value; const num=k=>{ const x=v(k); return x===''?null:parseFloat(x); };
   if(!v('designation').trim()){ alert('Indiquez une désignation.'); return; }
   const base=id?stockList.find(x=>x.id===id):{id:'st'+Date.now().toString(36),history:[],linked:[]};
-  const a={...base,designation:v('designation').trim(),ref:v('ref').trim(),emplacement:v('emplacement').trim(),qty:num('qty'),unit:v('unit').trim(),seuil:num('seuil')||0,parMachine:num('parMachine')||0,aReferencer:false};
+  const a={...base,designation:v('designation').trim(),ref:v('ref').trim(),cat:v('cat'),emplacement:v('emplacement').trim(),qty:num('qty'),unit:v('unit').trim(),seuil:num('seuil')||0,parMachine:num('parMachine')||0,aReferencer:false};
   document.getElementById('stkOverlay').remove(); stockSave(a);
+  if(!id&&confirm('Article créé. Imprimer son étiquette QR pour le bac ?')) printBinLabels([a.id]);
 }
+function dupStock(id){ const a=stockList.find(x=>x.id===id); document.getElementById('stkOverlay').remove();
+  window._stkDup={...a,id:'',designation:a.designation+' (copie)',ref:a.ref+'-2',qty:null,history:[],linked:[],manque:false,commande:false,forceOrder:false}; editStock('__dup'); }
 async function deleteStock(id){ if(!confirm('Supprimer cet article ?')) return; const F=fs(); stockList=stockList.filter(x=>x.id!==id); try{ await F.del(F.doc(F.db,'stock',id)); }catch(e){} document.getElementById('stkOverlay').remove(); renderStock(); }
 function seedStock(){
   const L=[['Joint plat DN150 PN25/40','JP-DN150',6],['Joint plat DN125 PN25/40','JP-DN125',3],['Vis M20x90','VIS-M20x90',32],['Vis M20x80','VIS-M20x80',100],['Vis CHC M6x40','VIS-M6x40',12],['Entretoise M6x30','ENT-M6x30',12],
@@ -5581,7 +5611,7 @@ function seedStock(){
     ['Flexible WF8S50000 — 0,245 m (F1)','WF8S50000-245',1],['Flexible WF8S50000 — 0,235 m (F2, F4, F5)','WF8S50000-235',3],['Flexible WF8S50000 — 1,020 m (F3)','WF8S50000-1020',1],['Flexible WF8S50000 — 2,400 m (F6)','WF8S50000-2400',1],
     ['Flexible WF8S50000 — 0,750 m (F7)','WF8S50000-750',3],['Flexible WF8S50000 — 0,720 m (F8)','WF8S50000-720',1],['Flexible WF8S60100 — 0,660 m (F9)','WF8S60100-660',2],['Flexible WF8S60100 — 0,425 m (F10)','WF8S60100-425',2],
     ['Sonde TT 1/4 NPT L130 calibrée','TT-130-CAL',2],['Sonde TT 1/4 NPT L130 non calibrée','TT-130',1],['Sonde TT 1/4 NPT L60','TT-60',1],['Sonde TT BSPP 1/2 L150','TT-BSPP-150',6],['Capteur de pression PT','PT',1],['Loctite 272 (flacon)','LOC-272',0]];
-  L.forEach(([d,r,pm],i)=>{ const a={id:'st'+(Date.now()+i).toString(36),designation:d,ref:r,qty:null,unit:'pcs',seuil:pm,parMachine:pm,emplacement:'',history:[],linked:[]}; stockSave(a); });
+  L.forEach(([d,r,pm],i)=>{ const a={id:'st'+(Date.now()+i).toString(36),designation:d,ref:r,cat:guessCat(d),qty:null,unit:'pcs',seuil:pm,parMachine:pm,emplacement:'',history:[],linked:[]}; stockSave(a); });
 }
 function refreshStockDatalist(){ let dl=document.getElementById('stockRefs'); if(!dl){ dl=document.createElement('datalist'); dl.id='stockRefs'; document.body.appendChild(dl); }
   dl.innerHTML=stockList.map(a=>`<option value="${_esc(a.designation)}">${_esc(a.ref)}</option>`).join(''); }
@@ -5601,6 +5631,91 @@ function i40OnRequest(r,si){
 // Prélèvement du kit au démarrage d'une checklist
 function i40OnSessionStart(s){
   stockList.filter(a=>a.parMachine>0&&a.qty!=null).forEach(a=>{ const b={...a,qty:Math.max(0,a.qty-a.parMachine),history:[{at:nowIso(),d:-a.parMachine,by:'Kit '+(s.serie||s.projet||'')},...(a.history||[])].slice(0,30)}; stockSave(b); });
+}
+
+
+// ===================== BACS QR : inventaire, sorties, entrées à la tablette =====================
+let binState=null, stockUrlChecked=false;
+function stockUrl(id){ return location.origin+location.pathname+'?stk='+encodeURIComponent(id); }
+function applyStockMove(id,mode,n,machine){
+  const a={...stockList.find(x=>x.id===id)}; if(!a.id) return;
+  const who=(window._currentUser&&window._currentUser.email||'').split('@')[0];
+  const before=a.qty==null?0:a.qty;
+  if(mode==='inv') a.qty=n; else if(mode==='in') a.qty=before+n; else a.qty=Math.max(0,before-n);
+  const d=mode==='inv'?n-before:(mode==='in'?n:-Math.min(n,before));
+  a.history=[{at:nowIso(),mode,d,qty:a.qty,by:who,machine:machine||''},...(a.history||[])].slice(0,40);
+  if(mode!=='out'){ if(a.qty>(a.seuil||0)){ a.commande=false; a.forceOrder=false; }
+    if(a.manque&&a.qty>0){ a.manque=false; (a.linked||[]).forEach(l=>andonList.filter(x=>!x.resolvedAt&&(x.reqId===l.reqId||(x.ref&&x.ref===a.ref))).forEach(x=>andonResolve(x.id,'Stock : pièce réapprovisionnée'))); a.linked=[]; } }
+  a.aReferencer=false; stockSave(a); return a;
+}
+function stockMove(id,sign){ openBin(id,sign>0?'in':'out'); }
+function binEmpty(id){ const a={...stockList.find(x=>x.id===id)}; a.forceOrder=true; a.commande=false;
+  a.history=[{at:nowIso(),mode:'empty',d:0,qty:a.qty,by:(window._currentUser&&window._currentUser.email||'').split('@')[0]},...(a.history||[])].slice(0,40); stockSave(a); closeBin(); }
+function openBin(id,mode){
+  const a=stockList.find(x=>x.id===id); if(!a){ alert('Article introuvable : l’étiquette correspond peut-être à un article supprimé.'); return; }
+  binState={id,mode:mode||(a.qty==null?'inv':'out'),val:'',machine:''}; renderBin();
+}
+function closeBin(){ const o=document.getElementById('binOverlay'); if(o) o.remove(); binState=null; }
+function binKey(k){ if(!binState) return; if(k==='⌫') binState.val=binState.val.slice(0,-1); else if(k==='C') binState.val=''; else if(binState.val.length<6) binState.val=(binState.val==='0'?'':binState.val)+k; renderBin(); }
+function binQuick(n){ binState.val=String(n); renderBin(); }
+function binMode(m){ binState.mode=m; binState.val=''; renderBin(); }
+function binValidate(){
+  const n=parseFloat(binState.val); if(isNaN(n)||(binState.mode!=='inv'&&n<=0)){ document.getElementById('binErr').textContent='Saisissez une quantité.'; return; }
+  const a=applyStockMove(binState.id,binState.mode,n,binState.machine);
+  const msg={inv:`Stock fixé à ${a.qty}`,in:`+${n} entré · stock ${a.qty}`,out:`−${n} sorti · stock ${a.qty}`}[binState.mode];
+  binState.val=''; binState.done=msg; renderBin();
+}
+function renderBin(){
+  const a=stockList.find(x=>x.id===binState.id); if(!a){ closeBin(); return; }
+  let ov=document.getElementById('binOverlay');
+  if(!ov){ ov=document.createElement('div'); ov.id='binOverlay'; ov.className='req-overlay'; ov.addEventListener('click',e=>{ if(e.target===ov) closeBin(); }); document.body.appendChild(ov); }
+  const st=stockStatus(a), stLbl={rupture:'🔴 Rupture',a_commander:'🟠 À commander',commande:'🔵 Commandé',ok:'🟢 En stock',inv:'⚪ À inventorier'}[st];
+  const m=binState.mode, verb={out:'Sortie',in:'Entrée',inv:'Inventaire'}[m];
+  const machines=(typeof i40Machines==='function'?i40Machines():[]).filter(x=>x.zone==='z1'||x.zone==='z2');
+  ov.innerHTML=`<div class="req-box bin-box">
+    <button class="bin-x" onclick="closeBin()" aria-label="Fermer">✕</button>
+    <div class="bin-head"><div><div class="bin-name">${_esc(a.designation)}</div><div class="bin-ref">${_esc(a.ref)}${a.emplacement?' · '+_esc(a.emplacement):''}</div></div>
+      <div class="bin-qty"><b>${a.qty==null?'?':a.qty}</b><span>${_esc(a.unit||'pcs')} · ${stLbl}</span></div></div>
+    <div class="bin-tabs">${['out','in','inv'].map(k=>`<button class="${k===m?'on':''}" onclick="binMode('${k}')">${{out:'− Sortie',in:'+ Entrée',inv:'= Inventaire'}[k]}</button>`).join('')}</div>
+    <div class="bin-help">${{out:'Quantité prise dans le bac',in:'Quantité reçue et rangée dans le bac',inv:'Quantité réellement présente dans le bac (quantité de base)'}[m]}</div>
+    <div class="bin-display ${m}">${binState.val||'0'}</div>
+    <div class="bin-quick">${[1,2,5,10].map(n=>`<button onclick="binQuick(${n})">${n}</button>`).join('')}${a.parMachine?`<button onclick="binQuick(${a.parMachine})">1 machine (${a.parMachine})</button>`:''}</div>
+    <div class="bin-pad">${['7','8','9','4','5','6','1','2','3','C','0','⌫'].map(k=>`<button onclick="binKey('${k}')">${k}</button>`).join('')}</div>
+    ${m==='out'&&machines.length?`<label class="bin-lbl">Pour quelle machine ? (facultatif)</label><select onchange="binState.machine=this.value"><option value="">—</option>${machines.map(x=>`<option ${binState.machine===x.sn?'selected':''}>${_esc(x.sn)}</option>`).join('')}</select>`:''}
+    <div class="req-err" id="binErr">${binState.done?`<span style="color:#7fe3d8">✓ ${binState.done}</span>`:''}</div>
+    <button class="btn btn-primary bin-ok" onclick="binValidate()">Valider ${verb.toLowerCase()}${binState.val?' de '+binState.val:''}</button>
+    <button class="bin-empty" onclick="binEmpty('${a.id}')">Bac vide → à commander</button>
+    ${(a.history||[]).length?`<div class="bin-hist">${a.history.slice(0,4).map(h=>`<div>${new Date(h.at).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})} · ${h.mode==='empty'?'bac vide signalé':h.mode==='inv'?'inventaire → '+h.qty:(h.d>0?'+':'')+h.d}${h.machine?' · '+_esc(h.machine):''} · ${_esc(h.by||'')}</div>`).join('')}</div>`:''}
+  </div>`;
+}
+// Étiquettes QR à coller sur les bacs
+function printBinLabels(ids){
+  const list=(ids&&ids.length?stockList.filter(a=>ids.includes(a.id)):stockList.slice()).sort((a,b)=>String(a.emplacement||'').localeCompare(String(b.emplacement||''))||a.designation.localeCompare(b.designation));
+  if(!list.length){ alert('Aucun article à étiqueter.'); return; } if(!window.QRCode){ alert('Le générateur de QR code n’est pas chargé, rechargez la page.'); return; }
+  const tmp=document.createElement('div'); tmp.style.cssText='position:fixed;left:-9999px'; document.body.appendChild(tmp);
+  const imgs=list.map(a=>{ const d=document.createElement('div'); tmp.appendChild(d); new QRCode(d,{text:stockUrl(a.id),width:180,height:180,correctLevel:QRCode.CorrectLevel.M}); const c=d.querySelector('canvas'); return c?c.toDataURL():''; });
+  tmp.remove();
+  const w=window.open('','_blank'); if(!w){ alert('Autorisez les fenêtres pop-up pour imprimer les étiquettes.'); return; }
+  w.document.write(`<html><head><title>Étiquettes bacs</title><style>body{font-family:Arial;margin:8mm}.g{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm}.l{border:1.5px solid #06303f;border-radius:3mm;padding:3mm;display:flex;gap:3mm;align-items:center;break-inside:avoid;height:38mm}.l img{width:32mm;height:32mm}.t b{display:block;font-size:11pt;color:#06303f;line-height:1.15}.t span{display:block;font-size:9pt;color:#333;margin-top:1.5mm}.t i{display:block;font-style:normal;font-size:8pt;color:#1b84cf;margin-top:2mm;font-weight:bold}</style></head><body><div class="g">${list.map((a,i)=>`<div class="l"><img src="${imgs[i]}"><div class="t"><b>${_esc(a.designation)}</b><span>${_esc(a.ref)}</span><span>${_esc(a.emplacement||'')}</span><i>ENOGIA · scanner pour sortir / entrer</i></div></div>`).join('')}</div><script>setTimeout(()=>print(),400)<\/script></body></html>`);
+  w.document.close();
+}
+// Scanner intégré (Chrome/Android) ; sinon l'appareil photo de la tablette ouvre directement le lien
+async function scanBin(){
+  if(!('BarcodeDetector' in window)){ alert('Scannez l’étiquette avec l’appareil photo de la tablette : le lien ouvre directement le bac dans l’appli.'); return; }
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='scanOverlay';
+  ov.innerHTML=`<div class="req-box" style="text-align:center"><h3>📷 Scanner un bac</h3><video id="scanVid" playsinline style="width:100%;border-radius:8px;background:#000"></video><div class="req-actions"><button class="btn btn-outline" id="scanStop">Fermer</button></div></div>`;
+  document.body.appendChild(ov);
+  let stream; const stop=()=>{ try{ stream&&stream.getTracks().forEach(t=>t.stop()); }catch(e){} ov.remove(); };
+  document.getElementById('scanStop').onclick=stop;
+  try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); const v=document.getElementById('scanVid'); v.srcObject=stream; await v.play();
+    const det=new BarcodeDetector({formats:['qr_code']});
+    const loop=async()=>{ if(!document.getElementById('scanOverlay')) return; try{ const r=await det.detect(v); if(r.length){ const u=r[0].rawValue; const m=u.match(/[?&]stk=([^&]+)/); if(m){ stop(); openBin(decodeURIComponent(m[1])); return; } } }catch(e){} requestAnimationFrame(loop); };
+    loop();
+  }catch(e){ stop(); alert('Caméra indisponible : autorisez l’accès à la caméra ou utilisez l’appareil photo de la tablette.'); }
+}
+function openStockFromUrl(){
+  if(stockUrlChecked||!stockList.length) return; const id=new URLSearchParams(location.search).get('stk'); stockUrlChecked=true; if(!id) return;
+  history.replaceState(null,'',location.pathname); showStock(); openBin(id);
 }
 
 // ---------- KPI Industrie 4.0 (tableau de bord) ----------
