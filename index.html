@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#00455a">
 <title>ENOGIA — Checklist Montage</title>
 <link href="https://fonts.googleapis.com/css2?family=Abel&family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
 <style>
 :root{
@@ -246,6 +247,58 @@ textarea{height:52px;resize:none;font-size:12px}
 .req-thumb img{width:100%;height:100%;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
 .req-thumb button{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:none;background:var(--red);color:#fff;font-size:12px;line-height:20px;cursor:pointer;padding:0}
 .req-mailnote{font-size:10px;color:var(--text3);margin-top:8px}
+/* ===== Industrie 4.0 ===== */
+.andon-bar{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.req-box label.req-check{text-transform:none;letter-spacing:0;font-size:12px;color:#ffb3b3;display:flex;align-items:center;margin-top:12px;cursor:pointer}
+.andon-actions{display:flex;gap:8px;flex-wrap:wrap}
+.andon-btn{flex:1;min-width:110px;padding:10px;border-radius:8px;font-weight:700;font-size:13px;font-family:var(--font);cursor:pointer;border:1px solid}
+.andon-btn.orange{background:#ff9f1a1c;border-color:#ff9f1a88;color:#ffc46b}
+.andon-btn.red{background:#ff3b301c;border-color:#ff3b3088;color:#ff8a82}
+.andon-btn.qr{flex:0 0 auto;background:#00364a;border-color:var(--border);color:var(--text2)}
+.andon-live{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:13px}
+.andon-live small{display:block;font-size:11px;opacity:.8;margin-top:2px}
+.andon-live.red{background:#ff3b3026;border:1px solid #ff3b30;color:#ffd0cc}
+.andon-live.orange{background:#ff9f1a22;border:1px solid #ff9f1a;color:#ffe2b8}
+.andon-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;background:currentColor;animation:andonBlink 1s infinite}
+.red>.andon-dot{background:#ff3b30}.orange>.andon-dot{background:#ff9f1a}
+@keyframes andonBlink{50%{opacity:.25}}
+.andon-res{background:#fff2;border:1px solid #fff5;color:#fff;border-radius:6px;padding:6px 10px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.flow-chip{font-size:11px;border-radius:20px;padding:3px 9px;white-space:nowrap;align-self:center;border:1px solid var(--border);color:var(--text2)}
+.flow-chip.test{color:#7fe3d8;border-color:#2aa99e88}.flow-chip.cond{color:#c9b6ff;border-color:#7a5bd688}.flow-chip.shipped{color:var(--text3)}
+#scAtelier{position:relative}
+#atelierFrame{display:block;width:100%;height:calc(100vh - 230px);min-height:520px;border:0;border-radius:var(--radius);background:#e7ecee}
+.andon-strip{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.as-kpis{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--text2)}
+.as-kpis b{color:#fff;font-size:15px;margin-right:3px}.as-kpis .bad b{color:#ff8a82}.as-kpis .warn b{color:#ffc46b}
+.as-list{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+.as-item{display:flex;align-items:center;gap:10px;min-width:260px;padding:8px 10px;border-radius:8px;font-size:12px}
+.as-item span{color:inherit;opacity:.85}
+.as-item.red{background:#ff3b3022;border:1px solid #ff3b30;color:#ffd0cc}.as-item.orange{background:#ff9f1a1c;border:1px solid #ff9f1a;color:#ffe2b8}
+.as-item button{margin-left:auto;background:#fff2;border:1px solid #fff4;color:#fff;border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.as-item button+button{margin-left:4px}
+.as-empty{font-size:12px;color:#7fe3d8;padding:6px 0}
+.tv-exit{display:none}
+body.tv-mode #scAtelier{position:fixed;inset:0;z-index:3000;background:#06303f;padding:10px !important;display:flex !important;flex-direction:column}
+body.tv-mode #atelierFrame{flex:1;height:auto;min-height:0}
+body.tv-mode .andon-strip{order:2;margin:10px 0 0}
+body.tv-mode .as-kpis{font-size:15px}body.tv-mode .as-kpis b{font-size:22px}
+body.tv-mode .as-item{min-width:320px;font-size:15px;padding:12px}
+body.tv-mode .tv-exit{display:block;position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#06303fcc;color:#fff;border:1px solid #fff4;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;z-index:2;opacity:.35}
+body.tv-mode .tv-exit:hover{opacity:1}
+.stk-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.stk-head input{background:#00364a;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-size:13px;min-width:220px}
+.stk-board{display:grid;grid-template-columns:repeat(5,minmax(220px,1fr));gap:10px;overflow-x:auto;align-items:start}
+.stk-col{background:#00364a;border:1px solid var(--border);border-radius:10px;padding:8px;min-height:120px}
+.stk-col-h{display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding:4px 4px 8px}
+.stk-col-h span{background:#fff2;border-radius:20px;padding:0 8px;font-size:11px;line-height:18px}
+.stk-col.rupture{border-top:3px solid #ff3b30}.stk-col.a_commander{border-top:3px solid #ff9f1a}.stk-col.commande{border-top:3px solid #2b8fd6}.stk-col.ok{border-top:3px solid #2aa99e}.stk-col.inv{border-top:3px solid #7a8b92}
+.stk-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px;margin-bottom:8px}
+.stk-top{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.stk-qty{font-size:16px;font-weight:700;white-space:nowrap}
+.stk-meta{font-size:11px;color:var(--text3);margin-top:3px}
+.stk-warn{font-size:11px;color:#ffc46b;margin-top:4px}
+.stk-btns{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.stk-btns button{background:#00364a;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:var(--font)}
 .notif-bell{position:relative;background:#00364a;border:1px solid var(--border);border-radius:8px;font-size:17px;padding:4px 9px;cursor:pointer;line-height:1.2}
 .notif-bell.has{border-color:var(--red);animation:bellShake 2.5s ease-in-out infinite}
 .notif-badge{position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:700;line-height:18px;text-align:center}
@@ -411,6 +464,9 @@ textarea{height:52px;resize:none;font-size:12px}
     <button class="menu-item" onclick="closeAppMenu();goHome()"><span class="menu-item-icon">🏠</span> Accueil</button>
     <button class="menu-item" onclick="closeAppMenu();showModelSelector()"><span class="menu-item-icon">⚙️</span> Sélection gamme</button>
     <button class="menu-item" onclick="closeAppMenu();showDashboard()"><span class="menu-item-icon">📊</span> Tableau de bord</button>
+    <button class="menu-item" onclick="closeAppMenu();showAtelier(false)"><span class="menu-item-icon">🏭</span> Atelier 3D en direct</button>
+    <button class="menu-item" onclick="closeAppMenu();showAtelier(true)"><span class="menu-item-icon">📺</span> Écran atelier (TV)</button>
+    <button class="menu-item" onclick="closeAppMenu();showStock()"><span class="menu-item-icon">🗄️</span> Stock</button>
     <div class="menu-divider"></div>
     <button class="menu-item" onclick="closeAppMenu();showConditionnement()"><span class="menu-item-icon">📦</span> Conditionnement</button>
     <button class="menu-item" onclick="closeAppMenu();showVSM()"><span class="menu-item-icon">🗺️</span> Value Stream Map</button>
@@ -1731,6 +1787,7 @@ function initApp(){
         }
       }
     }catch(e){ console.warn('Restauration session active impossible:', e); }
+    if(typeof openSessionFromUrl==='function') openSessionFromUrl();
   });
 }
 if(window._firebaseReady){ initApp(); }
@@ -3179,7 +3236,7 @@ function renderHistory(){
           ${histTab==='encours' ? `<div class="hist-bar"><div style="width:${p.pct}%"></div></div>` : ''}
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
-          <button class="btn btn-outline btn-sm" onclick="loadSession(${s.id})">${histTab==='histo' ? 'Consulter' : 'Reprendre'}</button>
+          ${histTab==='histo'&&typeof flowButtons==='function'?flowButtons(s):''}<button class="btn btn-outline btn-sm" onclick="loadSession(${s.id})">${histTab==='histo' ? 'Consulter' : 'Reprendre'}</button>
           ${isAdmin ? `<button class="btn btn-sm" style="background:#e0555522;border:1px solid #e0555544;color:#e05555" onclick="deleteSession(${s.id})">🗑</button>` : ''}
         </div>
       </div>`;
@@ -3272,6 +3329,7 @@ function renderStep(){
       </div>
     </div>
     ${renderStepRequests(currentStep)}
+    ${typeof renderAndonBar==='function'?renderAndonBar(currentStep):''}
     ${step.memoImg&&window[step.memoImg]?`<details class="step-memo"><summary>📐 Mémo technicien — ${step.memoTitle||'Plan'}<span class="sm-hint">Toucher pour afficher</span></summary><img src="${window[step.memoImg]}" alt="${step.memoTitle||'Plan'}" onclick="viewPhoto(this.src)"></details>`:''}`;
 
   // Checklist items
@@ -3460,8 +3518,9 @@ function openRequestForm(kind){
       <div class="req-chips">${Object.entries(NC_TYPES).map(([k,v])=>`<button class="req-chip" data-k="${k}" onclick="pickReq('type','${k}',this)">${v}</button>`).join('')}</div>`
     :`<label>Cause</label>
       <div class="req-chips">${Object.entries(STOCK_CAUSES).map(([k,v])=>`<button class="req-chip" data-k="${k}" onclick="pickReq('cause','${k}',this)">${v}</button>`).join('')}</div>
-      <label>Référence / désignation de la pièce</label><input id="reqRef" placeholder="ex. Joint DN125 PN25/40" autocomplete="off">
+      <label>Référence / désignation de la pièce</label><input id="reqRef" list="stockRefs" placeholder="ex. Joint plat DN125 PN25/40" autocomplete="off">
       <label>Quantité manquante</label><input id="reqQty" inputmode="numeric" placeholder="1" autocomplete="off">`}
+    ${kind==='nc'?`<label class="req-check"><input type="checkbox" id="reqBlock" style="width:auto;margin-right:8px">NC bloquante : la machine est à l’arrêt (Andon rouge)</label>`:''}
     <label>Description</label><textarea id="reqDesc" placeholder="${kind==='nc'?'Ce qui a été constaté…':'Précisions (optionnel)…'}"></textarea>
     <label>Photos (${REQ_MAX_PHOTOS} max)</label>
     <div class="req-photos" id="reqPhotos"></div>
@@ -3494,7 +3553,7 @@ function submitRequest(){
   if(d.kind==='nc'){
     if(!d.type){ err.textContent='Choisissez le type de non-conformité.'; return; }
     if(!r.desc){ err.textContent='Décrivez la non-conformité.'; return; }
-    r.type=d.type;
+    r.type=d.type; r.bloquante=!!(document.getElementById('reqBlock')||{}).checked;
   } else {
     if(!d.cause){ err.textContent='Choisissez la cause.'; return; }
     r.ref=v('reqRef').trim(); r.qty=v('reqQty').trim();
@@ -3509,6 +3568,7 @@ function submitRequest(){
   // Photos stockées à part (limite de taille Firestore par checklist)
   photos.forEach((data,i)=>{ photoCache[r.photos[i]]=data; savePhotoDoc(r.photos[i],data); });
   sendRequestNotif(r,si);
+  if(typeof i40OnRequest==='function') i40OnRequest(r,si);
 }
 
 // ===== Notifications dans l'appli (collection « notifications ») =====
@@ -3577,7 +3637,7 @@ function renderNotifPanel(){
   p.innerHTML=`<div class="notif-panel-hdr"><b>🔔 Notifications</b>${unreadNotifs().length?`<button onclick="markAllNotifsRead()">Tout marquer lu</button>`:''}</div>`
    +(notifList.length?notifList.slice(0,60).map(n=>{const unread=!(n.readBy||[]).includes(me);
      return `<div class="notif-row ${unread?'unread':''}" onclick="openNotif('${n.id}')">
-       <div class="nr-ic">${n.kind==='nc'?'⚠️':'📦'}</div>
+       <div class="nr-ic">${n.kind==='nc'?'⚠️':n.kind==='andon'?'🚨':'📦'}</div>
        <div style="flex:1;min-width:0"><div class="nr-t">${_esc(String(n.title).replace(/^(⚠️|📦)\s*/,''))}</div><div class="nr-b">${_esc(n.body)}</div>
        <div class="nr-m">${new Date(n.createdAt).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})} · ${_esc(n.by||'—')}${n.photos?' · 📷 '+n.photos:''}</div></div>
        ${unread?'<div class="nr-dot"></div>':''}</div>`;}).join('')
@@ -4120,6 +4180,7 @@ async function renderDashboard(){
 
   // === REQUÊTES TERRAIN (NC qualité / manques pièces) ===
   html += renderRequestsSection(monthSessions);
+  if(typeof renderI40Section==='function') html += renderI40Section(monthSessions);
 
   // === STEP TIME CHART (avg time per step across sessions) ===
   html += renderStepTimeChart(monthSessions);
@@ -4870,6 +4931,18 @@ function updateStockLabel(){
 <!-- ════════════════════════════════════════
      SCREEN VSM
 ════════════════════════════════════════ -->
+<div class="screen" id="scAtelier" style="padding:0;max-width:100%;margin:0">
+  <div class="andon-strip" id="andonStrip"></div>
+  <iframe id="atelierFrame" title="Atelier 3D en direct" allow="fullscreen"></iframe>
+  <button class="tv-exit" onclick="exitTv()">✕ Quitter l’écran atelier</button>
+</div>
+<div class="screen" id="scStock">
+  <div class="stk-head">
+    <div><div class="project-title" style="font-size:26px">Stock</div><div style="font-size:12px;color:var(--text3)"><span id="stockCount"></span> · relié aux manques pièces et aux Andon</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="stockSearch" placeholder="Rechercher une pièce…" oninput="stockFilter=this.value;renderStock()" autocomplete="off"><button class="btn btn-primary btn-sm" onclick="editStock()">+ Article</button></div>
+  </div>
+  <div class="stk-board" id="stockBoard"></div>
+</div>
 <div class="screen" id="scVSM" style="padding:0;max-width:100%;margin:0">
 <div style="display:flex;height:calc(100vh - 97px)">
 
@@ -5263,5 +5336,303 @@ window.showVSM=function(){
 </script>
 
 </div><!-- end appWrapper -->
+<script>
+
+// =====================================================================
+//  INDUSTRIE 4.0 — atelier 3D en direct, e-Andon, écran atelier, KPI,
+//  QR codes machines, stock kanban relié aux manques pièces
+// =====================================================================
+const ANDON_L1=['nordine.sakhri@enogia.com'];      // 1er niveau : chef d'équipe
+const ANDON_L2=['nicolas.stamboul@enogia.com'];    // escalade : responsable de production
+const ANDON_DELAY_MIN={red:5,orange:15};           // délai avant escalade si personne ne prend en charge
+const ANDON_REASONS={red:['Problème qualité bloquant','Sécurité','Machine endommagée','Pièce non conforme','Autre'],
+                     orange:['Manque pièce','Besoin d’aide technique','Attente information','Outillage','Autre']};
+const ANDON_COL={red:'#ff3b30',orange:'#ff9f1a',blue:'#2b8fd6',green:'#2ee07a',idle:'#7a8b92'};
+const ANDON_TXT={red:'Arrêt',orange:'Besoin d’aide',blue:'Attente validation VE',green:'En production',idle:'En attente'};
+
+let liveSessions=[], andonList=[], stockList=[], flowMap={}, i40Started=false;
+const fs=()=>({db:window._db,doc:window._fsDoc,set:window._fsSetDoc,col:window._fsCollection,snap:window._fsOnSnapshot,del:window._fsDeleteDoc});
+const nowIso=()=>new Date().toISOString();
+const minsSince=iso=>iso?Math.max(0,Math.round((Date.now()-new Date(iso))/60000)):0;
+const fmtMin=m=>m>=60?`${Math.floor(m/60)} h ${String(m%60).padStart(2,'0')}`:`${m} min`;
+
+function i40Start(){
+  if(i40Started||!window._fsOnSnapshot||!window._db) return; i40Started=true;
+  const F=fs();
+  F.snap(F.col(F.db,'sessions'),s=>{ liveSessions=s.docs.map(d=>d.data()); i40Refresh(); },e=>console.warn('sessions live',e));
+  F.snap(F.col(F.db,'andon'),s=>{ andonList=s.docs.map(d=>({id:d.id,...d.data()})); i40Refresh(); if(typeof renderStep==='function'&&session&&document.getElementById('scChecklist').classList.contains('active')) refreshAndonBar(); },e=>console.warn('andon live',e));
+  F.snap(F.col(F.db,'stock'),s=>{ stockList=s.docs.map(d=>({id:d.id,...d.data()})); i40Refresh(); if(document.getElementById('scStock').classList.contains('active')) renderStock(); refreshStockDatalist(); },e=>console.warn('stock live',e));
+  F.snap(F.col(F.db,'machineFlow'),s=>{ flowMap={}; s.docs.forEach(d=>flowMap[d.id]=d.data()); i40Refresh(); },e=>console.warn('flow live',e));
+  setInterval(andonEscalate,30000); setInterval(i40Refresh,5000);
+}
+document.addEventListener('firebaseReady',()=>setTimeout(i40Start,400));
+if(window._firebaseReady) setTimeout(i40Start,400);
+
+// ---------- Temps standard (médiane des sous-étapes terminées) et retards ----------
+function stdTimes(){
+  const acc={};
+  (liveSessions.length?liveSessions:sessions).forEach(s=>(s.steps||[]).forEach(st=>(st.items||[]).forEach(it=>{
+    const t=it.actionTimers&&it.actionTimers.item; if(!t||!t.stopped||!t.seconds) return;
+    const k=`${s.modelId||'eno180ltv3'}|${st.id}|${it.id}`; (acc[k]=acc[k]||[]).push(t.seconds); })));
+  const out={}; Object.entries(acc).forEach(([k,v])=>{ if(v.length<2) return; v.sort((a,b)=>a-b); out[k]=v[Math.floor(v.length/2)]; }); return out;
+}
+function lateInfo(s,std){
+  for(const st of (s.steps||[])) for(const it of (st.items||[])){
+    const t=it.actionTimers&&it.actionTimers.item; if(!t||!t.started||t.stopped) continue;
+    let el=t.seconds||0; if(!t.paused&&(t.runningSince||t.started)) el+=(Date.now()-new Date(t.runningSince||t.started))/1000;
+    const ref=std[`${s.modelId||'eno180ltv3'}|${st.id}|${it.id}`];
+    if(ref&&el>ref*1.3){ const def=((MODELS[s.modelId]||MODELS.eno180ltv3).getSteps().find(x=>x.id===st.id)||{items:[]}).items.find(x=>x.id===it.id); return {late:true,item:def?def.label:it.id,el:Math.round(el/60),ref:Math.round(ref/60)}; }
+  }
+  return {late:false};
+}
+function openAndonFor(sid){ return andonList.filter(a=>String(a.sessionId)===String(sid)&&!a.resolvedAt); }
+function andonColorFor(s){
+  const open=openAndonFor(s.id);
+  if(open.some(a=>a.color==='red')) return 'red';
+  if(open.some(a=>a.color==='orange')) return 'orange';
+  const waitVE=(s.steps||[]).some(st=>(st.items||[]).some(it=>it.opDone&&!it.veDone));
+  const running=(s.steps||[]).some(st=>(st.items||[]).some(it=>{ const t=it.actionTimers&&it.actionTimers.item; return t&&t.started&&!t.stopped&&!t.paused; }));
+  if(running) return 'green'; if(waitVE) return 'blue'; return 'idle';
+}
+function flowOf(s){ return (flowMap[String(s.id)]||{}).flow||'test'; }
+
+// ---------- État des machines pour l'atelier 3D ----------
+function i40Machines(){
+  const std=stdTimes(), out=[];
+  (liveSessions.length?liveSessions:sessions).forEach(s=>{
+    const model=MODELS[s.modelId]||MODELS.eno180ltv3, steps=model.getSteps(), p=calcProgress(s).pct;
+    let zone,level,step=null,stepName;
+    if(p<100){ let si=(s.steps||[]).findIndex(st=>(st.items||[]).some(it=>!it.opDone)); if(si<0) si=steps.length-1; step=si+1; stepName=(steps[si]||{}).name||'';
+      const half=Math.ceil(steps.length/2); zone=step<=half?'z1':'z2'; const st10=Math.round(step*10/steps.length); level=zone==='z1'?Math.max(3,st10):Math.max(6,st10); }
+    else { const f=flowOf(s); if(f==='shipped') return; zone=f==='cond'?'z4':'z3'; level=f==='cond'?12:11; stepName=f==='cond'?'Conditionnement':'Banc d’essai'; }
+    const li=p<100?lateInfo(s,std):{late:false};
+    out.push({id:s.id,sn:s.serie&&s.serie!=='–'?s.serie:(s.projet||'Sans n°'),projet:s.projet,model:model.name,zone,level,step,stepName,pct:p,op:s.op||'',andon:andonColorFor(s),late:li.late,lateTxt:li.late?`${li.item} : ${li.el} min (standard ${li.ref} min)`:'',started:s.started});
+  });
+  return out.sort((a,b)=>String(a.started).localeCompare(String(b.started)));
+}
+function stockStatus(a){ if(a.qty==null) return 'inv'; if(a.manque||a.qty<=0) return 'rupture'; if(a.commande) return 'commande'; if(a.qty<=(a.seuil||0)) return 'a_commander'; return 'ok'; }
+function i40State(){
+  const open=andonList.filter(a=>!a.resolvedAt).sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)));
+  const alerts=stockList.filter(a=>['rupture','a_commander'].includes(stockStatus(a)));
+  const feed=[...andonList].sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,8).map(a=>({t:a.createdAt,cls:a.color==='red'?'nc':'stock',txt:`${a.resolvedAt?'✓ Résolu · ':''}${a.sn||''} · ${a.stepName||''} — ${a.reason}`}));
+  return {type:'enogia-state',machines:i40Machines(),andon:open.map(a=>({id:a.id,color:a.color,reason:a.reason,sn:a.sn,sessionId:a.sessionId,age:minsSince(a.createdAt),ack:!!a.ackAt})),
+    stock:{alerts:alerts.map(a=>({ref:a.ref,designation:a.designation,qty:a.qty,seuil:a.seuil,status:stockStatus(a)})),total:stockList.length},feed};
+}
+function i40Refresh(){
+  const fr=document.getElementById('atelierFrame');
+  if(fr&&fr.contentWindow&&document.getElementById('scAtelier').classList.contains('active')) fr.contentWindow.postMessage(i40State(),'*');
+  renderAndonStrip();
+}
+window.addEventListener('message',e=>{
+  const d=e.data||{};
+  if(d.type==='enogia-ready') i40Refresh();
+  if(d.type==='enogia-open'&&d.id){ exitTv(); const s=(sessions.find(x=>String(x.id)===String(d.id)))||liveSessions.find(x=>String(x.id)===String(d.id)); if(s){ if(!sessions.find(x=>x.id===s.id)) sessions.push(s); loadSession(s.id); } }
+  if(d.type==='enogia-stock') showStock();
+});
+
+// ---------- Écrans ----------
+function showAtelier(tv){
+  showScreen('scAtelier'); const fr=document.getElementById('atelierFrame');
+  const want='atelier.html'+(tv?'?tv=1':''); if(!fr.getAttribute('src')||fr.getAttribute('src')!==want) fr.setAttribute('src',want);
+  document.body.classList.toggle('tv-mode',!!tv);
+  if(tv){ try{ document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen(); }catch(e){} }
+  i40Start(); setTimeout(i40Refresh,800);
+}
+function exitTv(){ if(document.body.classList.contains('tv-mode')){ document.body.classList.remove('tv-mode'); try{ document.fullscreenElement&&document.exitFullscreen(); }catch(e){} } }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') exitTv(); });
+
+// ---------- e-Andon ----------
+function canManageAndon(){ const e=(window._currentUser&&window._currentUser.email||'').toLowerCase(); return ANDON_L1.includes(e)||ANDON_L2.includes(e); }
+async function andonNotify(to,a,prefix){
+  const F=fs(); const id=(prefix||'a_')+a.id;
+  try{ await F.set(F.doc(F.db,'notifications',id),{to,kind:'andon',title:`🚨 ${prefix?'ESCALADE · ':''}Andon ${a.color==='red'?'ROUGE — arrêt':'ORANGE — aide'} · ${a.sn||''}`,
+    body:`${a.model||''} · ${a.stepName||''} — ${a.reason}${a.comment?' : '+a.comment:''}`,by:a.by||'',user:a.user||'',photos:0,sessionId:a.sessionId,si:a.si||0,itemId:'',requestId:a.id,createdAt:nowIso(),readBy:[]}); }catch(e){ console.warn('notif andon',e); }
+}
+async function andonRaise(color,reason,opts={}){
+  if(!session) return; const F=fs(); const si=opts.si!=null?opts.si:currentStep;
+  const open=openAndonFor(session.id).find(a=>a.color===color&&a.reason===reason); if(open) return open;
+  const a={id:'an'+Date.now().toString(36),color,reason,comment:opts.comment||'',sessionId:session.id,sn:session.serie&&session.serie!=='–'?session.serie:session.projet,
+    model:(currentModel&&currentModel.name)||'',si,stepName:(ACTIVE_STEPS[si]||{}).name||'',by:session.steps[si]&&session.steps[si].stepOp||session.op||'',
+    user:(window._currentUser&&window._currentUser.email)||'',createdAt:nowIso(),ackAt:null,ackBy:'',resolvedAt:null,resolvedBy:'',escalatedAt:null,auto:!!opts.auto,reqId:opts.reqId||'',ref:opts.ref||''};
+  andonList.push(a);
+  try{ await F.set(F.doc(F.db,'andon',a.id),a); }catch(e){ alert('Andon non enregistré (droits Firestore sur « andon »).'); console.warn(e); }
+  andonNotify(ANDON_L1,a); refreshAndonBar(); return a;
+}
+async function andonUpdate(id,patch){ const F=fs(); const a=andonList.find(x=>x.id===id); if(a) Object.assign(a,patch); try{ await F.set(F.doc(F.db,'andon',id),patch,{merge:true}); }catch(e){ console.warn(e); } renderAndonStrip(); refreshAndonBar(); }
+function andonAck(id){ const who=(window._currentUser&&window._currentUser.email)||''; andonUpdate(id,{ackAt:nowIso(),ackBy:who}); }
+function andonResolve(id,by){ const who=by||(window._currentUser&&window._currentUser.email)||''; const a=andonList.find(x=>x.id===id); andonUpdate(id,{resolvedAt:nowIso(),resolvedBy:who,ackAt:a&&a.ackAt||nowIso(),ackBy:a&&a.ackBy||who}); }
+function andonEscalate(){
+  andonList.filter(a=>!a.resolvedAt&&!a.ackAt&&!a.escalatedAt&&ANDON_DELAY_MIN[a.color]&&minsSince(a.createdAt)>=ANDON_DELAY_MIN[a.color]).forEach(a=>{
+    andonUpdate(a.id,{escalatedAt:nowIso()}); andonNotify(ANDON_L2,a,'esc_'); });
+}
+function renderAndonBar(si){
+  if(!session) return '';
+  const open=openAndonFor(session.id);
+  const st=open.length?'':`<button class="andon-btn orange" onclick="openAndonForm('orange')">🟠 Besoin d’aide</button><button class="andon-btn red" onclick="openAndonForm('red')">🔴 Arrêt</button>`;
+  return `<div class="andon-bar" id="andonBar">${open.map(a=>`<div class="andon-live ${a.color}"><span class="andon-dot"></span><div style="flex:1;min-width:0"><b>${a.color==='red'?'Arrêt en cours':'Aide demandée'}</b> — ${_esc(a.reason)}<small>${a.ackAt?'Pris en charge'+(a.ackBy?' par '+_esc(a.ackBy.split('@')[0]):''):'En attente de prise en charge'} · ${fmtMin(minsSince(a.createdAt))}${a.escalatedAt?' · escaladé':''}</small></div><button class="andon-res" onclick="andonResolve('${a.id}')">✓ Résolu</button></div>`).join('')}
+    <div class="andon-actions">${st}<button class="andon-btn qr" onclick="showMachineQR()">🏷️ QR machine</button></div></div>`;
+}
+function refreshAndonBar(){ const el=document.getElementById('andonBar'); if(el&&session){ const tmp=document.createElement('div'); tmp.innerHTML=renderAndonBar(currentStep); el.replaceWith(tmp.firstElementChild); } }
+function openAndonForm(color){
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='andonOverlay';
+  ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()"><h3>${color==='red'?'🔴 Andon rouge — arrêt':'🟠 Andon orange — besoin d’aide'}</h3>
+    <div class="req-sub">Étape ${currentStep+1} — ${ACTIVE_STEPS[currentStep].name} · ${_esc(session.serie||'')}</div>
+    <label>Motif</label><div class="req-chips">${ANDON_REASONS[color].map(r=>`<button class="req-chip" onclick="this.parentNode.querySelectorAll('.req-chip').forEach(b=>b.classList.toggle('on',b===this));window._andonReason='${r.replace(/'/g,"\\'")}'">${r}</button>`).join('')}</div>
+    <label>Précision (facultatif)</label><input id="andonComment" autocomplete="off">
+    <div class="req-mailnote">🔔 Le chef d’équipe est prévenu immédiatement. Sans prise en charge sous ${ANDON_DELAY_MIN[color]} min, l’alerte monte au responsable de production.</div>
+    <div class="req-err" id="andonErr"></div>
+    <div class="req-actions"><button class="btn btn-outline" onclick="document.getElementById('andonOverlay').remove()">Annuler</button><button class="btn btn-primary" onclick="submitAndon('${color}')">Lancer l’alerte</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); window._andonReason=null; document.body.appendChild(ov);
+}
+function submitAndon(color){ if(!window._andonReason){ document.getElementById('andonErr').textContent='Choisissez un motif.'; return; }
+  andonRaise(color,window._andonReason,{comment:(document.getElementById('andonComment')||{}).value||''}); document.getElementById('andonOverlay').remove(); }
+function renderAndonStrip(){
+  const el=document.getElementById('andonStrip'); if(!el) return;
+  const open=andonList.filter(a=>!a.resolvedAt).sort((a,b)=>(a.color==='red'?0:1)-(b.color==='red'?0:1)||String(a.createdAt).localeCompare(String(b.createdAt)));
+  const mach=i40Machines(), late=mach.filter(m=>m.late).length, alerts=stockList.filter(a=>['rupture','a_commander'].includes(stockStatus(a))).length;
+  const today=andonList.filter(a=>String(a.createdAt).slice(0,10)===nowIso().slice(0,10)&&a.ackAt);
+  const react=today.length?Math.round(today.reduce((s,a)=>s+(new Date(a.ackAt)-new Date(a.createdAt)),0)/today.length/60000):null;
+  const mg=canManageAndon();
+  el.innerHTML=`<div class="as-kpis"><span><b>${mach.length}</b> machines en cours</span><span class="${open.length?'bad':''}"><b>${open.length}</b> Andon ouvert${open.length>1?'s':''}</span><span><b>${react==null?'—':react+' min'}</b> réaction moyenne du jour</span><span class="${late?'warn':''}"><b>${late}</b> en retard</span><span class="${alerts?'warn':''}" onclick="showStock()" style="cursor:pointer"><b>${alerts}</b> article${alerts>1?'s':''} à commander</span></div>
+    <div class="as-list">${open.length?open.map(a=>`<div class="as-item ${a.color}"><span class="andon-dot"></span><div style="min-width:0"><b>${_esc(a.sn||'')}</b> · ${_esc(a.stepName||'')}<br><span>${_esc(a.reason)} · ${fmtMin(minsSince(a.createdAt))}${a.ackAt?' · pris en charge':''}${a.escalatedAt?' · escaladé':''}</span></div>
+      ${mg?`${a.ackAt?'':`<button onclick="andonAck('${a.id}')">Je prends</button>`}<button onclick="andonResolve('${a.id}')">Résolu</button>`:''}</div>`).join(''):'<div class="as-empty">Aucune alerte Andon : tout tourne.</div>'}</div>`;
+}
+
+// ---------- QR code machine ----------
+function showMachineQR(){
+  if(!session) return; const url=location.origin+location.pathname+'?s='+session.id;
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='qrOverlay';
+  ov.innerHTML=`<div class="req-box" style="text-align:center" onclick="event.stopPropagation()"><h3>🏷️ QR code machine</h3><div class="req-sub">${_esc(currentModel&&currentModel.name||'')} · ${_esc(session.serie||'')} · ${_esc(session.projet||'')}</div>
+    <div id="qrBox" style="display:inline-block;background:#fff;padding:12px;border-radius:8px"></div>
+    <div class="req-mailnote">Collez l’étiquette sur le skid : en la scannant, la checklist de cette machine s’ouvre directement.</div>
+    <div class="req-actions"><button class="btn btn-outline" onclick="document.getElementById('qrOverlay').remove()">Fermer</button><button class="btn btn-primary" onclick="printMachineQR()">Imprimer l’étiquette</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov);
+  if(window.QRCode) new QRCode(document.getElementById('qrBox'),{text:url,width:220,height:220,correctLevel:QRCode.CorrectLevel.M});
+  else document.getElementById('qrBox').textContent=url;
+}
+function printMachineQR(){
+  const img=document.querySelector('#qrBox img,#qrBox canvas'); const src=img?(img.tagName==='CANVAS'?img.toDataURL():img.src):'';
+  const w=window.open('','_blank','width=420,height=560'); if(!w) return;
+  w.document.write(`<html><head><title>Étiquette ${_esc(session.serie||'')}</title></head><body style="font-family:Arial;text-align:center;padding:20px"><div style="border:2px solid #06303f;border-radius:10px;padding:16px;display:inline-block"><div style="font-size:22px;font-weight:700;color:#06303f">ENOGIA</div><div style="font-size:15px;margin:4px 0 10px">${_esc(currentModel&&currentModel.name||'')}</div><img src="${src}" width="240" height="240"><div style="font-size:20px;font-weight:700;margin-top:8px">${_esc(session.serie||'')}</div><div style="font-size:14px">Projet ${_esc(session.projet||'')}</div></div><script>setTimeout(()=>print(),300)<\/script></body></html>`);
+  w.document.close();
+}
+function openSessionFromUrl(){
+  const sid=new URLSearchParams(location.search).get('s'); if(!sid) return;
+  const s=sessions.find(x=>String(x.id)===String(sid)); if(s){ loadSession(s.id); history.replaceState(null,'',location.pathname); }
+}
+
+// ---------- Flux après checklist : banc d'essai → conditionnement → expédiée ----------
+async function setFlow(id,flow){ const F=fs(); flowMap[String(id)]={flow,at:nowIso()}; try{ await F.set(F.doc(F.db,'machineFlow',String(id)),{flow,at:nowIso(),[flow+'At']:nowIso()},{merge:true}); }catch(e){ console.warn(e); } renderHistory(); i40Refresh(); }
+function flowButtons(s){
+  const f=flowOf(s), lbl={test:'🧪 Banc d’essai',cond:'📦 Conditionnement',shipped:'🚚 Expédiée'}, next={test:'cond',cond:'shipped'}[f];
+  return `<span class="flow-chip ${f}">${lbl[f]}</span>${next?`<button class="btn btn-outline btn-sm" onclick="setFlow(${s.id},'${next}')">→ ${lbl[next].slice(2)}</button>`:''}`;
+}
+
+// ---------- Stock (kanban) ----------
+const STOCK_COLS=[['rupture','🔴 Rupture / manque'],['a_commander','🟠 À commander'],['commande','🔵 Commandé'],['ok','🟢 En stock'],['inv','⚪ À inventorier']];
+let stockFilter='';
+function showStock(){ exitTv(); showScreen('scStock'); i40Start(); renderStock(); }
+function stockCover(a){ return a.parMachine>0&&a.qty!=null?Math.floor(a.qty/a.parMachine):null; }
+function renderStock(){
+  const el=document.getElementById('stockBoard'); if(!el) return;
+  const q=stockFilter.toLowerCase(); const list=stockList.filter(a=>!q||(a.ref+' '+a.designation+' '+(a.emplacement||'')).toLowerCase().includes(q));
+  document.getElementById('stockCount').textContent=`${stockList.length} article${stockList.length>1?'s':''}`;
+  if(!stockList.length){ el.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="emo">📦</div><p>Aucun article. Créez vos articles un par un, ou partez de la liste de base tirée de vos checklists.</p><button class="btn btn-primary" style="margin-top:10px" onclick="seedStock()">Créer les articles de base</button></div>`; return; }
+  el.innerHTML=STOCK_COLS.map(([k,t])=>{ const items=list.filter(a=>stockStatus(a)===k); return `<div class="stk-col ${k}"><div class="stk-col-h">${t}<span>${items.length}</span></div>${items.map(a=>{
+    const cov=stockCover(a);
+    return `<div class="stk-card"><div class="stk-top"><b>${_esc(a.designation)}</b><span class="stk-qty">${a.qty==null?'?':a.qty}${a.unit?' '+_esc(a.unit):''}</span></div>
+      <div class="stk-meta">${_esc(a.ref)}${a.emplacement?' · '+_esc(a.emplacement):''} · seuil ${a.seuil||0}${cov!=null?` · couvre <b>${cov}</b> machine${cov>1?'s':''}`:''}</div>
+      ${a.manque&&(a.linked||[]).length?`<div class="stk-warn">⚠ Manque signalé : ${(a.linked||[]).map(l=>_esc(l.sn||'')).join(', ')}</div>`:''}
+      ${a.aReferencer?`<div class="stk-warn">Créé depuis un manque pièce : à compléter</div>`:''}
+      <div class="stk-btns"><button onclick="stockMove('${a.id}',1)">+ Entrée</button><button onclick="stockMove('${a.id}',-1)">− Sortie</button>${k==='a_commander'||k==='rupture'?`<button onclick="stockSet('${a.id}',{commande:true})">Commandé</button>`:''}<button onclick="editStock('${a.id}')">✎</button></div></div>`; }).join('')}</div>`; }).join('');
+}
+async function stockSave(a){ const F=fs(); const i=stockList.findIndex(x=>x.id===a.id); if(i>=0) stockList[i]=a; else stockList.push(a); try{ await F.set(F.doc(F.db,'stock',a.id),a); }catch(e){ alert('Stock non enregistré (droits Firestore sur « stock »).'); console.warn(e); } renderStock(); i40Refresh(); }
+function stockSet(id,patch){ const a={...stockList.find(x=>x.id===id),...patch}; stockSave(a); }
+function stockMove(id,sign){
+  const a={...stockList.find(x=>x.id===id)}; const n=parseFloat(prompt(sign>0?`Entrée en stock — ${a.designation}\nQuantité reçue :`:`Sortie de stock — ${a.designation}\nQuantité prélevée :`,'1'));
+  if(!n||n<=0) return; a.qty=Math.max(0,(a.qty||0)+sign*n);
+  a.history=[{at:nowIso(),d:sign*n,by:(window._currentUser&&window._currentUser.email)||''},...(a.history||[])].slice(0,30);
+  if(sign>0){ if(a.qty>(a.seuil||0)) a.commande=false;
+    if(a.manque){ a.manque=false; (a.linked||[]).forEach(l=>{ andonList.filter(x=>!x.resolvedAt&&(x.reqId===l.reqId||(x.ref&&x.ref===a.ref))).forEach(x=>andonResolve(x.id,'Stock : pièce réapprovisionnée')); }); a.linked=[]; } }
+  stockSave(a);
+}
+function editStock(id){
+  const a=id?stockList.find(x=>x.id===id):{ref:'',designation:'',qty:0,seuil:0,parMachine:0,unit:'',emplacement:''};
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='stkOverlay';
+  const f=(k,l,type='text')=>`<label>${l}</label><input id="stk_${k}" type="${type}" value="${_esc(a[k]==null?'':a[k])}" autocomplete="off">`;
+  ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()"><h3>${id?'Modifier l’article':'Nouvel article'}</h3>
+    ${f('designation','Désignation')}${f('ref','Référence')}${f('emplacement','Emplacement (rack / niveau)')}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 10px">${f('qty','Quantité en stock','number')}${f('unit','Unité (pcs, m…)')}${f('seuil','Seuil de commande','number')}${f('parMachine','Quantité par machine','number')}</div>
+    <div class="req-mailnote">La quantité par machine est prélevée automatiquement au démarrage de chaque nouvelle checklist, et sert à calculer combien de machines le stock couvre.</div>
+    <div class="req-actions">${id?`<button class="btn btn-outline" style="color:#e05555" onclick="deleteStock('${id}')">Supprimer</button>`:''}<button class="btn btn-outline" onclick="document.getElementById('stkOverlay').remove()">Annuler</button><button class="btn btn-primary" onclick="saveStockForm('${id||''}')">Enregistrer</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov);
+}
+function saveStockForm(id){
+  const v=k=>(document.getElementById('stk_'+k)||{}).value; const num=k=>{ const x=v(k); return x===''?null:parseFloat(x); };
+  if(!v('designation').trim()){ alert('Indiquez une désignation.'); return; }
+  const base=id?stockList.find(x=>x.id===id):{id:'st'+Date.now().toString(36),history:[],linked:[]};
+  const a={...base,designation:v('designation').trim(),ref:v('ref').trim(),emplacement:v('emplacement').trim(),qty:num('qty'),unit:v('unit').trim(),seuil:num('seuil')||0,parMachine:num('parMachine')||0,aReferencer:false};
+  document.getElementById('stkOverlay').remove(); stockSave(a);
+}
+async function deleteStock(id){ if(!confirm('Supprimer cet article ?')) return; const F=fs(); stockList=stockList.filter(x=>x.id!==id); try{ await F.del(F.doc(F.db,'stock',id)); }catch(e){} document.getElementById('stkOverlay').remove(); renderStock(); }
+function seedStock(){
+  const L=[['Joint plat DN150 PN25/40','JP-DN150',6],['Joint plat DN125 PN25/40','JP-DN125',3],['Vis M20x90','VIS-M20x90',32],['Vis M20x80','VIS-M20x80',100],['Vis CHC M6x40','VIS-M6x40',12],['Entretoise M6x30','ENT-M6x30',12],
+    ['Vis CHC M8x30','VIS-M8x30',16],['Vis CHC M6x20','VIS-M6x20',16],['Joint torique 189,87 × 5,33','JT-189-5.33',2],['Joint torique 126,6 × 5,33','JT-126-5.33',2],['Insert réducteur M8 → M5','INS-M8M5',2],['Raccord 1/2 NPT – 1/2 SAE','RAC-12NPT-12SAE',4],
+    ['Flexible WF8S50000 — 0,245 m (F1)','WF8S50000-245',1],['Flexible WF8S50000 — 0,235 m (F2, F4, F5)','WF8S50000-235',3],['Flexible WF8S50000 — 1,020 m (F3)','WF8S50000-1020',1],['Flexible WF8S50000 — 2,400 m (F6)','WF8S50000-2400',1],
+    ['Flexible WF8S50000 — 0,750 m (F7)','WF8S50000-750',3],['Flexible WF8S50000 — 0,720 m (F8)','WF8S50000-720',1],['Flexible WF8S60100 — 0,660 m (F9)','WF8S60100-660',2],['Flexible WF8S60100 — 0,425 m (F10)','WF8S60100-425',2],
+    ['Sonde TT 1/4 NPT L130 calibrée','TT-130-CAL',2],['Sonde TT 1/4 NPT L130 non calibrée','TT-130',1],['Sonde TT 1/4 NPT L60','TT-60',1],['Sonde TT BSPP 1/2 L150','TT-BSPP-150',6],['Capteur de pression PT','PT',1],['Loctite 272 (flacon)','LOC-272',0]];
+  L.forEach(([d,r,pm],i)=>{ const a={id:'st'+(Date.now()+i).toString(36),designation:d,ref:r,qty:null,unit:'pcs',seuil:pm,parMachine:pm,emplacement:'',history:[],linked:[]}; stockSave(a); });
+}
+function refreshStockDatalist(){ let dl=document.getElementById('stockRefs'); if(!dl){ dl=document.createElement('datalist'); dl.id='stockRefs'; document.body.appendChild(dl); }
+  dl.innerHTML=stockList.map(a=>`<option value="${_esc(a.designation)}">${_esc(a.ref)}</option>`).join(''); }
+// Lien manque pièce → stock + Andon orange ; NC bloquante → Andon rouge
+function i40OnRequest(r,si){
+  if(r.kind==='stock'&&r.cause==='rupture'){
+    const key=(r.ref||'').toLowerCase().trim();
+    let a=stockList.find(x=>x.ref.toLowerCase()===key||x.designation.toLowerCase()===key)||stockList.find(x=>key&&(x.designation.toLowerCase().includes(key)||key.includes(x.ref.toLowerCase())&&x.ref));
+    const link={reqId:r.id,sessionId:session.id,sn:session.serie,si,at:nowIso()};
+    if(a){ a={...a,manque:true,commande:false,linked:[...(a.linked||[]),link]}; }
+    else { a={id:'st'+Date.now().toString(36),designation:r.ref,ref:r.ref,qty:0,unit:'pcs',seuil:1,parMachine:parseFloat(r.qty)||0,emplacement:'',history:[],linked:[link],manque:true,aReferencer:true}; }
+    stockSave(a);
+    andonRaise('orange','Manque pièce : '+r.ref+(r.qty?' ×'+r.qty:''),{auto:true,reqId:r.id,ref:a.ref,si});
+  }
+  if(r.kind==='nc'&&r.bloquante) andonRaise('red','NC bloquante : '+(NC_TYPES[r.type]||r.type),{auto:true,reqId:r.id,comment:r.desc,si});
+}
+// Prélèvement du kit au démarrage d'une checklist
+function i40OnSessionStart(s){
+  stockList.filter(a=>a.parMachine>0&&a.qty!=null).forEach(a=>{ const b={...a,qty:Math.max(0,a.qty-a.parMachine),history:[{at:nowIso(),d:-a.parMachine,by:'Kit '+(s.serie||s.projet||'')},...(a.history||[])].slice(0,30)}; stockSave(b); });
+}
+
+// ---------- KPI Industrie 4.0 (tableau de bord) ----------
+function renderI40Section(monthSessions){
+  const ms=new Set(monthSessions.map(s=>String(s.id))); const A=andonList.filter(a=>ms.has(String(a.sessionId)));
+  const acked=A.filter(a=>a.ackAt), res=A.filter(a=>a.resolvedAt);
+  const avg=(arr,f)=>arr.length?Math.round(arr.reduce((s,a)=>s+f(a),0)/arr.length/60000):null;
+  const react=avg(acked,a=>new Date(a.ackAt)-new Date(a.createdAt)), solve=avg(res,a=>new Date(a.resolvedAt)-new Date(a.createdAt));
+  const pareto={}; A.forEach(a=>{ const k=a.reason.split(' : ')[0]; pareto[k]=(pareto[k]||0)+1; });
+  const pTop=Object.entries(pareto).sort((a,b)=>b[1]-a[1]).slice(0,6), pMax=pTop.length?pTop[0][1]:1;
+  const done=monthSessions.filter(s=>s.completed&&s.started); const lead=done.length?Math.round(done.reduce((t,s)=>t+(new Date(s.completed)-new Date(s.started)),0)/done.length/3600000):null;
+  const mach=i40Machines(), late=mach.filter(m=>m.late), alerts=stockList.filter(a=>['rupture','a_commander'].includes(stockStatus(a)));
+  const std=stdTimes(), stdRows=Object.entries(std).slice(0,40).map(([k,v])=>{ const [mid,sid,iid]=k.split('|'); const mdl=MODELS[mid]||MODELS.eno180ltv3; const st=mdl.getSteps().find(x=>x.id===sid)||{name:sid,items:[]}; const it=(st.items||[]).find(x=>x.id===iid)||{label:iid}; return {m:mdl.name,s:st.name,i:it.label,v}; }).sort((a,b)=>b.v-a.v).slice(0,12);
+  const tile=(lbl,val,sub,col)=>`<div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:10px;border-top:3px solid ${col}"><span class="kpi-label">${lbl}</span><span class="kpi-value" style="font-size:22px">${val}</span><span style="font-size:10px;color:var(--text3)">${sub}</span></div>`;
+  let h='<div class="dash-section-title">🏭 Industrie 4.0 — Andon, flux & stock</div>';
+  h+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px">
+    ${tile('🚨 Appels Andon',A.length,`${A.filter(a=>a.color==='red').length} rouges · ${A.filter(a=>a.color==='orange').length} orange`,'#ff3b30')}
+    ${tile('⏱ Réaction moyenne',react==null?'—':react+' min','appel → prise en charge','#ff9f1a')}
+    ${tile('✓ Résolution moyenne',solve==null?'—':solve+' min','appel → résolu','var(--accent)')}
+    ${tile('🔁 Lead time moyen',lead==null?'—':lead+' h','démarrage → checklist terminée','var(--accent2)')}
+    ${tile('🐢 En retard maintenant',late.length,'sous-étape > 130 % du standard','#f2c230')}
+    ${tile('📦 Articles à commander',alerts.length,`${stockList.length} articles suivis`,'#f0a500')}</div>`;
+  if(pTop.length) h+=`<div style="margin-bottom:14px"><div style="font-size:12px;color:var(--text3);margin-bottom:6px">Pareto des causes d’arrêt et d’appel</div>${pTop.map(([k,v])=>`<div style="display:grid;grid-template-columns:180px 1fr 30px;gap:8px;align-items:center;font-size:12px;margin:3px 0"><span>${_esc(k)}</span><span style="height:10px;border-radius:5px;background:#ff9f1a;width:${Math.round(v/pMax*100)}%"></span><b>${v}</b></div>`).join('')}</div>`;
+  if(late.length) h+=`<div style="margin-bottom:14px;font-size:12px"><div style="color:var(--text3);margin-bottom:4px">Machines en retard</div>${late.map(m=>`<div>🐢 <b>${_esc(m.sn)}</b> — ${_esc(m.lateTxt)}</div>`).join('')}</div>`;
+  if(stdRows.length) h+=`<div style="overflow-x:auto;margin-bottom:16px"><div style="font-size:12px;color:var(--text3);margin-bottom:6px">Temps standard par sous-étape (médiane des chronos terminés)</div><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:520px">${stdRows.map(r=>`<tr style="border-top:1px solid var(--border)"><td style="padding:5px">${_esc(r.m)}</td><td style="padding:5px;color:var(--text2)">${_esc(r.s)}</td><td style="padding:5px">${_esc(r.i)}</td><td style="padding:5px;text-align:right"><b>${fmtMin(Math.round(r.v/60))}</b></td></tr>`).join('')}</table></div>`;
+  else h+='<p style="font-size:12px;color:var(--text3);margin-bottom:14px">Les temps standard apparaîtront dès que chaque sous-étape aura été chronométrée au moins deux fois.</p>';
+  return h;
+}
+
+// Prélèvement du kit au démarrage d'une nouvelle checklist
+(function(){ const base=startSession; startSession=function(){ const before=session&&session.id; base.apply(this,arguments); if(session&&session.id!==before&&typeof i40OnSessionStart==='function') i40OnSessionStart(session); }; })();
+
+</script>
 </body>
 </html>
