@@ -845,10 +845,11 @@ const PLACES={
 };
 const TECHS=[
   {name:'Alexandre',role:'Technicien',zone:'z1',home:['turb','turb','z1'],tool:'wrench',tasks:'turb'},
-  {name:'Karim',    role:'Technicien',zone:'z1',home:['z1'],tool:'drill',tasks:'z1'},
-  {name:'Julien',   role:'Technicien',zone:'z2',home:['z2','z2','bench2'],tool:'wrench',tasks:'z2'},
-  {name:'Sofiane',  role:'Technicien',zone:'z3',home:['z3desk','z3'],tool:'wrench',tasks:'z3'},
-  {name:'Hugo',     role:'Technicien',zone:'z4',home:['z4'],tool:'none',tasks:'z4'},
+  {name:'Corentin', role:'Technicien',zone:'z1',home:['z1'],tool:'drill',tasks:'z1'},
+  {name:'David',    role:'Technicien',zone:'z2',home:['z2','z2','bench2'],tool:'wrench',tasks:'z2'},
+  {name:'Thibault', role:'Technicien',zone:'z2',home:['z2'],tool:'drill',tasks:'z2'},
+  {name:'Adrien',   role:'Technicien',zone:'z3',home:['z3desk','z3'],tool:'wrench',tasks:'z3'},
+  {name:'Kesil',    role:'Technicien',zone:'z4',home:['z4'],tool:'none',tasks:'z4'},
   {name:'Chef d’équipe',role:'Chef d’équipe',zone:'chef',tool:'tablet',tasks:'chef',chef:true,helmet:'#f2c230'},
   {name:'Resp. production',role:'Responsable production',zone:'prod',home:['z4'],tool:'tablet',tasks:'prod',prod:true,helmet:'#2b8fd6'}
 ];
@@ -1064,7 +1065,7 @@ const zoneTag={z1:'Z1',z2:'Z2',z3:'Z3',z4:'Z4',chef:'VE',prod:'Prod'};
 function logTask(t){ if(Math.random()>.45) return; const a=activity(t); logFeed(`${zoneTag[t.def.zone]||''} · ${t.def.name} termine : ${a.charAt(0).toLowerCase()+a.slice(1)}`); }
 const EXTRA=[['Z1 · Turbines A et B prêtes pour le montage sur skid',''],['Magasin · Kit Cycle Lub PJ436 complet',''],['Z2 · Requête qualité : sertissage borne armoire','nc'],
   ['Z1 · Manque pièce : flexible F7 (0,750 m)','stock'],['Z3 · Essai d’étanchéité azote : 0 fuite',''],['Z4 · PJ433 filmée, prête au chargement',''],['Z3 · Relevé TT-03A en charge : 74 °C','']];
-logFeed('Z1 · Karim démarre : cycle ORC — serrer brides DN150'); logFeed('Z3 · Sofiane lance l’essai en charge de PJ434'); logFeed('VE · Le chef d’équipe valide l’instrumentation de PJ436');
+logFeed('Z1 · Corentin démarre : cycle ORC — serrer brides DN150'); logFeed('Z3 · Adrien lance l’essai en charge de PJ434'); logFeed('VE · Le chef d’équipe valide l’instrumentation de PJ436');
 let extraT=6;
 const clockEl=document.getElementById('clock'), dateEl=document.getElementById('date');
 function tickClock(){ const d=new Date(); clockEl.textContent=d.toLocaleTimeString('fr-FR'); dateEl.textContent=d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}); }
