@@ -326,8 +326,8 @@ body.tv-mode .tv-exit:hover{opacity:1}
 .tc-step{border:1px solid var(--border);border-radius:8px;background:var(--surface)}
 .tc-step summary{list-style:none;display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;font-size:13.5px}
 .tc-step summary::-webkit-details-marker{display:none}
-.tc-step[open] summary{border-bottom:1px solid var(--border)}
-.tc-chev{color:var(--text3);transition:transform .2s;font-size:11px}.tc-step[open] .tc-chev{transform:rotate(90deg)}
+.tc-step[open]>summary{border-bottom:1px solid var(--border)}
+.tc-chev{color:var(--text3);transition:transform .2s;font-size:11px}.tc-step[open]>summary .tc-chev{transform:rotate(90deg)}
 .tc-sn{width:22px;height:22px;border-radius:6px;background:#00364a;display:grid;place-items:center;font-size:11px;color:var(--text2);flex-shrink:0}
 .tc-st{font-weight:700;flex:1;min-width:0}
 .tc-badge{font-size:10px;background:#f0a50022;color:#ffc46b;border:1px solid #f0a50066;border-radius:20px;padding:1px 7px;white-space:nowrap}
@@ -340,6 +340,19 @@ body.tv-mode .tv-exit:hover{opacity:1}
 .tc-edit{display:flex;gap:4px;align-items:center;flex-shrink:0}
 .tc-val{width:74px !important;padding:6px 8px !important;text-align:right;font-variant-numeric:tabular-nums}
 .tc-ok{background:var(--accent2);border:none;color:#fff;border-radius:6px;padding:6px 9px;font-weight:700;font-size:12px;cursor:pointer;font-family:var(--font)}
+.tc-tools{display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;margin:8px 0 10px}
+.tc-tools .tc-quick{flex:1 1 100%;margin:4px 0 0}
+.tc-subs{padding:6px 8px 8px;display:flex;flex-direction:column;gap:5px}
+.tc-sub{border:1px solid #ffffff14;border-radius:7px;background:#00364a}
+.tc-sub summary{list-style:none;display:flex;align-items:center;gap:8px;padding:9px 10px;cursor:pointer;font-size:13px}
+.tc-sub summary::-webkit-details-marker{display:none}
+.tc-sub[open]>summary .tc-chev{transform:rotate(90deg)}
+.tc-sub .tc-st{font-weight:600}
+.tc-run{font-size:10px;font-weight:700;color:#ffc46b;background:#f0a50022;border-radius:20px;padding:1px 7px;margin-left:4px}
+.tc-note{font-size:11px;color:#ffc46b;padding:0 12px 6px}
+.tc-line.head{background:#ffffff08}
+.tc-line.head .tc-lbl b{color:var(--accent)}
+.tc-undo[disabled]{opacity:.3;cursor:default}
 .tc-modes{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0 4px}
 .tc-modes button{padding:10px;border-radius:8px;border:1px solid var(--border);background:#00364a;color:var(--text2);font-weight:700;font-family:var(--font);cursor:pointer}
 .tc-modes button.on{background:var(--accent2);border-color:var(--accent2);color:#fff}
@@ -5761,78 +5774,88 @@ function openStockFromUrl(){
 const TIME_ADMIN='nordine.sakhri@enogia.com';
 let corrMap={};
 const isTimeAdmin=()=>((window._currentUser&&window._currentUser.email)||'').toLowerCase()===TIME_ADMIN;
-function timeCorr(sid,si,itemId){ const c=corrMap[String(sid)]; return c&&c.items?(c.items[si+'_'+itemId]||0):0; }
 function rawItemSeconds(it){ let s=0; if(it&&it.actionTimers) Object.values(it.actionTimers).forEach(t=>{ s+=(t&&t.seconds)||0; }); return s; }
 function hm(sec){ sec=Math.max(0,Math.round(sec)); const h=Math.floor(sec/3600), m=Math.round((sec%3600)/60); return h?`${h} h ${String(m).padStart(2,'0')}`:`${m} min`; }
 function hmIn(sec){ sec=Math.max(0,Math.round(sec)); const h=Math.floor(sec/3600), m=Math.round((sec%3600)/60); return `${h}h${String(m).padStart(2,'0')}`; }
 function parseHM(v){ v=String(v||'').trim().replace(',','.'); if(!v) return 0; const m=v.match(/^(\d+)\s*[h:]\s*(\d{1,2})?$/i); if(m) return (+m[1])*3600+(+(m[2]||0))*60; const n=parseFloat(v); return isNaN(n)?0:n*60; }
 document.addEventListener('firebaseReady',()=>setTimeout(()=>{ if(!window._fsOnSnapshot) return; window._fsOnSnapshot(window._fsCollection(window._db,'timeCorrections'),s=>{ corrMap={}; s.docs.forEach(d=>corrMap[d.id]=d.data()); },e=>console.warn('corrections',e)); },500));
+function timeCorr(sid,si,itemId){ const c=corrMap[String(sid)]; if(!c||!c.items) return 0; const k=si+'_'+itemId; let s=0; Object.entries(c.items).forEach(([kk,v])=>{ if(kk===k||kk.startsWith(k+'_a')) s+=v||0; }); return s; }
+function corrKey(sid,k){ const c=corrMap[String(sid)]; return c&&c.items?(c.items[k]||0):0; }
 function openTimeCorr(sid,keepOpen){
   if(!isTimeAdmin()){ alert('Seul l’administrateur peut corriger les temps.'); return; }
   const s=sessions.find(x=>String(x.id)===String(sid))||liveSessions.find(x=>String(x.id)===String(sid)); if(!s) return;
   const steps=(MODELS[s.modelId]||MODELS.eno180ltv3).getSteps();
-  const rows=[], groups=[];
-  (s.steps||[]).forEach((st,si)=>{ const g={si,name:(steps[si]||{}).name||st.id,icon:(steps[si]||{}).icon||'',rows:[]};
-    (st.items||[]).forEach((it,ii)=>{ const def=(steps[si]||{items:[]}).items[ii]||{label:it.id}; const r={i:rows.length,si,itemId:it.id,step:g.name,label:def.label,raw:rawItemSeconds(it),c:timeCorr(s.id,si,it.id)}; rows.push(r); g.rows.push(r); });
-    groups.push(g); });
-  const prevOpen=keepOpen||[...document.querySelectorAll('#tcOverlay details.tc-step[open]')].map(d=>+d.dataset.si);
-  const old=document.getElementById('tcOverlay'); const scroll=old?old.querySelector('.tc-acc').scrollTop:0; if(old) old.remove();
-  const dflt=39*3600+15*60, tot=rows.reduce((a,r)=>a+Math.max(0,r.raw+r.c),0);
+  const E=[], groups=[];   // E : toutes les lignes éditables (sous-étape ou ligne d'action)
+  (s.steps||[]).forEach((st,si)=>{ const sd=steps[si]||{items:[]}; const g={si,name:sd.name||st.id,icon:sd.icon||'',subs:[]};
+    (st.items||[]).forEach((it,ii)=>{ const def=sd.items[ii]||{label:it.id,actions:[]}; const tm=it.actionTimers||{}, ti=tm.item||{};
+      const running=ti.started&&!ti.stopped; const live=running&&!ti.paused?(Date.now()-new Date(ti.runningSince||ti.started))/1000:0;
+      const sub={si,itemId:it.id,label:def.label,running,live:Math.round((ti.seconds||0)+live),lines:[]};
+      const head={e:E.length,key:si+'_'+it.id,si,itemId:it.id,ai:null,label:'Chrono de la sous-étape',raw:ti.seconds||0}; head.c=corrKey(s.id,head.key); E.push(head); sub.head=head;
+      (def.actions||[]).forEach((a,ai)=>{ const r={e:E.length,key:si+'_'+it.id+'_a'+ai,si,itemId:it.id,ai,label:a.txt||('Ligne '+(ai+1)),info:[a.torque,a.info].filter(Boolean).join(' · '),raw:(tm[ai]&&tm[ai].seconds)||0}; r.c=corrKey(s.id,r.key); E.push(r); sub.lines.push(r); });
+      sub.total=[head,...sub.lines].reduce((x,r)=>x+r.raw+r.c,0); sub.nc=[head,...sub.lines].filter(r=>r.c).length;
+      g.subs.push(sub); });
+    g.total=g.subs.reduce((x,u)=>x+Math.max(0,u.total),0); g.nc=g.subs.reduce((x,u)=>x+u.nc,0); groups.push(g); });
+  const prev=keepOpen||tcOpenState(); const old=document.getElementById('tcOverlay'); const scroll=old?old.querySelector('.tc-acc').scrollTop:0; if(old) old.remove();
+  const dflt=39*3600+15*60, tot=groups.reduce((a,g)=>a+g.total,0);
+  const line=r=>`<div class="tc-line ${r.ai==null?'head':''} ${r.c?'mod':''}"><div class="tc-lbl"><b>${_esc(r.label)}</b><small>${r.info?_esc(r.info)+' · ':''}${r.raw?'chrono '+hm(r.raw):'pas de chrono'}${r.c?` · correction ${r.c>0?'+':'−'}${hm(Math.abs(r.c))}`:''}</small></div>
+    <div class="tc-edit"><input class="tc-val" id="tcv_${r.e}" value="${hmIn(r.raw+r.c)}" inputmode="text" onkeydown="if(event.key==='Enter')tcSetRow('${s.id}',${r.e})" onfocus="this.select()" aria-label="Temps retenu"><button class="tc-ok" onclick="tcSetRow('${s.id}',${r.e})">OK</button><button class="tc-undo" ${r.c?'':'disabled'} onclick="tcUndoKey('${s.id}','${r.key}')" title="Revenir au chrono d’origine">↺</button></div></div>`;
   const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='tcOverlay';
   ov.innerHTML=`<div class="req-box tc-box" onclick="event.stopPropagation()">
     <h3>⏱ Correction des temps</h3>
-    <div class="req-sub">${_esc((MODELS[s.modelId]||{}).name||'')} · ${_esc(s.serie||'')} · ${_esc(s.projet||'')} · total retenu <b>${hm(tot)}</b><br>Seules les durées du tableau de bord sont corrigées : la checklist n’est pas modifiée.</div>
-    <details class="tc-quick"><summary>⚡ Correction rapide sur plusieurs lignes</summary>
-      <div class="tc-modes"><button id="tcModeSub" class="on" onclick="tcMode('sub')">− Retirer du temps</button><button id="tcModeAdd" onclick="tcMode('add')">+ Ajouter du temps</button></div>
-      <div class="tc-bar"><label style="margin:0" id="tcDurLbl">Durée à retirer</label><input id="tcDur" value="39h15" style="width:90px" placeholder="ex. 1h30"><button class="btn btn-outline btn-sm" id="tcLongBtn" onclick="tcCheckLong()">Cocher les chronos plus longs</button></div>
-      <div class="tc-hint">Cochez les lignes dans les étapes ci-dessous, puis appliquez.</div>
-      <button class="btn btn-primary btn-sm" id="tcGo" onclick="tcApply('${s.id}')">Retirer la durée aux lignes cochées</button>
-    </details>
-    <div class="tc-acc">${groups.map(g=>{ const gt=g.rows.reduce((a,r)=>a+Math.max(0,r.raw+r.c),0), nc=g.rows.filter(r=>r.c).length, has=g.rows.some(r=>r.raw||r.c);
-      return `<details class="tc-step" data-si="${g.si}" ${prevOpen.includes(g.si)?'open':''}>
-        <summary><span class="tc-chev">▸</span><span class="tc-sn">${g.si+1}</span><span class="tc-st">${g.icon?g.icon+' ':''}${_esc(g.name)}</span>${nc?`<span class="tc-badge">${nc} corrigée${nc>1?'s':''}</span>`:''}<span class="tc-tot ${has?'':'zero'}">${hm(gt)}</span></summary>
-        ${g.rows.map(r=>`<div class="tc-line ${r.c?'mod':''}">
-          <input type="checkbox" class="tc-cb" data-i="${r.i}" ${r.raw>=dflt&&!r.c?'checked':''} title="Sélection pour la correction rapide">
-          <div class="tc-lbl"><b>${_esc(r.label)}</b><small>${r.raw?'Chrono '+hm(r.raw):'Pas de chrono'}${r.c?` · correction ${r.c>0?'+':'−'}${hm(Math.abs(r.c))}`:''}</small></div>
-          <div class="tc-edit"><input class="tc-val" id="tcv_${r.i}" value="${hmIn(r.raw+r.c)}" onkeydown="if(event.key==='Enter')tcSetRow('${s.id}',${r.i})" aria-label="Temps retenu"><button class="tc-ok" onclick="tcSetRow('${s.id}',${r.i})">OK</button>${r.c?`<button class="tc-undo" onclick="tcUndo('${s.id}',${r.si},'${r.itemId}')" title="Revenir au chrono d’origine">↺</button>`:''}</div>
-        </div>`).join('')}
-      </details>`; }).join('')}</div>
+    <div class="req-sub">${_esc((MODELS[s.modelId]||{}).name||'')} · ${_esc(s.serie||'')} · ${_esc(s.projet||'')} · total retenu <b>${hm(tot)}</b><br>Étape → sous-étape → lignes : chaque temps est modifiable. La checklist d’origine n’est pas modifiée.</div>
+    <div class="tc-tools"><button class="btn btn-outline btn-sm" onclick="tcExpand(true)">Tout déplier</button><button class="btn btn-outline btn-sm" onclick="tcExpand(false)">Tout replier</button>
+      <details class="tc-quick"><summary>⚡ Correction rapide</summary>
+        <div class="tc-modes"><button id="tcModeSub" class="on" onclick="tcMode('sub')">− Retirer</button><button id="tcModeAdd" onclick="tcMode('add')">+ Ajouter</button></div>
+        <div class="tc-bar"><input id="tcDur" value="39h15" style="width:90px" placeholder="ex. 1h30"><button class="btn btn-outline btn-sm" id="tcLongBtn" onclick="tcCheckLong()">Cocher les sous-étapes plus longues</button></div>
+        <div class="tc-hint">Cochez les sous-étapes (case à gauche de leur nom), puis appliquez.</div>
+        <button class="btn btn-primary btn-sm" id="tcGo" onclick="tcApply('${s.id}')">Retirer aux sous-étapes cochées</button>
+      </details></div>
+    <div class="tc-acc">${groups.map(g=>`<details class="tc-step" data-k="s${g.si}" ${prev.includes('s'+g.si)?'open':''}>
+        <summary><span class="tc-chev">▸</span><span class="tc-sn">${g.si+1}</span><span class="tc-st">${g.icon?g.icon+' ':''}${_esc(g.name)}</span>${g.nc?`<span class="tc-badge">${g.nc} corrigée${g.nc>1?'s':''}</span>`:''}<span class="tc-tot ${g.total?'':'zero'}">${hm(g.total)}</span></summary>
+        <div class="tc-subs">${g.subs.map(u=>`<details class="tc-sub" data-k="u${u.si}_${u.itemId}" ${prev.includes('u'+u.si+'_'+u.itemId)?'open':''}>
+          <summary><span class="tc-chev">▸</span><input type="checkbox" class="tc-cb" data-k="${u.head.key}" data-tot="${u.total}" onclick="event.stopPropagation()" ${u.total>=dflt&&!u.nc?'checked':''} title="Sélection pour la correction rapide"><span class="tc-st">${_esc(u.label)}${u.running?` <span class="tc-run">⏱ chrono en cours · ${hm(u.live)}</span>`:''}</span>${u.nc?`<span class="tc-badge">${u.nc}</span>`:''}<span class="tc-tot ${u.total?'':'zero'}">${hm(u.total)}</span></summary>
+          ${u.running?`<div class="tc-note">Ce chrono tourne encore : son temps n’est compté qu’une fois arrêté (dernière ligne cochée par le technicien).</div>`:''}
+          ${line(u.head)}${u.lines.map(line).join('')}
+        </details>`).join('')}</div>
+      </details>`).join('')}</div>
     <div class="req-err" id="tcErr"></div>
     <div class="req-actions"><button class="btn btn-outline" onclick="document.getElementById('tcOverlay').remove()">Fermer</button></div></div>`;
-  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov); window._tcRows=rows; window._tcMode='sub';
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov); window._tcE=E; window._tcMode='sub';
   ov.querySelector('.tc-acc').scrollTop=scroll;
 }
-function tcOpenSteps(){ return [...document.querySelectorAll('#tcOverlay details.tc-step[open]')].map(d=>+d.dataset.si); }
+async function tcSave(sid,mutator){
+  const cur=JSON.parse(JSON.stringify(corrMap[String(sid)]||{items:{},log:[]})); if(!cur.items) cur.items={}; mutator(cur); corrMap[String(sid)]=cur;
+  try{ await window._fsSetDoc(window._fsDoc(window._db,'timeCorrections',String(sid)),cur); }catch(e){ alert('Correction non enregistrée : '+(e.message||e)); return false; }
+  const d=document.getElementById('scDashboard'); if(d&&d.classList.contains('active')&&typeof renderDashboard==='function') renderDashboard();
+  return true;
+}
+function tcOpenState(){ return [...document.querySelectorAll('#tcOverlay details[open][data-k]')].map(d=>d.dataset.k); }
+function tcExpand(on){ document.querySelectorAll('#tcOverlay .tc-acc details').forEach(d=>d.open=on); }
 function tcMode(m){ window._tcMode=m; const add=m==='add';
   document.getElementById('tcModeSub').classList.toggle('on',!add); document.getElementById('tcModeAdd').classList.toggle('on',add);
-  document.getElementById('tcDurLbl').textContent=add?'Durée à ajouter':'Durée à retirer'; document.getElementById('tcLongBtn').style.display=add?'none':'';
-  document.getElementById('tcGo').textContent=add?'Ajouter la durée aux lignes cochées':'Retirer la durée aux lignes cochées';
+  document.getElementById('tcLongBtn').style.display=add?'none':''; document.getElementById('tcGo').textContent=add?'Ajouter aux sous-étapes cochées':'Retirer aux sous-étapes cochées';
   document.getElementById('tcDur').value=add?'':'39h15'; if(add) document.querySelectorAll('#tcOverlay .tc-cb').forEach(cb=>cb.checked=false); }
-function tcCheckLong(){ const d=parseHM(document.getElementById('tcDur').value); const open=new Set();
-  document.querySelectorAll('#tcOverlay .tc-cb').forEach(cb=>{ const r=window._tcRows[+cb.dataset.i]; cb.checked=r.raw+r.c>=d; if(cb.checked) open.add(r.si); });
-  document.querySelectorAll('#tcOverlay details.tc-step').forEach(d=>{ if(open.has(+d.dataset.si)) d.open=true; }); }
-async function tcSetRow(sid,i){
-  const r=window._tcRows[i], v=document.getElementById('tcv_'+i).value; const target=parseHM(v);
-  if(String(v).trim()===''||target<0){ document.getElementById('tcErr').textContent='Temps invalide : écrivez par exemple 1h30, 45 ou 0h20.'; return; }
-  const k=r.si+'_'+r.itemId, c=target-r.raw, keep=tcOpenSteps();
-  const ok=await tcSave(sid,cur=>{ if(c) cur.items[k]=c; else delete cur.items[k]; cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key:k,set:target,delta:c-(r.c||0)},...(cur.log||[])].slice(0,100); });
+function tcCheckLong(){ const d=parseHM(document.getElementById('tcDur').value);
+  document.querySelectorAll('#tcOverlay .tc-cb').forEach(cb=>{ cb.checked=+cb.dataset.tot>=d; if(cb.checked){ const st=cb.closest('.tc-step'); if(st) st.open=true; } }); }
+async function tcSetRow(sid,e){
+  const r=window._tcE[e], v=document.getElementById('tcv_'+e).value, target=parseHM(v);
+  if(String(v).trim()===''||isNaN(target)||target<0){ document.getElementById('tcErr').textContent='Temps invalide : écrivez par exemple 1h30, 0h45 ou 45 (minutes).'; return; }
+  const c=Math.round(target-r.raw), keep=tcOpenState();
+  const ok=await tcSave(sid,cur=>{ if(c) cur.items[r.key]=c; else delete cur.items[r.key]; cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key:r.key,set:target,delta:c-(r.c||0)},...(cur.log||[])].slice(0,100); });
   if(ok) openTimeCorr(sid,keep);
 }
 async function tcApply(sid){
-  const d=parseHM(document.getElementById('tcDur').value); if(d<=0){ document.getElementById('tcErr').textContent='Indiquez une durée, par exemple 39h15 ou 1h30.'; return; }
-  const sel=[...document.querySelectorAll('#tcOverlay .tc-cb:checked')].map(cb=>window._tcRows[+cb.dataset.i]);
-  if(!sel.length){ document.getElementById('tcErr').textContent='Cochez au moins une ligne dans les étapes.'; return; }
-  const keep=tcOpenSteps();
-  if(window._tcMode==='add'){
-    const ok=await tcSave(sid,cur=>{ sel.forEach(r=>{ const k=r.si+'_'+r.itemId; cur.items[k]=(cur.items[k]||0)+d; cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key:k,delta:d},...(cur.log||[])].slice(0,100); }); });
-    if(ok) openTimeCorr(sid,keep); return;
-  }
-  const tooShort=sel.filter(r=>r.raw+r.c<d); if(tooShort.length&&!confirm(`${tooShort.length} ligne(s) ont un temps inférieur à ${hm(d)} : leur temps sera ramené à 0. Continuer ?`)) return;
-  const ok=await tcSave(sid,cur=>{ sel.forEach(r=>{ const k=r.si+'_'+r.itemId; const remain=r.raw+(cur.items[k]||0); cur.items[k]=(cur.items[k]||0)-Math.min(d,remain);
-    cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key:k,delta:-Math.min(d,remain)},...(cur.log||[])].slice(0,100); }); });
+  const d=parseHM(document.getElementById('tcDur').value); if(!(d>0)){ document.getElementById('tcErr').textContent='Indiquez une durée, par exemple 39h15 ou 1h30.'; return; }
+  const sel=[...document.querySelectorAll('#tcOverlay .tc-cb:checked')].map(cb=>({key:cb.dataset.k,tot:+cb.dataset.tot}));
+  if(!sel.length){ document.getElementById('tcErr').textContent='Cochez au moins une sous-étape.'; return; }
+  const keep=tcOpenState(), add=window._tcMode==='add';
+  if(!add){ const short=sel.filter(x=>x.tot<d); if(short.length&&!confirm(`${short.length} sous-étape(s) ont un temps inférieur à ${hm(d)} : leur temps sera ramené à 0. Continuer ?`)) return; }
+  const ok=await tcSave(sid,cur=>{ sel.forEach(x=>{ const delta=add?d:-Math.min(d,Math.max(0,x.tot)); cur.items[x.key]=(cur.items[x.key]||0)+delta; if(!cur.items[x.key]) delete cur.items[x.key];
+    cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key:x.key,delta},...(cur.log||[])].slice(0,100); }); });
   if(ok) openTimeCorr(sid,keep);
 }
-async function tcUndo(sid,si,itemId){ const k=si+'_'+itemId, keep=tcOpenSteps(); const ok=await tcSave(sid,cur=>{ delete cur.items[k]; cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key:k,delta:0,undo:true},...(cur.log||[])].slice(0,100); }); if(ok) openTimeCorr(sid,keep); }
+async function tcUndoKey(sid,key){ const keep=tcOpenState(); const ok=await tcSave(sid,cur=>{ delete cur.items[key]; cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key,delta:0,undo:true},...(cur.log||[])].slice(0,100); }); if(ok) openTimeCorr(sid,keep); }
+async function tcUndo(sid,si,itemId){ return tcUndoKey(sid,si+'_'+itemId); }
 
 // ---------- KPI Industrie 4.0 (tableau de bord) ----------
 function renderI40Section(monthSessions){
