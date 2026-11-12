@@ -318,6 +318,50 @@ body.tv-mode .tv-exit:hover{opacity:1}
 .bin-ok{width:100%;padding:14px;font-size:16px;margin-top:4px}
 .bin-empty{width:100%;margin-top:8px;padding:11px;border-radius:8px;border:1px solid #ff9f1a88;background:#ff9f1a14;color:#ffc46b;font-weight:700;font-family:var(--font);cursor:pointer}
 .bin-hist{margin-top:10px;font-size:11px;color:var(--text3);line-height:1.6}
+.pl-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.pl-kpi{display:flex;gap:16px;font-size:12px;color:var(--text3);margin-top:4px}.pl-kpi b{color:#fff;font-size:15px;margin-left:4px}
+.pl-tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.pl-wk{font-size:13px;color:var(--text2);min-width:150px;text-align:center}
+.pl-body{display:flex;gap:12px;align-items:flex-start}
+.pl-back{width:280px;flex-shrink:0;max-height:calc(100vh - 200px);overflow:auto;background:#00364a;border:1px solid var(--border);border-radius:10px;padding:10px}
+.pl-back h3{font-size:14px;margin-bottom:4px}.pl-hint{font-size:11px;color:var(--text3);margin-bottom:8px}
+.pl-bg{border-top:1px solid var(--border);padding:6px 0}.pl-bg summary{cursor:pointer;font-size:12.5px;padding:3px 0}
+.pl-bi{font-size:12px;padding:7px 8px;margin:4px 0;border-radius:6px;background:var(--surface);border:1px solid var(--border);cursor:grab;display:flex;justify-content:space-between;gap:6px}
+.pl-bi span{color:var(--text3);white-space:nowrap}.pl-bi.step{border-style:dashed;color:#9fdcff}
+.pl-bi.sel,.pl-task.sel{outline:2px solid #f2c230;outline-offset:1px}
+.pl-grid-wrap{flex:1;overflow-x:auto}
+.pl-grid{width:100%;border-collapse:separate;border-spacing:4px;min-width:760px}
+.pl-grid th{font-size:12px;color:var(--text2);font-weight:600;padding:6px;text-align:left}.pl-grid th.today{color:#7fe3d8}
+.pl-tech{width:120px;vertical-align:top;font-size:13px !important;color:#fff !important}
+.pl-cell{vertical-align:top;background:#00364a;border:1px solid var(--border);border-radius:8px;padding:6px;min-width:130px;height:90px}
+.pl-cell.today{border-color:#2aa99e88}.pl-cell.target{cursor:copy;border-style:dashed;border-color:#f2c23088}.pl-cell.over{background:#0086c233}
+.pl-load{height:4px;background:#ffffff14;border-radius:2px;overflow:hidden}.pl-load span{display:block;height:100%;background:var(--accent)}.pl-load span.over{background:#ff6b62}
+.pl-lt{font-size:10px;color:var(--text3);margin:2px 0 4px}
+.pl-task{position:relative;font-size:11.5px;padding:6px 22px 6px 7px;margin-top:4px;border-radius:6px;background:var(--surface);border-left:3px solid #7a8b92;line-height:1.35}
+.pl-task span{color:var(--text3)}.pl-task i{display:block;font-style:normal;font-size:10px;font-weight:700;margin-top:2px}
+.pl-task.todo{border-left-color:#7a8b92}.pl-task.run{border-left-color:#2ee07a}.pl-task.run i{color:#2ee07a}.pl-task.done{border-left-color:#2aa99e;opacity:.6}.pl-task.done i{color:#7fe3d8}
+.pl-task.late{border-left-color:#ff3b30}.pl-task.late i{color:#ff8a82}.pl-task.part{border-left-color:#f2c230}.pl-task.part i{color:#ffd27a}.pl-task.gone{opacity:.4}
+.pl-del{position:absolute;top:3px;right:3px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px}
+.pl-empty{font-size:12px;color:var(--text3);padding:14px;text-align:center}
+@media (max-width:900px){ .pl-body{flex-direction:column} .pl-back{width:100%;max-height:300px} }
+body.tv-mode #scPlanTv{position:fixed;inset:0;z-index:3000;background:#04222d;display:block !important;overflow:hidden}
+#planTvBody{height:100vh;display:flex;flex-direction:column;padding:16px;gap:12px;color:#fff}
+.pt-top{display:flex;align-items:center;gap:20px}.pt-brand{font-family:var(--font-title);font-size:30px;letter-spacing:2px}
+.pt-kpis{display:flex;gap:28px;flex:1;justify-content:center}.pt-kpis div{text-align:center}.pt-kpis b{display:block;font-size:40px;line-height:1;color:#7fe3d8}.pt-kpis b.bad{color:#ff6b62}.pt-kpis span{font-size:13px;color:#a9cad4}
+.pt-clock{font-size:40px;font-weight:700;text-align:right;line-height:1}.pt-clock small{display:block;font-size:13px;font-weight:400;color:#a9cad4;margin-top:4px}
+.pt-andon{display:flex;gap:8px;flex-wrap:wrap}.pt-andon span{padding:8px 12px;border-radius:8px;font-size:16px;font-weight:700;animation:andonBlink 1.2s infinite}.pt-andon .red{background:#ff3b30}.pt-andon .orange{background:#ff9f1a;color:#1a0d00}
+.pt-cols{flex:1;display:grid;gap:12px;min-height:0}
+.pt-col{background:#06303f;border:1px solid #14495a;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.pt-tech{font-size:22px;font-weight:700;display:flex;justify-content:space-between;align-items:baseline}.pt-tech span{font-size:13px;color:#a9cad4;font-weight:400}
+.pt-cur{border-radius:10px;padding:12px;background:#2ee07a1f;border:2px solid #2ee07a}.pt-cur.pause{background:#f2c2301f;border-color:#f2c230}.pt-cur.idle{background:#ffffff08;border:2px dashed #14495a;color:#78a2ae}
+.pt-cur small{font-size:13px;font-weight:700;color:#2ee07a}.pt-cur.pause small{color:#f2c230}.pt-cur b{display:block;font-size:24px;margin:4px 0}.pt-cur div{font-size:16px;color:#d8eef3}
+.pt-chrono{font-size:30px !important;font-weight:700;color:#fff !important;margin-top:6px;font-variant-numeric:tabular-nums}.pt-chrono span{font-size:15px;color:#a9cad4;font-weight:400}
+.pt-next{display:flex;flex-direction:column;gap:6px;overflow:hidden}.pt-next div{font-size:15px;padding:8px 10px;border-radius:8px;background:#ffffff0a;border-left:4px solid #7a8b92;display:flex;justify-content:space-between;gap:8px}
+.pt-next div em{font-style:normal;min-width:0}
+.pt-chrono.over{color:#ff8a82 !important}
+body.tv-mode #scPlanTv .tv-exit{top:auto;bottom:14px;left:auto;right:14px;transform:none}
+.pt-next div span{color:#a9cad4;white-space:nowrap;font-size:13px}.pt-next .late{border-left-color:#ff3b30}.pt-next .late span{color:#ff8a82;font-weight:700}.pt-next .partial{border-left-color:#f2c230}.pt-next p{color:#78a2ae;font-size:14px}
+.pt-done{display:flex;gap:8px;overflow:hidden;white-space:nowrap;align-items:center;background:#06303f;border:1px solid #14495a;border-radius:10px;padding:10px 12px}.pt-done b{color:#7fe3d8;font-size:15px;margin-right:6px}
+.pt-done span{font-size:13px;background:#2aa99e22;border:1px solid #2aa99e66;border-radius:20px;padding:4px 10px}
 .tc-box{max-width:680px}
 .tc-quick{border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin:8px 0 10px;background:#00364a}
 .tc-quick summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--text2)}
@@ -537,7 +581,9 @@ body.tv-mode .tv-exit:hover{opacity:1}
     <button class="menu-item" onclick="closeAppMenu();showModelSelector()"><span class="menu-item-icon">⚙️</span> Sélection gamme</button>
     <button class="menu-item" onclick="closeAppMenu();showDashboard()"><span class="menu-item-icon">📊</span> Tableau de bord</button>
     <button class="menu-item" onclick="closeAppMenu();showAtelier(false)"><span class="menu-item-icon">🏭</span> Atelier 3D en direct</button>
-    <button class="menu-item" onclick="closeAppMenu();showAtelier(true)"><span class="menu-item-icon">📺</span> Écran atelier (TV)</button>
+    <button class="menu-item" onclick="closeAppMenu();showPlanning()"><span class="menu-item-icon">📋</span> Planning de production</button>
+    <button class="menu-item" onclick="closeAppMenu();showPlanTv()"><span class="menu-item-icon">📺</span> Écran planning (TV)</button>
+    <button class="menu-item" onclick="closeAppMenu();showAtelier(true)"><span class="menu-item-icon">🖥️</span> Écran atelier 3D (TV)</button>
     <button class="menu-item" onclick="closeAppMenu();showStock()"><span class="menu-item-icon">🗄️</span> Stock</button>
     <div class="menu-divider"></div>
     <button class="menu-item" onclick="closeAppMenu();showConditionnement()"><span class="menu-item-icon">📦</span> Conditionnement</button>
@@ -3945,7 +3991,7 @@ function validateOP(si,ii){
     if(miss.length){ alert(`⛔ Validation impossible\n\nValeur ohmique manquante pour ${miss.join(', ')}.`); return; }
   }
   if(!it.actions.every(Boolean)&&!confirm('Actions incomplètes. Valider quand même ?'))return;
-  it.opDone=true;it.opDate=new Date().toLocaleDateString('fr-FR');
+  it.opDone=true;it.opDate=new Date().toLocaleDateString('fr-FR');it.opAt=new Date().toISOString();
   if(!it.opName)it.opName=session.op;
   saveState();renderStep();
   // Mettre à jour la mise en rouge des pièces 3D
@@ -5010,6 +5056,18 @@ function updateStockLabel(){
   <iframe id="atelierFrame" title="Atelier 3D en direct" allow="fullscreen"></iframe>
   <button class="tv-exit" onclick="exitTv()">✕ Quitter l’écran atelier</button>
 </div>
+<div class="screen" id="scPlanning" style="max-width:100%">
+  <div class="pl-head">
+    <div><div class="project-title" style="font-size:26px">Planning de production</div><div class="pl-kpi" id="planKpi"></div></div>
+    <div class="pl-tools"><button class="btn btn-outline btn-sm" onclick="planWeekNav(-1)">◀</button><span id="planWeekLbl" class="pl-wk"></span><button class="btn btn-outline btn-sm" onclick="planWeekNav(1)">▶</button><button class="btn btn-outline btn-sm" onclick="planWeekNav(0)">Aujourd’hui</button>
+      <button class="btn btn-outline btn-sm plan-ed" onclick="planEditTeam()">👥 Équipe</button><button class="btn btn-primary btn-sm" onclick="showPlanTv()">📺 Écran TV</button></div>
+  </div>
+  <div class="pl-body" id="planBody"></div>
+</div>
+<div class="screen" id="scPlanTv" style="padding:0;max-width:100%;margin:0">
+  <div id="planTvBody"></div>
+  <button class="tv-exit" onclick="exitTv()">✕ Quitter l’écran planning</button>
+</div>
 <div class="screen" id="scStock">
   <div class="stk-head">
     <div><div class="project-title" style="font-size:26px">Stock</div><div style="font-size:12px;color:var(--text3)"><span id="stockCount"></span> · relié aux manques pièces et aux Andon</div></div>
@@ -5514,7 +5572,7 @@ function showAtelier(tv){
   if(tv){ try{ document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen(); }catch(e){} }
   i40Start(); setTimeout(i40Refresh,800);
 }
-function exitTv(){ if(document.body.classList.contains('tv-mode')){ document.body.classList.remove('tv-mode'); try{ document.fullscreenElement&&document.exitFullscreen(); }catch(e){} } }
+function exitTv(){ if(document.body.classList.contains('tv-mode')){ const wasPlan=document.getElementById('scPlanTv').classList.contains('active'); document.body.classList.remove('tv-mode'); try{ document.fullscreenElement&&document.exitFullscreen(); }catch(e){} if(wasPlan&&typeof showPlanning==='function') showPlanning(); } }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') exitTv(); });
 
 // ---------- e-Andon ----------
@@ -5857,6 +5915,161 @@ async function tcApply(sid){
 async function tcUndoKey(sid,key){ const keep=tcOpenState(); const ok=await tcSave(sid,cur=>{ delete cur.items[key]; cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key,delta:0,undo:true},...(cur.log||[])].slice(0,100); }); if(ok) openTimeCorr(sid,keep); }
 async function tcUndo(sid,si,itemId){ return tcUndoKey(sid,si+'_'+itemId); }
 
+
+// ===================== PLANNING DE PRODUCTION =====================
+const PLAN_EDITORS=['nordine.sakhri@enogia.com','nicolas.stamboul@enogia.com'];   // + chef d'équipe à ajouter
+// Équipe montage, rangée par ordre alphabétique des noms
+const DEFAULT_TECHS=['Adrien Caulier','Kesil Copol','Thibault Devarieux','David Felici','Corentin Pene','Alexandre Trovato'];
+const lastName=n=>{ const p=String(n).trim().split(/\s+/); return (p.length>1?p.slice(1).join(' '):p[0]).toLowerCase(); };
+const sortTechs=a=>[...new Set(a.map(x=>String(x).trim().replace(/\s+/g,' ')).filter(Boolean))].sort((x,y)=>lastName(x).localeCompare(lastName(y),'fr')||x.localeCompare(y,'fr'));
+let planTasks=[], planTeam={techs:DEFAULT_TECHS.slice(),capH:7}, planWeek=null, planSel=null, planStarted=false, planTvTimer=null;
+const isPlanner=()=>PLAN_EDITORS.includes(((window._currentUser&&window._currentUser.email)||'').toLowerCase());
+const dKey=d=>{ const x=new Date(d); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`; };
+const todayKey=()=>dKey(new Date());
+function mondayOf(d){ const x=new Date(d); x.setHours(0,0,0,0); const k=(x.getDay()+6)%7; x.setDate(x.getDate()-k); return x; }
+function weekKeys(){ const m=planWeek||mondayOf(new Date()); return [0,1,2,3,4].map(i=>{ const d=new Date(m); d.setDate(d.getDate()+i); return dKey(d); }); }
+const dayLbl=k=>new Date(k+'T12:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+function planStart(){
+  if(planStarted||!window._fsOnSnapshot||!window._db) return; planStarted=true;
+  const F=fs();
+  F.snap(F.col(F.db,'planning'),s=>{ planTasks=s.docs.map(d=>({id:d.id,...d.data()})); planRerender(); },e=>console.warn('planning',e));
+  F.snap(F.doc(F.db,'planConfig','team'),d=>{
+    const data=d.exists()?d.data():null;
+    if(!data||data.v!==2){ planTeam={techs:sortTechs(DEFAULT_TECHS),capH:(data&&data.capH)||7,v:2}; if(isPlanner()) F.set(F.doc(F.db,'planConfig','team'),planTeam).catch(()=>{}); }
+    else planTeam={capH:7,...data,techs:sortTechs(data.techs||[])};
+    planRerender(); },e=>console.warn('planConfig',e));
+}
+document.addEventListener('firebaseReady',()=>setTimeout(planStart,600));
+function planRerender(){ const a=id=>{ const e=document.getElementById(id); return e&&e.classList.contains('active'); }; if(a('scPlanning')) renderPlanning(); if(a('scPlanTv')) renderPlanTv(); }
+
+// ---------- état réel d'une tâche, lu dans les checklists ----------
+function itemDoneAt(it){ if(it.opAt) return it.opAt; const t=it.actionTimers&&it.actionTimers.item; if(t&&t.stopped) return t.stopped; if(it.opDate){ const m=String(it.opDate).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m) return new Date(+m[3],+m[2]-1,+m[1],12).toISOString(); } return null; }
+function taskItems(t){ const s=liveSessions.find(x=>String(x.id)===String(t.sessionId))||sessions.find(x=>String(x.id)===String(t.sessionId)); if(!s) return null; const st=(s.steps||[])[t.si]; if(!st) return null; return {s,items:t.itemId?(st.items||[]).filter(i=>i.id===t.itemId):(st.items||[])}; }
+function taskStatus(t){
+  const r=taskItems(t); if(!r||!r.items.length) return {st:'gone'};
+  const done=r.items.every(i=>i.opDone); let doneAt=null, real=0, live=0, running=false, paused=false, started=false;
+  r.items.forEach(i=>{ const tm=i.actionTimers&&i.actionTimers.item; if(i.opDone){ started=true; const d=itemDoneAt(i); if(d&&(!doneAt||d>doneAt)) doneAt=d; }
+    real+=rawItemSeconds(i)+(typeof timeCorr==='function'?timeCorr(r.s.id,t.si,i.id):0);
+    if(tm&&tm.started&&!tm.stopped){ started=true; if(tm.paused) paused=true; else { running=true; live+=(tm.seconds||0)+(Date.now()-new Date(tm.runningSince||tm.started))/1000; } } });
+  const opName=(r.s.steps[t.si]&&r.s.steps[t.si].stepOp)||r.items.map(i=>i.opName).find(Boolean)||r.s.op||'';
+  if(done) return {st:'done',doneAt,real,opName};
+  if(running||paused) return {st:paused?'pause':'run',live:Math.round(live),real,opName};
+  if(t.date<todayKey()) return {st:'late',real,opName,started};
+  return {st:started?'partial':'todo',real,opName};
+}
+function stdFor(s,si,itemId){ const std=stdTimes(); const st=(s.steps||[])[si]; return std[`${s.modelId||'eno180ltv3'}|${st&&st.id}|${itemId}`]||null; }
+function planBacklog(){
+  const out=[];
+  (liveSessions.length?liveSessions:sessions).forEach(s=>{ if(calcProgress(s).pct>=100) return;
+    const model=MODELS[s.modelId]||MODELS.eno180ltv3, steps=model.getSteps();
+    (s.steps||[]).forEach((st,si)=>{ const stepPlanned=planTasks.some(t=>String(t.sessionId)===String(s.id)&&t.si===si&&!t.itemId); if(stepPlanned) return;
+      const items=(st.items||[]).map((it,ii)=>({it,def:(steps[si]||{items:[]}).items[ii]||{label:it.id}})).filter(x=>!x.it.opDone&&!planTasks.some(t=>String(t.sessionId)===String(s.id)&&t.si===si&&t.itemId===x.it.id));
+      if(!items.length) return;
+      out.push({sid:s.id,sn:s.serie&&s.serie!=='–'?s.serie:(s.projet||'Sans n°'),model:model.name,si,stepName:(steps[si]||{}).name||st.id,icon:(steps[si]||{}).icon||'',
+        items:items.map(x=>({itemId:x.it.id,label:x.def.label,std:stdFor(s,si,x.it.id)}))});
+    }); });
+  return out;
+}
+const taskStd=t=>t.std||1800;
+function techLoad(tech,date){ return planTasks.filter(t=>t.tech===tech&&t.date===date).reduce((a,t)=>a+taskStd(t),0); }
+
+// ---------- actions ----------
+async function planWrite(t){ const F=fs(); const i=planTasks.findIndex(x=>x.id===t.id); if(i>=0) planTasks[i]=t; else planTasks.push(t); planRerender(); try{ await F.set(F.doc(F.db,'planning',t.id),t); }catch(e){ alert('Planning non enregistré : '+(e.message||e)); } }
+async function planRemove(id){ const F=fs(); planTasks=planTasks.filter(x=>x.id!==id); planRerender(); try{ await F.del(F.doc(F.db,'planning',id)); }catch(e){} }
+function planPick(data){ if(!isPlanner()) return; planSel=(planSel&&JSON.stringify(planSel)===JSON.stringify(data))?null:data; renderPlanning(); }
+function planDrop(tech,date,data){
+  data=data||planSel; if(!data||!isPlanner()) return; planSel=null;
+  const who=(window._currentUser&&window._currentUser.email)||'';
+  if(data.kind==='task'){ const t=planTasks.find(x=>x.id===data.id); if(t) planWrite({...t,tech,date}); return; }
+  const b=planBacklog().find(x=>String(x.sid)===String(data.sid)&&x.si===data.si); if(!b) return;
+  if(data.itemId){ const it=b.items.find(i=>i.itemId===data.itemId); if(!it) return;
+    planWrite({id:'pl'+Date.now().toString(36),sessionId:b.sid,sn:b.sn,model:b.model,si:b.si,stepName:b.stepName,itemId:it.itemId,label:it.label,std:it.std,tech,date,createdBy:who,createdAt:nowIso()}); }
+  else { planWrite({id:'pl'+Date.now().toString(36),sessionId:b.sid,sn:b.sn,model:b.model,si:b.si,stepName:b.stepName,itemId:null,label:'Étape entière',std:b.items.reduce((a,i)=>a+(i.std||1800),0),tech,date,createdBy:who,createdAt:nowIso()}); }
+}
+function planDragStart(ev,data){ ev.dataTransfer.setData('text/plain',JSON.stringify(data)); ev.dataTransfer.effectAllowed='move'; }
+function planDropEv(ev,tech,date){ ev.preventDefault(); ev.currentTarget.classList.remove('over'); try{ planDrop(tech,date,JSON.parse(ev.dataTransfer.getData('text/plain'))); }catch(e){} }
+function planWeekNav(n){ const m=planWeek||mondayOf(new Date()); const d=new Date(m); d.setDate(d.getDate()+n*7); planWeek=n===0?mondayOf(new Date()):d; renderPlanning(); }
+async function planSaveTeam(){ const F=fs(); const raw=(document.getElementById('planTeamTxt')||{}).value||''; const cap=parseFloat((document.getElementById('planCap')||{}).value)||7;
+  const techs=sortTechs(raw.split('\n')); planTeam={techs,capH:cap,v:2}; try{ await F.set(F.doc(F.db,'planConfig','team'),planTeam); }catch(e){ alert('Équipe non enregistrée : '+(e.message||e)); } document.getElementById('planTeamOv').remove(); renderPlanning(); }
+function planEditTeam(){
+  const known=new Set(planTeam.techs); (liveSessions.length?liveSessions:sessions).forEach(s=>{ [s.op,...(s.steps||[]).map(st=>st.stepOp)].forEach(n=>{ if(n&&String(n).trim()) known.add(String(n).trim()); }); });
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='planTeamOv';
+  ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()"><h3>👥 Équipe planifiée</h3><div class="req-sub">Un technicien par ligne (Prénom Nom). La liste est rangée automatiquement par ordre alphabétique des noms à l’enregistrement.</div>
+    <textarea id="planTeamTxt" style="min-height:180px">${_esc((planTeam.techs.length?planTeam.techs:DEFAULT_TECHS).join('\n'))}</textarea>
+    <label>Capacité par technicien et par jour (heures)</label><input id="planCap" type="number" step="0.5" value="${planTeam.capH||7}">
+    <div class="req-actions"><button class="btn btn-outline" onclick="document.getElementById('planTeamOv').remove()">Annuler</button><button class="btn btn-primary" onclick="planSaveTeam()">Enregistrer</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov);
+}
+
+// ---------- KPI respect planning ----------
+function planRespect(keys,tech){
+  const tk=todayKey(); let plan=0, ok=0;
+  planTasks.filter(t=>keys.includes(t.date)&&t.date<=tk&&(!tech||t.tech===tech)).forEach(t=>{ const s=taskStatus(t); if(s.st==='gone') return; plan++; if(s.st==='done'&&s.doneAt&&dKey(s.doneAt)<=t.date) ok++; });
+  return {plan,ok,pct:plan?Math.round(ok/plan*100):null};
+}
+function lastDays(n){ const out=[]; for(let i=0;i<n;i++){ const d=new Date(); d.setDate(d.getDate()-i); if(d.getDay()!==0&&d.getDay()!==6) out.push(dKey(d)); } return out; }
+function doneToday(){
+  const tk=todayKey(), out=[];
+  (liveSessions.length?liveSessions:sessions).forEach(s=>{ const steps=(MODELS[s.modelId]||MODELS.eno180ltv3).getSteps();
+    (s.steps||[]).forEach((st,si)=>(st.items||[]).forEach((it,ii)=>{ if(!it.opDone) return; const d=itemDoneAt(it); if(!d||dKey(d)!==tk) return;
+      const planned=planTasks.find(t=>String(t.sessionId)===String(s.id)&&t.si===si&&(!t.itemId||t.itemId===it.id));
+      out.push({at:d,sn:s.serie&&s.serie!=='–'?s.serie:s.projet,step:(steps[si]||{}).name||'',label:((steps[si]||{items:[]}).items[ii]||{}).label||it.id,tech:planned?planned.tech:(it.opName||s.op||''),planned:!!planned}); })); });
+  return out.sort((a,b)=>b.at.localeCompare(a.at));
+}
+
+// ---------- écran Planning (édition) ----------
+function showPlanning(){ exitTv(); showScreen('scPlanning'); i40Start(); planStart(); renderPlanning(); }
+function renderPlanning(){
+  const el=document.getElementById('planBody'); if(!el) return; const ed=isPlanner(), keys=weekKeys(), tk=todayKey(), cap=(planTeam.capH||7)*3600;
+  const techs=planTeam.techs.length?planTeam.techs:[...new Set(planTasks.map(t=>t.tech))];
+  document.getElementById('planWeekLbl').textContent=`Semaine du ${new Date(keys[0]+'T12:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long'})}`;
+  const rw=planRespect(lastDays(7)), rd=planRespect([tk]);
+  document.getElementById('planKpi').innerHTML=`<span>Respect du jour <b>${rd.pct==null?'—':rd.pct+' %'}</b> <small>${rd.ok}/${rd.plan}</small></span><span>Respect 7 jours <b>${rw.pct==null?'—':rw.pct+' %'}</b> <small>${rw.ok}/${rw.plan}</small></span>`;
+  document.querySelectorAll('.plan-ed').forEach(x=>x.style.display=ed?'':'none');
+  const back=planBacklog();
+  const chip=(t)=>{ const s=taskStatus(t); const cls={done:'done',run:'run',pause:'run',late:'late',partial:'part',todo:'todo',gone:'gone'}[s.st];
+    const sel=planSel&&planSel.kind==='task'&&planSel.id===t.id;
+    return `<div class="pl-task ${cls} ${sel?'sel':''}" ${ed?`draggable="true" ondragstart='planDragStart(event,${JSON.stringify({kind:'task',id:t.id})})' onclick='event.stopPropagation();planPick(${JSON.stringify({kind:'task',id:t.id})})'`:''}>
+      <b>${_esc(t.sn)}</b> · ${_esc(t.stepName)}<br><span>${_esc(t.itemId?t.label:'Étape entière')} · ${hm(taskStd(t))}${t.std?'':' (estimé)'}</span>
+      <i>${{done:'✓ Réalisée',run:'● En cours'+(s.live?' · '+hm(s.live):''),pause:'⏸ En pause',late:'⚠ En retard',partial:'Entamée',todo:'À faire',gone:'Machine terminée'}[s.st]}</i>
+      ${ed?`<button class="pl-del" onclick="event.stopPropagation();planRemove('${t.id}')" title="Retirer du planning">✕</button>`:''}</div>`; };
+  el.innerHTML=`
+    ${ed?`<aside class="pl-back"><h3>Tâches à planifier</h3>${planSel?`<div class="pl-hint">👉 Touchez une case (technicien / jour) pour placer la tâche sélectionnée.</div>`:`<div class="pl-hint">Glissez une tâche sur un technicien et un jour, ou touchez-la puis touchez la case.</div>`}
+      ${back.length?back.map(b=>`<details class="pl-bg" open><summary><b>${_esc(b.sn)}</b> · ${b.icon} ${_esc(b.stepName)}</summary>
+        <div class="pl-bi step ${planSel&&!planSel.itemId&&planSel.sid==b.sid&&planSel.si===b.si?'sel':''}" draggable="true" ondragstart='planDragStart(event,${JSON.stringify({kind:'backlog',sid:b.sid,si:b.si,itemId:null})})' onclick='planPick(${JSON.stringify({kind:'backlog',sid:b.sid,si:b.si,itemId:null})})'>▣ Étape entière (${b.items.length} sous-étapes · ${hm(b.items.reduce((a,i)=>a+(i.std||1800),0))})</div>
+        ${b.items.map(i=>`<div class="pl-bi ${planSel&&planSel.itemId===i.itemId&&planSel.sid==b.sid&&planSel.si===b.si?'sel':''}" draggable="true" ondragstart='planDragStart(event,${JSON.stringify({kind:'backlog',sid:b.sid,si:b.si,itemId:i.itemId})})' onclick='planPick(${JSON.stringify({kind:'backlog',sid:b.sid,si:b.si,itemId:i.itemId})})'>${_esc(i.label)} <span>${i.std?hm(i.std):'≈ 30 min'}</span></div>`).join('')}
+      </details>`).join(''):'<p class="pl-empty">Tout est planifié.</p>'}</aside>`:''}
+    <div class="pl-grid-wrap"><table class="pl-grid"><thead><tr><th>Technicien</th>${keys.map(k=>`<th class="${k===tk?'today':''}">${dayLbl(k)}</th>`).join('')}</tr></thead><tbody>
+      ${techs.length?techs.map(tech=>`<tr><th class="pl-tech">${_esc(tech)}</th>${keys.map(k=>{ const L=techLoad(tech,k), ts=planTasks.filter(t=>t.tech===tech&&t.date===k);
+        return `<td class="pl-cell ${k===tk?'today':''} ${planSel&&ed?'target':''}" ${ed?`ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="planDropEv(event,'${_esc(tech).replace(/'/g,"\\'")}','${k}')" onclick="planDrop('${_esc(tech).replace(/'/g,"\\'")}','${k}')"`:''}>
+          <div class="pl-load"><span style="width:${Math.min(100,L/cap*100)}%" class="${L>cap?'over':''}"></span></div><div class="pl-lt">${hm(L)} / ${planTeam.capH||7} h</div>${ts.map(chip).join('')}</td>`; }).join('')}</tr>`).join('')
+        :`<tr><td colspan="6" class="pl-empty">${ed?'Commencez par définir l’équipe avec le bouton « 👥 Équipe ».':'Aucun planning pour le moment.'}</td></tr>`}
+    </tbody></table></div>`;
+}
+
+// ---------- écran TV planning ----------
+function showPlanTv(){ showScreen('scPlanTv'); document.body.classList.add('tv-mode'); try{ document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen(); }catch(e){} i40Start(); planStart(); renderPlanTv();
+  clearInterval(planTvTimer); planTvTimer=setInterval(()=>{ if(document.getElementById('scPlanTv').classList.contains('active')) renderPlanTv(); else clearInterval(planTvTimer); },1000); }
+function renderPlanTv(){
+  const el=document.getElementById('planTvBody'); if(!el) return; const tk=todayKey();
+  const techs=planTeam.techs.length?planTeam.techs:[...new Set(planTasks.filter(t=>t.date===tk).map(t=>t.tech))];
+  const rd=planRespect([tk]), rw=planRespect(lastDays(7)), dt=doneToday(), openA=andonList.filter(a=>!a.resolvedAt);
+  const tasksOf=tech=>planTasks.filter(t=>t.tech===tech&&(t.date===tk||(t.date<tk&&taskStatus(t).st!=='done'&&taskStatus(t).st!=='gone')));
+  el.innerHTML=`<div class="pt-top"><div class="pt-brand">ENOGIA · Planning atelier</div><div class="pt-kpis">
+      <div><b class="${rd.pct!=null&&rd.pct<80?'bad':''}">${rd.pct==null?'—':rd.pct+' %'}</b><span>respect du jour (${rd.ok}/${rd.plan})</span></div>
+      <div><b>${rw.pct==null?'—':rw.pct+' %'}</b><span>respect 7 jours</span></div><div><b>${dt.length}</b><span>tâches réalisées aujourd’hui</span></div>
+      <div><b class="${openA.length?'bad':''}">${openA.length}</b><span>Andon ouvert${openA.length>1?'s':''}</span></div></div>
+      <div class="pt-clock">${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}<small>${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</small></div></div>
+    ${openA.length?`<div class="pt-andon">${openA.map(a=>`<span class="${a.color}">🚨 ${_esc(a.sn||'')} · ${_esc(a.stepName||'')} — ${_esc(a.reason)} · ${fmtMin(minsSince(a.createdAt))}</span>`).join('')}</div>`:''}
+    <div class="pt-cols" style="grid-template-columns:repeat(${Math.max(1,techs.length)},minmax(0,1fr))">${techs.map(tech=>{ const ts=tasksOf(tech).map(t=>({t,s:taskStatus(t)})).filter(x=>x.s.st!=='gone');
+      const cur=ts.find(x=>x.s.st==='run'||x.s.st==='pause'), todo=ts.filter(x=>x!==cur&&x.s.st!=='done').sort((a,b)=>(a.s.st==='late'?0:1)-(b.s.st==='late'?0:1)), done=ts.filter(x=>x.s.st==='done');
+      const L=ts.reduce((a,x)=>a+taskStd(x.t),0);
+      return `<div class="pt-col"><div class="pt-tech">${_esc(tech)}<span>${done.length}/${ts.length} · ${hm(L)}</span></div>
+        ${cur?`<div class="pt-cur ${cur.s.st}"><small>${cur.s.st==='pause'?'⏸ En pause':'● En cours'}</small><b>${_esc(cur.t.sn)}</b><div>${_esc(cur.t.stepName)}${cur.t.itemId?' › '+_esc(cur.t.label):''}</div><div class="pt-chrono ${(cur.s.live||0)>taskStd(cur.t)*1.1?'over':''}">${hm(cur.s.live||0)}<span> / ${hm(taskStd(cur.t))}</span></div></div>`:`<div class="pt-cur idle"><small>Aucune tâche en cours</small></div>`}
+        <div class="pt-next">${todo.map(x=>`<div class="${x.s.st}"><em><b>${_esc(x.t.sn)}</b> · ${_esc(x.t.stepName)}${x.t.itemId?' › '+_esc(x.t.label):''}</em><span>${x.s.st==='late'?'⚠ en retard':x.s.st==='partial'?'entamée':hm(taskStd(x.t))}</span></div>`).join('')||'<p>Rien d’autre de prévu aujourd’hui.</p>'}</div></div>`; }).join('')||'<div class="pt-col"><p>Aucun planning défini pour aujourd’hui.</p></div>'}</div>
+    <div class="pt-done"><b>✓ Réalisées aujourd’hui</b>${dt.slice(0,14).map(d=>`<span>${new Date(d.at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})} · ${_esc(d.sn)} · ${_esc(d.label)} · ${_esc(d.tech)}${d.planned?'':' · hors planning'}</span>`).join('')||'<span>Aucune tâche validée pour le moment.</span>'}</div>`;
+}
+
 // ---------- KPI Industrie 4.0 (tableau de bord) ----------
 function renderI40Section(monthSessions){
   const ms=new Set(monthSessions.map(s=>String(s.id))); const A=andonList.filter(a=>ms.has(String(a.sessionId)));
@@ -5876,7 +6089,10 @@ function renderI40Section(monthSessions){
     ${tile('✓ Résolution moyenne',solve==null?'—':solve+' min','appel → résolu','var(--accent)')}
     ${tile('🔁 Lead time moyen',lead==null?'—':lead+' h','démarrage → checklist terminée','var(--accent2)')}
     ${tile('🐢 En retard maintenant',late.length,'sous-étape > 130 % du standard','#f2c230')}
-    ${tile('📦 Articles à commander',alerts.length,`${stockList.length} articles suivis`,'#f0a500')}</div>`;
+    ${tile('📦 Articles à commander',alerts.length,`${stockList.length} articles suivis`,'#f0a500')}
+    ${(()=>{ const r=typeof planRespect==='function'?planRespect(lastDays(7)):{pct:null,ok:0,plan:0}; return tile('📅 Respect du planning',r.pct==null?'—':r.pct+' %',`${r.ok}/${r.plan} tâches à l’heure · 7 jours`,r.pct==null?'var(--text3)':r.pct>=90?'var(--accent)':r.pct>=70?'#f2c230':'#ff3b30'); })()}</div>`;
+  if(typeof planRespect==='function'&&planTeam.techs.length){ const days=lastDays(7); const rows=planTeam.techs.map(tc=>{ const r=planRespect(days,tc); const ts=planTasks.filter(x=>x.tech===tc&&days.includes(x.date)).map(x=>({x,s:taskStatus(x)})).filter(o=>o.s.st==='done'); const real=ts.reduce((a,o)=>a+(o.s.real||0),0), prev=ts.reduce((a,o)=>a+taskStd(o.x),0); return {tc,r,real,prev}; });
+    h+=`<div style="overflow-x:auto;margin-bottom:16px"><div style="font-size:12px;color:var(--text3);margin-bottom:6px">Respect du planning par technicien (7 derniers jours ouvrés)</div><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:480px"><tr style="color:var(--text3);font-size:10px;text-transform:uppercase;text-align:left"><th style="padding:5px">Technicien</th><th style="padding:5px">Respect</th><th style="padding:5px">Tâches à l’heure</th><th style="padding:5px">Temps réel / prévu</th></tr>${rows.map(o=>`<tr style="border-top:1px solid var(--border)"><td style="padding:5px">${_esc(o.tc)}</td><td style="padding:5px;font-weight:700;color:${o.r.pct==null?'var(--text3)':o.r.pct>=90?'var(--accent)':o.r.pct>=70?'#f2c230':'#ff6b62'}">${o.r.pct==null?'—':o.r.pct+' %'}</td><td style="padding:5px">${o.r.ok}/${o.r.plan}</td><td style="padding:5px">${o.prev?`${hm(o.real)} / ${hm(o.prev)} <span style="color:${o.real>o.prev*1.1?'#ff6b62':'var(--accent)'}">(${Math.round(o.real/o.prev*100)} %)</span>`:'—'}</td></tr>`).join('')}</table></div>`; }
   if(pTop.length) h+=`<div style="margin-bottom:14px"><div style="font-size:12px;color:var(--text3);margin-bottom:6px">Pareto des causes d’arrêt et d’appel</div>${pTop.map(([k,v])=>`<div style="display:grid;grid-template-columns:180px 1fr 30px;gap:8px;align-items:center;font-size:12px;margin:3px 0"><span>${_esc(k)}</span><span style="height:10px;border-radius:5px;background:#ff9f1a;width:${Math.round(v/pMax*100)}%"></span><b>${v}</b></div>`).join('')}</div>`;
   if(late.length) h+=`<div style="margin-bottom:14px;font-size:12px"><div style="color:var(--text3);margin-bottom:4px">Machines en retard</div>${late.map(m=>`<div>🐢 <b>${_esc(m.sn)}</b> — ${_esc(m.lateTxt)}</div>`).join('')}</div>`;
   if(stdRows.length) h+=`<div style="overflow-x:auto;margin-bottom:16px"><div style="font-size:12px;color:var(--text3);margin-bottom:6px">Temps standard par sous-étape (médiane des chronos terminés)</div><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:520px">${stdRows.map(r=>`<tr style="border-top:1px solid var(--border)"><td style="padding:5px">${_esc(r.m)}</td><td style="padding:5px;color:var(--text2)">${_esc(r.s)}</td><td style="padding:5px">${_esc(r.i)}</td><td style="padding:5px;text-align:right"><b>${fmtMin(Math.round(r.v/60))}</b></td></tr>`).join('')}</table></div>`;
