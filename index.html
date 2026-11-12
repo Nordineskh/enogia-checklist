@@ -318,6 +318,13 @@ body.tv-mode .tv-exit:hover{opacity:1}
 .bin-ok{width:100%;padding:14px;font-size:16px;margin-top:4px}
 .bin-empty{width:100%;margin-top:8px;padding:11px;border-radius:8px;border:1px solid #ff9f1a88;background:#ff9f1a14;color:#ffc46b;font-weight:700;font-family:var(--font);cursor:pointer}
 .bin-hist{margin-top:10px;font-size:11px;color:var(--text3);line-height:1.6}
+.tc-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 10px}
+.tc-list{max-height:52vh;overflow:auto;border:1px solid var(--border);border-radius:8px}
+.tc-row{display:flex !important;gap:10px;align-items:center;padding:9px 10px;border-top:1px solid var(--border);margin:0 !important;text-transform:none !important;letter-spacing:0 !important;font-size:13px !important;color:var(--text) !important;cursor:pointer}
+.tc-row:first-child{border-top:none}
+.tc-row input{width:auto !important;transform:scale(1.2)}
+.tc-row small{display:block;font-size:11px;color:var(--text3);margin-top:2px}
+.tc-undo{margin-left:auto;background:none;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer}
 .stk-cats{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px}
 .stk-cats button{background:#00364a;border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font)}
 .stk-cats button.on{background:var(--accent2);border-color:var(--accent2);color:#fff}
@@ -4508,8 +4515,9 @@ function computeStepTimesForSession(s){
       if(it.actionTimers){
         Object.values(it.actionTimers).forEach(t=>{ seconds += (t && t.seconds) || 0; });
       }
+      if(typeof timeCorr==='function') seconds += timeCorr(s.id, si, it.id);
     });
-    out.push({ stepId: st.id, stepLabel, seconds });
+    out.push({ stepId: st.id, stepLabel, seconds: Math.max(0,seconds) });
   });
   return out;
 }
@@ -4654,6 +4662,7 @@ function renderKPICard(s, isAdmin){
     <div class="kpi-bar-wrap"><div class="kpi-bar-label"><span>✋ OP</span><span style="color:${opC}">${opPct}%</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${opPct}%;background:${opC}"></div></div></div>
     <div class="kpi-bar-wrap" style="margin-top:6px"><div class="kpi-bar-label"><span>🔍 VE</span><span style="color:${veC}">${vePct}%</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${vePct}%;background:${veC}"></div></div></div>
     <div style="margin-top:10px"><textarea placeholder="Commentaire / notes..." style="width:100%;height:50px;font-size:12px;resize:none" ${isAdmin?'onchange="updateDash('+s.id+',\'comment\',this.value)"':' readonly'}>${dash.comment||''}</textarea></div>
+    ${typeof isTimeAdmin==='function'&&isTimeAdmin()?`<button class="btn btn-outline btn-sm" style="margin-top:8px;width:100%" onclick="openTimeCorr('${s.id}')">⏱ Corriger les temps${corrMap[String(s.id)]&&Object.keys(corrMap[String(s.id)].items||{}).length?' (corrigé)':''}</button>`:''}
   </div>`;
 }
 
@@ -5399,7 +5408,8 @@ function stdTimes(){
   const acc={};
   (liveSessions.length?liveSessions:sessions).forEach(s=>(s.steps||[]).forEach(st=>(st.items||[]).forEach(it=>{
     const t=it.actionTimers&&it.actionTimers.item; if(!t||!t.stopped||!t.seconds) return;
-    const k=`${s.modelId||'eno180ltv3'}|${st.id}|${it.id}`; (acc[k]=acc[k]||[]).push(t.seconds); })));
+    const si=s.steps.indexOf(st), sec=t.seconds+(typeof timeCorr==='function'?timeCorr(s.id,si,it.id):0); if(sec<=0) return;
+    const k=`${s.modelId||'eno180ltv3'}|${st.id}|${it.id}`; (acc[k]=acc[k]||[]).push(sec); })));
   const out={}; Object.entries(acc).forEach(([k,v])=>{ if(v.length<2) return; v.sort((a,b)=>a-b); out[k]=v[Math.floor(v.length/2)]; }); return out;
 }
 function lateInfo(s,std){
@@ -5717,6 +5727,50 @@ function openStockFromUrl(){
   if(stockUrlChecked||!stockList.length) return; const id=new URLSearchParams(location.search).get('stk'); stockUrlChecked=true; if(!id) return;
   history.replaceState(null,'',location.pathname); showStock(); openBin(id);
 }
+
+
+// ===================== CORRECTION DES TEMPS (réservée à l'administrateur) =====================
+// Les corrections sont stockées à part (collection « timeCorrections ») : la checklist d'origine n'est jamais réécrite.
+const TIME_ADMIN='nordine.sakhri@enogia.com';
+let corrMap={};
+const isTimeAdmin=()=>((window._currentUser&&window._currentUser.email)||'').toLowerCase()===TIME_ADMIN;
+function timeCorr(sid,si,itemId){ const c=corrMap[String(sid)]; return c&&c.items?(c.items[si+'_'+itemId]||0):0; }
+function rawItemSeconds(it){ let s=0; if(it&&it.actionTimers) Object.values(it.actionTimers).forEach(t=>{ s+=(t&&t.seconds)||0; }); return s; }
+function hm(sec){ sec=Math.max(0,Math.round(sec)); const h=Math.floor(sec/3600), m=Math.round((sec%3600)/60); return h?`${h} h ${String(m).padStart(2,'0')}`:`${m} min`; }
+function parseHM(v){ v=String(v||'').trim().replace(',','.'); if(!v) return 0; const m=v.match(/^(\d+)\s*[h:]\s*(\d{1,2})?$/i); if(m) return (+m[1])*3600+(+(m[2]||0))*60; const n=parseFloat(v); return isNaN(n)?0:n*60; }
+document.addEventListener('firebaseReady',()=>setTimeout(()=>{ if(!window._fsOnSnapshot) return; window._fsOnSnapshot(window._fsCollection(window._db,'timeCorrections'),s=>{ corrMap={}; s.docs.forEach(d=>corrMap[d.id]=d.data()); },e=>console.warn('corrections',e)); },500));
+function openTimeCorr(sid){
+  if(!isTimeAdmin()){ alert('Seul l’administrateur peut corriger les temps.'); return; }
+  const s=sessions.find(x=>String(x.id)===String(sid))||liveSessions.find(x=>String(x.id)===String(sid)); if(!s) return;
+  const steps=(MODELS[s.modelId]||MODELS.eno180ltv3).getSteps();
+  const rows=[]; (s.steps||[]).forEach((st,si)=>(st.items||[]).forEach((it,ii)=>{ const raw=rawItemSeconds(it); const c=timeCorr(s.id,si,it.id); if(raw||c){ const def=(steps[si]||{items:[]}).items[ii]||{label:it.id}; rows.push({si,itemId:it.id,step:(steps[si]||{}).name||st.id,label:def.label,raw,c}); } }));
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='tcOverlay';
+  const dflt=39*3600+15*60;
+  ov.innerHTML=`<div class="req-box" style="max-width:640px" onclick="event.stopPropagation()"><h3>⏱ Correction des temps</h3>
+    <div class="req-sub">${_esc((MODELS[s.modelId]||{}).name||'')} · ${_esc(s.serie||'')} · ${_esc(s.projet||'')} — seules les durées affichées dans le tableau de bord sont corrigées, la checklist n’est pas modifiée.</div>
+    <div class="tc-bar"><label style="margin:0">Durée à retirer</label><input id="tcDur" value="39h15" style="width:90px"><button class="btn btn-outline btn-sm" onclick="tcCheckLong()">Cocher les chronos plus longs</button></div>
+    ${rows.length?`<div class="tc-list">${rows.map((r,i)=>`<label class="tc-row"><input type="checkbox" data-i="${i}" ${r.raw>=dflt&&!r.c?'checked':''}><div><b>${_esc(r.step)}</b> › ${_esc(r.label)}<small>Chrono ${hm(r.raw)}${r.c?` · correction −${hm(-r.c)} · <b>retenu ${hm(r.raw+r.c)}</b>`:''}</small></div>${r.c?`<button class="tc-undo" onclick="event.preventDefault();tcUndo('${s.id}',${r.si},'${r.itemId}')">Annuler</button>`:''}</label>`).join('')}</div>`:'<p style="font-size:13px;color:var(--text3)">Aucun temps enregistré sur cette machine.</p>'}
+    <div class="req-err" id="tcErr"></div>
+    <div class="req-actions"><button class="btn btn-outline" onclick="document.getElementById('tcOverlay').remove()">Fermer</button><button class="btn btn-primary" onclick="tcApply('${s.id}')">Retirer la durée aux sous-étapes cochées</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov); window._tcRows=rows;
+}
+function tcCheckLong(){ const d=parseHM(document.getElementById('tcDur').value); document.querySelectorAll('#tcOverlay .tc-row input[type=checkbox]').forEach(cb=>{ const r=window._tcRows[+cb.dataset.i]; cb.checked=r.raw+r.c>=d; }); }
+async function tcSave(sid,mutator){
+  const cur=JSON.parse(JSON.stringify(corrMap[String(sid)]||{items:{},log:[]})); mutator(cur); corrMap[String(sid)]=cur;
+  try{ await window._fsSetDoc(window._fsDoc(window._db,'timeCorrections',String(sid)),cur); }catch(e){ alert('Correction non enregistrée : '+e.message); return false; }
+  if(document.getElementById('scDashboard')&&document.getElementById('scDashboard').classList.contains('active')) renderDashboard();
+  return true;
+}
+async function tcApply(sid){
+  const d=parseHM(document.getElementById('tcDur').value); if(d<=0){ document.getElementById('tcErr').textContent='Indiquez une durée, par exemple 39h15.'; return; }
+  const sel=[...document.querySelectorAll('#tcOverlay .tc-row input:checked')].map(cb=>window._tcRows[+cb.dataset.i]);
+  if(!sel.length){ document.getElementById('tcErr').textContent='Cochez au moins une sous-étape.'; return; }
+  const tooShort=sel.filter(r=>r.raw+r.c<d); if(tooShort.length&&!confirm(`${tooShort.length} sous-étape(s) ont un temps inférieur à ${hm(d)} : leur temps sera ramené à 0. Continuer ?`)) return;
+  const ok=await tcSave(sid,cur=>{ sel.forEach(r=>{ const k=r.si+'_'+r.itemId; const remain=r.raw+(cur.items[k]||0); cur.items[k]=(cur.items[k]||0)-Math.min(d,remain);
+    cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key:k,delta:-Math.min(d,remain)},...(cur.log||[])].slice(0,100); }); });
+  if(ok){ document.getElementById('tcOverlay').remove(); openTimeCorr(sid); }
+}
+async function tcUndo(sid,si,itemId){ const k=si+'_'+itemId; const ok=await tcSave(sid,cur=>{ delete cur.items[k]; cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key:k,delta:0,undo:true},...(cur.log||[])].slice(0,100); }); if(ok){ document.getElementById('tcOverlay').remove(); openTimeCorr(sid); } }
 
 // ---------- KPI Industrie 4.0 (tableau de bord) ----------
 function renderI40Section(monthSessions){
