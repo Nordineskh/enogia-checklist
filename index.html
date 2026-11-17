@@ -533,6 +533,42 @@ body.tv-mode #scPlanTv .tv-exit{top:auto;bottom:14px;left:auto;right:14px;transf
 .item-pause-btn{flex:0 0 auto;min-width:120px;padding:11px 14px;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;background:#00364a;border:1px solid #e08a3c;color:#ffb877}
 .item-pause-btn.resume{background:var(--accent2);border-color:var(--accent2);color:#001824}
 
+/* ===================== ERGONOMIE ===================== */
+.menu-sec{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);padding:10px 12px 4px}
+.menu-sec:first-child{padding-top:4px}
+.step-nav-bar{position:sticky;bottom:0;z-index:20;background:linear-gradient(180deg,#002a3a00,var(--bg) 35%);padding:14px 0 calc(10px + env(safe-area-inset-bottom,0px));margin-top:8px}
+.step-nav-bar .btn{min-width:140px;box-shadow:0 6px 18px #0006}
+.btn.pulse{animation:btnPulse 1s 4}
+@keyframes btnPulse{50%{box-shadow:0 0 0 6px #2aa99e66}}
+#toastWrap{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:5000;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:min(92vw,520px)}
+.toast{background:#06303f;border:1px solid var(--border);color:#fff;padding:11px 16px;border-radius:10px;font-size:13.5px;box-shadow:0 10px 30px #0008;animation:toastIn .25s ease-out;text-align:center}
+.toast.ok{border-color:var(--accent);background:#0b3f3c}
+.toast.out{opacity:0;transform:translateY(8px);transition:.4s}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}}
+/* Tableau de bord */
+.db-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:4px 0 14px;position:sticky;top:0;z-index:15;background:var(--bg)}
+.db-tabs button{flex-shrink:0;background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.db-tabs button.on{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.db-n{display:inline-block;min-width:18px;padding:0 6px;border-radius:9px;background:#ff6b62;color:#fff;font-size:11px;line-height:18px;text-align:center;margin-left:4px}
+.db-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:10px;margin-bottom:14px}
+.db-tile{background:var(--surface);border:1px solid var(--border);border-top:3px solid;border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.db-tile span{font-size:11.5px;color:var(--text3)}.db-tile b{font-size:28px;line-height:1.1;font-weight:700}.db-tile small{font-size:11px;color:var(--text3)}
+.db-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px}
+.db-card h3{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:6px}.db-card h3 small{font-size:11px;color:var(--text3);font-weight:400;margin-left:auto}
+.db-todo{display:flex;flex-direction:column;gap:6px}
+.db-td{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;background:#00364a;border-left:3px solid #7a8b92;font-size:13px}
+.db-td.r{border-left-color:#ff3b30}.db-td.o{border-left-color:#ff9f1a}
+.db-td .ic{font-size:17px;flex-shrink:0}.db-td>div{flex:1;min-width:0}.db-td small{display:block;font-size:11px;color:var(--text3);margin-top:2px}
+.db-ok{font-size:13px;color:#7fe3d8}.db-more{font-size:12px;color:var(--text3);text-align:center;margin-top:4px}
+.db-mach{display:flex;flex-direction:column;gap:5px}
+.db-m{display:grid;grid-template-columns:12px minmax(90px,1fr) minmax(120px,2fr) minmax(60px,1.2fr) 40px;gap:10px;align-items:center;width:100%;text-align:left;background:#00364a;border:1px solid transparent;border-radius:8px;padding:9px 10px;color:var(--text);cursor:pointer;font-family:var(--font)}
+.db-m:hover{border-color:var(--accent2)}
+.db-m .dot{width:12px;height:12px;border-radius:50%}
+.db-m small{display:block;font-size:11px;color:var(--text3)}.db-m .sn b{font-size:13.5px}.db-m .st{font-size:12.5px}
+.db-m .pg{height:6px;border-radius:3px;background:#ffffff14;overflow:hidden}.db-m .pg i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+.db-m .pc{font-size:12.5px;font-weight:700;text-align:right}
+@media (max-width:640px){ .db-card h3 small{display:none} #dashboardContent .btn{min-width:0 !important} .db-m{grid-template-columns:12px 1fr 44px;row-gap:4px} .db-m .st{grid-column:2/4;grid-row:2} .db-m .pg{grid-column:2/4;grid-row:3} .db-m .pc{grid-column:3;grid-row:1} .db-tile b{font-size:24px} }
+
 /* ===================== RESPONSIVE ===================== */
 img,canvas,video{max-width:100%}
 body{padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -607,6 +643,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
       Se connecter avec Google
     </button>
+    <div style="margin-top:12px;color:#7ab8cc;font-size:12px;font-family:'Roboto',sans-serif;line-height:1.4">Tablette partagée : la fenêtre Google vous laisse choisir le compte, ou « Utiliser un autre compte ».</div>
     <div id="loginError" style="display:none;margin-top:16px;color:#ffaaaa;font-size:13px;background:#ff000015;border:1px solid #ff000030;border-radius:8px;padding:10px;font-family:'Roboto',sans-serif"></div>
   </div>
 </div>
@@ -636,18 +673,21 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
     <span class="menu-burger">☰</span> Menu <span class="menu-caret">▾</span>
   </button>
   <div class="menu-dropdown" id="appMenuDropdown">
-    <button class="menu-item" onclick="closeAppMenu();goHome()"><span class="menu-item-icon">🏠</span> Accueil</button>
+    <div class="menu-sec">Montage</div>
+    <button class="menu-item" onclick="closeAppMenu();goHome()"><span class="menu-item-icon">🏠</span> Accueil — checklists</button>
     <button class="menu-item" onclick="closeAppMenu();showModelSelector()"><span class="menu-item-icon">⚙️</span> Sélection gamme</button>
-    <button class="menu-item" onclick="closeAppMenu();showDashboard()"><span class="menu-item-icon">📊</span> Tableau de bord</button>
-    <button class="menu-item" onclick="closeAppMenu();showAtelier(false)"><span class="menu-item-icon">🏭</span> Atelier 3D en direct</button>
-    <button class="menu-item" onclick="closeAppMenu();showPlanning()"><span class="menu-item-icon">📋</span> Planning de production</button>
-    <button class="menu-item" onclick="closeAppMenu();showPlanTv()"><span class="menu-item-icon">📺</span> Écran planning (TV)</button>
-    <button class="menu-item" onclick="closeAppMenu();showAtelier(true)"><span class="menu-item-icon">🖥️</span> Écran atelier 3D (TV)</button>
-    <button class="menu-item" onclick="closeAppMenu();showStock()"><span class="menu-item-icon">🗄️</span> Stock</button>
-    <div class="menu-divider"></div>
     <button class="menu-item" onclick="closeAppMenu();showConditionnement()"><span class="menu-item-icon">📦</span> Conditionnement</button>
+    <div class="menu-sec">Pilotage</div>
+    <button class="menu-item" onclick="closeAppMenu();showDashboard()"><span class="menu-item-icon">📊</span> Tableau de bord</button>
+    <button class="menu-item" onclick="closeAppMenu();showPlanning()"><span class="menu-item-icon">📋</span> Planning de production</button>
+    <button class="menu-item" onclick="closeAppMenu();showAtelier(false)"><span class="menu-item-icon">🏭</span> Atelier 3D en direct</button>
+    <button class="menu-item" onclick="closeAppMenu();showStock()"><span class="menu-item-icon">🗄️</span> Stock</button>
     <button class="menu-item" onclick="closeAppMenu();showVSM()"><span class="menu-item-icon">🗺️</span> Value Stream Map</button>
-    <div class="menu-divider"></div>
+    <div class="menu-sec">Écrans atelier</div>
+    <button class="menu-item" onclick="closeAppMenu();showPlanTv()"><span class="menu-item-icon">📺</span> Planning (TV)</button>
+    <button class="menu-item" onclick="closeAppMenu();showAtelier(true)"><span class="menu-item-icon">🖥️</span> Atelier 3D (TV)</button>
+    <div class="menu-sec">Compte</div>
+    <button class="menu-item" onclick="closeAppMenu();window._signOut()"><span class="menu-item-icon">👤</span> Changer d’utilisateur</button>
     <button class="menu-item" onclick="closeAppMenu();window._signOut()"><span class="menu-item-icon">⎋</span> Déconnexion</button>
   </div>
 </div>
@@ -947,7 +987,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
   <div id="snSection"></div>
   <div id="stepCommentSection"></div>
 
-  <div class="flex mt12 flex-wrap" style="justify-content:space-between">
+  <div class="flex mt12 flex-wrap step-nav-bar" style="justify-content:space-between">
     <button class="btn btn-outline" id="btnPrev" onclick="navStep(-1)">◀ Précédent</button>
     <button class="btn btn-primary" id="btnNext" onclick="navStep(1)">Suivant ▶</button>
   </div>
@@ -999,7 +1039,7 @@ window.CYCLE_LUB_OBJ_TEXT="o 101-Flexible1__Pi085-510-008-TeteDroiteFlexible_3_8
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
   import { getFirestore, collection, doc, setDoc, getDoc, getDocs, orderBy, query, deleteDoc, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBkRDYMUQkgJQcngQCarYbUIwtImHDS3B8",
@@ -1012,6 +1052,7 @@ window.CYCLE_LUB_OBJ_TEXT="o 101-Flexible1__Pi085-510-008-TeteDroiteFlexible_3_8
   };
 
   const ALLOWED_EMAILS = [
+    'adrien.caulier@enogia.com',
     'corentin.pene@enogia.com',
     'nordine.sakhri@enogia.com',
     'nicolas.stamboul@enogia.com',
@@ -1031,6 +1072,8 @@ window.CYCLE_LUB_OBJ_TEXT="o 101-Flexible1__Pi085-510-008-TeteDroiteFlexible_3_8
   const db = getFirestore(app);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
+  // Toujours proposer le choix du compte Google : indispensable sur les tablettes partagées
+  provider.setCustomParameters({ prompt: 'select_account' });
 
   window._db = db;
   window._fsCollection = collection;
@@ -1045,23 +1088,37 @@ window.CYCLE_LUB_OBJ_TEXT="o 101-Flexible1__Pi085-510-008-TeteDroiteFlexible_3_8
   window._fsWhere = where;
   window._ADMIN_EMAIL = 'nordine.sakhri@enogia.com';
 
+  const showLoginError = (msg) => { const el=document.getElementById('loginError'); el.textContent=msg; el.style.display='block'; };
+  const checkAllowed = async (user) => {
+    if (user && !ALLOWED_EMAILS.includes(user.email)) {
+      await signOut(auth);
+      showLoginError(`Accès refusé : ${user.email} n'est pas autorisé. Choisissez un autre compte.`);
+    }
+  };
+  // Retour d'une connexion par redirection (tablettes qui bloquent les fenêtres)
+  getRedirectResult(auth).then(r => { if (r && r.user) checkAllowed(r.user); }).catch(()=>{});
+
   window._signIn = async () => {
+    document.getElementById('loginError').style.display = 'none';
     try {
       const result = await signInWithPopup(auth, provider);
-      const email = result.user.email;
-      if (!ALLOWED_EMAILS.includes(email)) {
-        await signOut(auth);
-        document.getElementById('loginError').textContent = `Accès refusé : ${email} n'est pas autorisé.`;
-        document.getElementById('loginError').style.display = 'block';
-      }
+      await checkAllowed(result.user);
     } catch(e) {
-      document.getElementById('loginError').textContent = 'Erreur de connexion. Réessayez.';
-      document.getElementById('loginError').style.display = 'block';
+      if (e && (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment')) {
+        try { await signInWithRedirect(auth, provider); return; } catch(e2) {}
+      }
+      if (e && (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request')) return;
+      showLoginError('Erreur de connexion. Réessayez.');
     }
   };
 
+  // Déconnexion propre : on oublie la checklist ouverte sur cet appareil et on repart d'une page vierge,
+  // pour que l'utilisateur suivant ne récupère rien de la session précédente.
   window._signOut = async () => {
-    await signOut(auth);
+    try { if (typeof saveState === 'function' && typeof session !== 'undefined' && session) await saveState(); } catch(e) {}
+    try { localStorage.removeItem('activeSessionId'); } catch(e) {}
+    try { await signOut(auth); } catch(e) {}
+    location.replace(location.pathname);
   };
 
   onAuthStateChanged(auth, (user) => {
@@ -4069,6 +4126,7 @@ function validateOP(si,ii){
   it.opDone=true;it.opDate=new Date().toLocaleDateString('fr-FR');it.opAt=new Date().toISOString();
   if(!it.opName)it.opName=session.op;
   saveState();renderStep();
+  if(typeof afterValidate==='function') afterValidate(si,ii);
   // Mettre à jour la mise en rouge des pièces 3D
   setTimeout(applyPartHighlights, 100);
   // Rappel graissage si la sous-étape suivante comporte des vis à serrer
@@ -4327,82 +4385,60 @@ async function renderDashboard(){
   const onTimeCount = sessionsWithDeadline.filter(s=>s.completed&&new Date(s.completed)<=new Date(s.plannedEnd+'T23:59:59')).length;
   const kpiRetard = sessionsWithDeadline.length ? Math.round(onTimeCount/sessionsWithDeadline.length*100) : null;
 
-  html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:12px">
-    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🏭 Machines</span><span class="kpi-value" style="font-size:24px">${totalM}</span></div>
-    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">✅ Terminées</span><span class="kpi-value good" style="font-size:24px">${doneM}</span></div>
-    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🔄 En cours</span><span class="kpi-value warn" style="font-size:24px">${inProgM}</span></div>
-    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🚨 En retard</span><span class="kpi-value ${lateM>0?'bad':'good'}" style="font-size:24px">${lateM}</span></div>
-    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">⭐ Qualité OP</span><span class="kpi-value ${avgQ>=80?'good':avgQ>=50?'warn':'bad'}" style="font-size:24px">${avgQ}%</span></div>
-    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">🎯 1er passage</span><span class="kpi-value ${fpRate===null?'':fpRate>=80?'good':fpRate>=60?'warn':'bad'}" style="font-size:24px">${fpRate!==null?fpRate+'%':'—'}</span></div>
-    <div class="kpi-row" style="flex-direction:column;align-items:flex-start;gap:2px;padding:12px"><span class="kpi-label">⚠️ Non-conf.</span><span class="kpi-value ${ncTotal>0?'bad':'good'}" style="font-size:24px">${ncTotal}</span></div>
-  </div>
-
-  <div class="dash-section-title">📊 KPI Supply Chain</div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:20px">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;border-top:3px solid var(--accent2)">
-      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">📅 Planification</div>
-      <div style="font-size:28px;font-weight:700;color:${kpiPlanif===null?'var(--text3)':kpiPlanif>=80?'var(--green)':kpiPlanif>=60?'var(--yellow)':'#e05555'}">${kpiPlanif!==null?kpiPlanif+'%':'N/A'}</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:4px">Démarrées + livrées dans les temps</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:2px">${sessionsWithPlan.length} machine(s) avec dates planifiées</div>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;border-top:3px solid var(--accent)">
-      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">📦 Fiabilité Stock</div>
-      <div style="font-size:28px;font-weight:700;color:${kpiStock===null?'var(--text3)':kpiStock>=80?'var(--green)':kpiStock>=60?'var(--yellow)':'#e05555'}">${kpiStock!==null?kpiStock+'%':'N/A'}</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:4px">Pièces disponibles au démarrage</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:2px">${stockOkCount}/${sessionsWithStock.length} machine(s) sans manque</div>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;border-top:3px solid #f0a500">
-      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">📐 Nomenclatures</div>
-      <div style="font-size:28px;font-weight:700;color:${kpiNomencl===null?'var(--text3)':kpiNomencl>=90?'var(--green)':kpiNomencl>=70?'var(--yellow)':'#e05555'}">${kpiNomencl!==null?kpiNomencl+'%':'N/A'}</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:4px">Items VE sans NC gamme/assemblage</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:2px">📐${ncErreurGameme} gamme | 🔧${ncDefautAssemblage} assemblage | 📦${ncPieceManquante} pièce | 📝${ncAutre} autre | 📋${nomenReqTotal} non-respect nomencl.</div>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;border-top:3px solid #e05555">
-      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">⏱️ Retard OF</div>
-      <div style="font-size:28px;font-weight:700;color:${kpiRetard===null?'var(--text3)':kpiRetard>=80?'var(--green)':kpiRetard>=60?'var(--yellow)':'#e05555'}">${kpiRetard!==null?kpiRetard+'%':'N/A'}</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:4px">Machines livrées dans les délais</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:2px">${onTimeCount}/${sessionsWithDeadline.length} machine(s) avec date de fin planifiée</div>
-    </div>
-  </div>`;
-
-  // === GANTT VIEW ===
-  html += renderGantt(monthSessions, isAdmin);
-
-  // === NC BREAKDOWN CHART ===
-  html += renderNCChart(monthSessions);
-
-  // === REQUÊTES TERRAIN (NC qualité / manques pièces) ===
-  html += renderRequestsSection(monthSessions);
-  if(typeof renderI40Section==='function') html += renderI40Section(monthSessions);
-
-  // === STEP TIME CHART (avg time per step across sessions) ===
-  html += renderStepTimeChart(monthSessions);
-
-  // === OPERATOR COMPARISON ===
-  html += renderOpComparison(monthSessions);
-
-  // === TIME SECTION (par gamme / technicien / étape) ===
-  html += renderTimeSection(monthSessions);
-
-  // === KPI CARDS per machine ===
-  const byModel = {};
-  monthSessions.forEach(s=>{ const k=s.modelName||'ENO 180 LTV3'; if(!byModel[k])byModel[k]=[]; byModel[k].push(s); });
-
-  Object.entries(byModel).forEach(([modelName, modelSessions])=>{
-    html += `<div class="dash-section-title">⚙️ ${modelName}</div><div class="kpi-grid">`;
-    modelSessions.forEach(s=>{
-      html += renderKPICard(s, isAdmin);
-    });
-    html += '</div>';
-  });
-
-  // Export button
-  html += `<div style="margin-top:20px;text-align:center">
-    <button class="export-btn" onclick="exportDashboard()">📥 Exporter rapport mensuel (CSV)</button>
-  </div>`;
-
+  // ================= TABLEAU DE BORD : onglets, synthèse d'abord =================
+  const sup=(lbl,val,sub,col)=>`<div class="db-tile" style="border-top-color:${col}"><span>${lbl}</span><b style="color:${col}">${val}</b><small>${sub}</small></div>`;
+  const pctCol=(v,g,w)=>v==null?'var(--text3)':v>=g?'var(--green)':v>=w?'var(--yellow)':'#ff6b62';
+  const resp=typeof planRespect==='function'?planRespect(lastDays(7)):{pct:null,ok:0,plan:0};
+  const openAndon=(typeof andonList!=='undefined'?andonList:[]).filter(a=>!a.resolvedAt);
+  const stockAlerts=(typeof stockList!=='undefined'?stockList:[]).filter(a=>['rupture','a_commander'].includes(stockStatus(a)));
+  const machinesLive=typeof i40Machines==='function'?i40Machines():[];
+  // --- À traiter maintenant (toutes périodes confondues) ---
+  const todo=[];
+  openAndon.sort((a,b)=>(a.color==='red'?0:1)-(b.color==='red'?0:1)).forEach(a=>todo.push({lvl:a.color==='red'?'r':'o',ic:'🚨',txt:`Andon ${a.color==='red'?'rouge':'orange'} · <b>${_esc(a.sn||'')}</b> · ${_esc(a.stepName||'')} — ${_esc(a.reason)}`,meta:fmtMin(minsSince(a.createdAt))+(a.ackAt?' · pris en charge':''),act:`openSessionById('${a.sessionId}',${a.si||0})`,btn:'Ouvrir'}));
+  sessions.forEach(s=>sessionRequests(s).filter(r=>r.kind==='nc'&&r.status!=='closed').forEach(r=>todo.push({lvl:'o',ic:'⚠️',txt:`NC ouverte · <b>${_esc(s.serie||s.projet||'')}</b> — ${_esc(NC_TYPES[r.type]||r.type)}${r.desc?' : '+_esc(r.desc.slice(0,60)):''}`,meta:new Date(r.date).toLocaleDateString('fr-FR'),act:`openSessionById('${s.id}',${r.si})`,btn:'Ouvrir'})));
+  const rupt=stockAlerts.filter(a=>stockStatus(a)==='rupture');
+  if(rupt.length) todo.push({lvl:'r',ic:'📦',txt:`${rupt.length} article${rupt.length>1?'s':''} en rupture : ${rupt.slice(0,3).map(a=>_esc(a.designation)).join(', ')}${rupt.length>3?'…':''}`,meta:'',act:'showStock()',btn:'Stock'});
+  const lowS=stockAlerts.length-rupt.length; if(lowS>0) todo.push({lvl:'o',ic:'🛒',txt:`${lowS} article${lowS>1?'s':''} sous le seuil, à commander`,meta:'',act:'showStock()',btn:'Stock'});
+  machinesLive.filter(m=>m.late).forEach(m=>todo.push({lvl:'o',ic:'🐢',txt:`Retard · <b>${_esc(m.sn)}</b> — ${_esc(m.lateTxt)}`,meta:'',act:`openSessionById('${m.id}')`,btn:'Ouvrir'}));
+  sessions.filter(s=>{ const d=dashCache[String(s.id)]||{}; return s.started&&!s.completed&&d.plannedEnd&&new Date()>new Date(d.plannedEnd+'T23:59:59'); }).forEach(s=>todo.push({lvl:'r',ic:'📅',txt:`Date de fin dépassée · <b>${_esc(s.serie||s.projet||'')}</b> (prévue le ${new Date((dashCache[String(s.id)]||{}).plannedEnd).toLocaleDateString('fr-FR')})`,meta:'',act:`openSessionById('${s.id}')`,btn:'Ouvrir'}));
+  if(typeof planTasks!=='undefined'){ const late=planTasks.filter(t=>taskStatus(t).st==='late'); if(late.length) todo.push({lvl:'o',ic:'📋',txt:`${late.length} tâche${late.length>1?'s':''} planifiée${late.length>1?'s':''} en retard`,meta:'',act:'showPlanning()',btn:'Planning'}); }
+  const zoneLbl={z1:'Montage méca',z2:'Montage élec',z3:'Banc d’essai',z4:'Conditionnement'};
+  const andonDot={red:'#ff3b30',orange:'#ff9f1a',blue:'#2b8fd6',green:'#2ee07a',idle:'#7a8b92'};
+  // --- onglets ---
+  const tabs=[['syn','🏠 Synthèse'],['mach','🏭 Machines'],['qual','⚠️ Qualité'],['temps','⏱ Temps'],['flux','📅 Planning & flux'],['stock','📦 Stock']];
+  html+=`<div class="db-tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" class="${dashTab===k?'on':''}" onclick="setDashTab('${k}')">${l}${k==='syn'&&todo.length?` <span class="db-n">${todo.length}</span>`:''}</button>`).join('')}</div>`;
+  const pane=(k,inner)=>`<div class="db-pane" data-tab="${k}" ${dashTab===k?'':'hidden'}>${inner}</div>`;
+  // Synthèse
+  let syn=`<div class="db-tiles">
+    ${sup('🔄 En cours',inProgM,`${doneM} terminée${doneM>1?'s':''} · ${totalM} ce mois`,'var(--accent2)')}
+    ${sup('📅 Respect planning',resp.pct==null?'—':resp.pct+' %',`${resp.ok}/${resp.plan} tâches · 7 jours`,pctCol(resp.pct,90,70))}
+    ${sup('🎯 Qualité 1er passage',fpRate==null?'—':fpRate+' %',`${fpPass}/${fpTotal} sous-étapes`,pctCol(fpRate,80,60))}
+    ${sup('⏱️ Livrées à temps',kpiRetard==null?'—':kpiRetard+' %',`${onTimeCount}/${sessionsWithDeadline.length} avec date de fin`,pctCol(kpiRetard,80,60))}
+    ${sup('🚨 Andon ouverts',openAndon.length,openAndon.length?openAndon.filter(a=>a.color==='red').length+' rouge(s)':'tout tourne',openAndon.length?'#ff6b62':'var(--green)')}
+    ${sup('📦 À commander',stockAlerts.length,rupt.length?rupt.length+' en rupture':'aucune rupture',stockAlerts.length?'#f0a500':'var(--green)')}</div>`;
+  syn+=`<div class="db-card"><h3>À traiter maintenant ${todo.length?`<span class="db-n">${todo.length}</span>`:''}</h3>${todo.length?`<div class="db-todo">${todo.slice(0,12).map(x=>`<div class="db-td ${x.lvl}"><span class="ic">${x.ic}</span><div>${x.txt}${x.meta?`<small>${x.meta}</small>`:''}</div><button class="btn btn-outline btn-sm" onclick="${x.act}">${x.btn}</button></div>`).join('')}${todo.length>12?`<p class="db-more">+ ${todo.length-12} autre(s)</p>`:''}</div>`:'<p class="db-ok">✓ Rien d’urgent : aucune alerte, aucune NC ouverte, aucun retard.</p>'}</div>`;
+  syn+=`<div class="db-card"><h3>Machines en cours <small>touchez une ligne pour ouvrir la checklist</small></h3>${machinesLive.length?`<div class="db-mach">${machinesLive.map(m=>`<button class="db-m" onclick="openSessionById('${m.id}')"><span class="dot" style="background:${andonDot[m.andon]||'#7a8b92'}" title="${_esc(ANDON_TXT[m.andon]||'')}"></span><span class="sn"><b>${_esc(m.sn)}</b><small>${_esc(m.model)}</small></span><span class="st">${_esc(m.stepName||'')}<small>${zoneLbl[m.zone]||''}${m.op?' · '+_esc(m.op):''}</small></span><span class="pg"><i style="width:${m.pct}%"></i></span><span class="pc">${m.pct}%</span></button>`).join('')}</div>`:'<p class="db-ok">Aucune machine en cours.</p>'}</div>`;
+  syn+=`<div style="text-align:center;margin-top:6px"><button class="export-btn" onclick="exportDashboard()">📥 Exporter le rapport mensuel (CSV)</button></div>`;
+  html+=pane('syn',syn);
+  // Machines
+  const byModel={}; monthSessions.forEach(s=>{ const k=s.modelName||'ENO 180 LTV3'; (byModel[k]=byModel[k]||[]).push(s); });
+  let mach=renderGantt(monthSessions,isAdmin);
+  Object.entries(byModel).forEach(([modelName,ms])=>{ mach+=`<div class="dash-section-title">⚙️ ${modelName}</div><div class="kpi-grid">${ms.map(s=>renderKPICard(s,isAdmin)).join('')}</div>`; });
+  html+=pane('mach',mach);
+  // Qualité
+  html+=pane('qual',`<div class="db-tiles">${sup('🎯 1er passage',fpRate==null?'—':fpRate+' %',`${fpPass}/${fpTotal} sous-étapes VE`,pctCol(fpRate,80,60))}${sup('⚠️ Non-conformités',ncTotal,'ce mois','#ff6b62')}${sup('📐 Nomenclatures',kpiNomencl==null?'—':kpiNomencl+' %',`${ncErreurGameme} gamme · ${ncDefautAssemblage} assemblage · ${nomenReqTotal} non-respect`,pctCol(kpiNomencl,90,70))}${sup('⭐ Avancement OP moyen',avgQ+' %','des machines du mois',pctCol(avgQ,80,50))}</div>`+renderNCChart(monthSessions)+renderRequestsSection(monthSessions));
+  // Temps
+  html+=pane('temps',renderStepTimeChart(monthSessions)+renderOpComparison(monthSessions)+renderTimeSection(monthSessions));
+  // Planning & flux
+  html+=pane('flux',`<div class="db-tiles">${sup('📅 Planification',kpiPlanif==null?'—':kpiPlanif+' %','démarrées + livrées dans les temps',pctCol(kpiPlanif,80,60))}${sup('⏱️ Livrées à temps',kpiRetard==null?'—':kpiRetard+' %',`${onTimeCount}/${sessionsWithDeadline.length} machines`,pctCol(kpiRetard,80,60))}</div>`+(typeof renderI40Section==='function'?renderI40Section(monthSessions):''));
+  // Stock
+  html+=pane('stock',`<div class="db-tiles">${sup('📦 Fiabilité stock',kpiStock==null?'—':kpiStock+' %',`${stockOkCount}/${sessionsWithStock.length} machines sans manque`,pctCol(kpiStock,80,60))}${sup('🛒 À commander',stockAlerts.length,`${rupt.length} en rupture`,stockAlerts.length?'#f0a500':'var(--green)')}</div>
+    <div class="db-card"><h3>Articles à recommander</h3>${stockAlerts.length?`<div class="db-todo">${stockAlerts.sort((a,b)=>(stockStatus(a)==='rupture'?0:1)-(stockStatus(b)==='rupture'?0:1)).map(a=>`<div class="db-td ${stockStatus(a)==='rupture'?'r':'o'}"><span class="ic">${stockStatus(a)==='rupture'?'🔴':'🟠'}</span><div><b>${_esc(a.designation)}</b><small>${_esc(a.ref)}${a.emplacement?' · '+_esc(a.emplacement):''} · stock ${a.qty??'?'} / seuil ${a.seuil||0}</small></div><button class="btn btn-outline btn-sm" onclick="showStock();setTimeout(()=>openBin('${a.id}','in'),300)">Réception</button></div>`).join('')}</div>`:'<p class="db-ok">✓ Tous les articles sont au-dessus de leur seuil.</p>'}<div style="margin-top:10px"><button class="btn btn-primary btn-sm" onclick="showStock()">Ouvrir le stock</button></div></div>`);
   el.innerHTML = html;
 }
+let dashTab='syn';
+function setDashTab(k){ dashTab=k; document.querySelectorAll('#dashboardContent .db-pane').forEach(p=>p.hidden=p.dataset.tab!==k); document.querySelectorAll('#dashboardContent .db-tabs button').forEach((b,i)=>b.classList.toggle('on',b.getAttribute('onclick')===`setDashTab('${k}')`)); window.scrollTo({top:0,behavior:'smooth'}); }
+function openSessionById(id,si){ const s=sessions.find(x=>String(x.id)===String(id))||(typeof liveSessions!=='undefined'&&liveSessions.find(x=>String(x.id)===String(id))); if(!s){ alert('Checklist introuvable.'); return; } if(!sessions.includes(s)) sessions.push(s); loadSession(s.id); if(si!=null){ currentStep=si; renderStep(); } window.scrollTo(0,0); }
 
 function renderGantt(sessions, isAdmin){
   if(!sessions.length) return '';
@@ -6143,6 +6179,17 @@ function renderPlanTv(){
         ${cur?`<div class="pt-cur ${cur.s.st}"><small>${cur.s.st==='pause'?'⏸ En pause':'● En cours'}</small><b>${_esc(cur.t.sn)}</b><div>${_esc(cur.t.stepName)}${cur.t.itemId?' › '+_esc(cur.t.label):''}</div><div class="pt-chrono ${(cur.s.live||0)>taskStd(cur.t)*1.1?'over':''}">${hm(cur.s.live||0)}<span> / ${hm(taskStd(cur.t))}</span></div></div>`:`<div class="pt-cur idle"><small>Aucune tâche en cours</small></div>`}
         <div class="pt-next">${todo.map(x=>`<div class="${x.s.st}"><em><b>${_esc(x.t.sn)}</b> · ${_esc(x.t.stepName)}${x.t.itemId?' › '+_esc(x.t.label):''}</em><span>${x.s.st==='late'?'⚠ en retard':x.s.st==='partial'?'entamée':hm(taskStd(x.t))}</span></div>`).join('')||'<p>Rien d’autre de prévu aujourd’hui.</p>'}</div></div>`; }).join('')||'<div class="pt-col"><p>Aucun planning défini pour aujourd’hui.</p></div>'}</div>
     <div class="pt-done"><b>✓ Réalisées aujourd’hui</b>${dt.slice(0,14).map(d=>`<span>${new Date(d.at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})} · ${_esc(d.sn)} · ${_esc(d.label)} · ${_esc(d.tech)}${d.planned?'':' · hors planning'}</span>`).join('')||'<span>Aucune tâche validée pour le moment.</span>'}</div>`;
+}
+
+// ===================== ERGONOMIE : confirmations et enchaînement automatique =====================
+function toast(msg,kind){ let w=document.getElementById('toastWrap'); if(!w){ w=document.createElement('div'); w.id='toastWrap'; document.body.appendChild(w); }
+  const d=document.createElement('div'); d.className='toast '+(kind||''); d.textContent=msg; w.appendChild(d); setTimeout(()=>d.classList.add('out'),2300); setTimeout(()=>d.remove(),2800); }
+function afterValidate(si,ii){
+  const items=session.steps[si].items, defs=ACTIVE_STEPS[si].items;
+  let next=-1; for(let k=1;k<=items.length;k++){ const j=(ii+k)%items.length; if(!items[j].opDone){ next=j; break; } }
+  if(next>=0){ toast('✓ '+defs[ii].label+' validée — suite : '+defs[next].label,'ok');
+    setTimeout(()=>{ document.querySelectorAll('.item-body.open').forEach(b=>b.classList.remove('open')); const b=document.getElementById('body_'+defs[next].id); if(b){ b.classList.add('open'); const card=b.closest('.item-card')||b; card.scrollIntoView({behavior:'smooth',block:'start'}); } },150); }
+  else { toast('✓ Étape '+(si+1)+' terminée côté technicien — passez à l’étape suivante','ok'); const n=document.getElementById('btnNext'); if(n){ n.classList.add('pulse'); setTimeout(()=>n.classList.remove('pulse'),4000); n.scrollIntoView({behavior:'smooth',block:'center'}); } }
 }
 
 // ---------- KPI Industrie 4.0 (tableau de bord) ----------
