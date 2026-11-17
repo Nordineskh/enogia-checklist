@@ -397,6 +397,11 @@ body.tv-mode #scPlanTv .tv-exit{top:auto;bottom:14px;left:auto;right:14px;transf
 .tc-line.head{background:#ffffff08}
 .tc-line.head .tc-lbl b{color:var(--accent)}
 .tc-undo[disabled]{opacity:.3;cursor:default}
+.tc-orange{color:#ffc46b;font-weight:600}
+.tc-note.ok{color:#7fe3d8}
+.tc-rw{margin:4px 8px 8px;border:1px solid #9b7bff55;border-radius:7px;background:#7a5bd614;overflow:hidden}
+.tc-rw-h{font-size:12.5px;font-weight:700;color:#d7c4ff;padding:8px 12px;border-bottom:1px solid #9b7bff33}
+.tc-badge.rw{background:#7a5bd633;color:#d7c4ff;border-color:#9b7bff66}
 .tc-modes{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0 4px}
 .tc-modes button{padding:10px;border-radius:8px;border:1px solid var(--border);background:#00364a;color:var(--text2);font-weight:700;font-family:var(--font);cursor:pointer}
 .tc-modes button.on{background:var(--accent2);border-color:var(--accent2);color:#fff}
@@ -409,6 +414,11 @@ body.tv-mode #scPlanTv .tv-exit{top:auto;bottom:14px;left:auto;right:14px;transf
 .tc-row input{width:auto !important;transform:scale(1.2)}
 .tc-row small{display:block;font-size:11px;color:var(--text3);margin-top:2px}
 .tc-undo{margin-left:auto;background:none;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer}
+.sheet-btn.on{border-color:#34a853;color:#8fe0a6}
+.sheet-imp{margin-top:14px;padding:12px;border:1px solid var(--border);border-radius:8px;background:#00364a;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.sheet-imp label.req-check{margin:0 !important}
+.stk-order{font-size:11.5px;color:#9fdcff;margin-top:4px}
+.sheet-steps{font-size:12.5px;color:var(--text2);padding-left:18px;margin:4px 0 6px;line-height:1.55}
 .stk-cats{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px}
 .stk-cats button{background:#00364a;border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font)}
 .stk-cats button.on{background:var(--accent2);border-color:var(--accent2);color:#fff}
@@ -4414,7 +4424,14 @@ async function renderDashboard(){
   const todo=[];
   openAndon.sort((a,b)=>(a.color==='red'?0:1)-(b.color==='red'?0:1)).forEach(a=>todo.push({lvl:a.color==='red'?'r':'o',ic:'🚨',txt:`Andon ${a.color==='red'?'rouge':'orange'} · <b>${_esc(a.sn||'')}</b> · ${_esc(a.stepName||'')} — ${_esc(a.reason)}`,meta:fmtMin(minsSince(a.createdAt))+(a.ackAt?' · pris en charge':''),act:`openSessionById('${a.sessionId}',${a.si||0})`,btn:'Ouvrir'}));
   sessions.forEach(s=>sessionRequests(s).filter(r=>r.kind==='nc'&&r.status!=='closed').forEach(r=>todo.push({lvl:'o',ic:'⚠️',txt:`NC ouverte · <b>${_esc(s.serie||s.projet||'')}</b> — ${_esc(NC_TYPES[r.type]||r.type)}${r.desc?' : '+_esc(r.desc.slice(0,60)):''}`,meta:new Date(r.date).toLocaleDateString('fr-FR'),act:`openSessionById('${s.id}',${r.si})`,btn:'Ouvrir'})));
-  sessions.forEach(s=>(s.steps||[]).forEach((st,si)=>(st.reworks||[]).filter(r=>!r.endedAt).forEach(r=>todo.push({lvl:'o',ic:'🔧',txt:`Reprise en cours · <b>${_esc(s.serie||s.projet||'')}</b> — ${_esc(rwType(r.type)[2])}`,meta:hm(rwSec(r))+(r.by?' · '+_esc(r.by):''),act:`openSessionById('${s.id}',${si})`,btn:'Ouvrir'}))));
+  sessions.forEach(s=>(s.steps||[]).forEach((st,si)=>(st.reworks||[]).filter(r=>!r.endedAt&&!(typeof rwOverride==='function'&&rwOverride(s.id,'rw_'+si+'_'+r.id)!=null)).forEach(r=>todo.push({lvl:'o',ic:'🔧',txt:`Reprise en cours · <b>${_esc(s.serie||s.projet||'')}</b> — ${_esc(rwType(r.type)[2])}`,meta:hm(rwSec(r))+(r.by?' · '+_esc(r.by):''),act:`openSessionById('${s.id}',${si})`,btn:'Ouvrir'}))));
+  { const adm=typeof isTimeAdmin==='function'&&isTimeAdmin(), tk=new Date(); tk.setHours(0,0,0,0);
+    sessions.forEach(s=>{ const stp=(MODELS[s.modelId]||MODELS.eno180ltv3).getSteps(); (s.steps||[]).forEach((st,si)=>(st.items||[]).forEach((it,ii)=>{ const tm=it.actionTimers&&it.actionTimers.item; if(!tm||!tm.started||tm.stopped) return;
+      if(typeof absKey==='function'&&absKey(s.id,si+'_'+it.id)!=null) return;
+      const live=(tm.seconds||0)+(!tm.paused?(Date.now()-new Date(tm.runningSince||tm.started))/1000:0);
+      if(live<10*3600&&new Date(tm.started)>=tk) return;
+      const lab=((stp[si]||{items:[]}).items[ii]||{}).label||it.id;
+      todo.push({lvl:'o',ic:'⏱',txt:`Chrono resté en marche · <b>${_esc(s.serie||s.projet||'')}</b> — ${_esc((stp[si]||{}).name||'')} › ${_esc(lab)}`,meta:`<span class="tc-orange">en cours depuis ${hm(live)}</span>`,act:adm?`openTimeCorr('${s.id}',['s${si}','u${si}_${it.id}'])`:`openSessionById('${s.id}',${si})`,btn:adm?'Corriger':'Ouvrir'}); })); }); }
   const rupt=stockAlerts.filter(a=>stockStatus(a)==='rupture');
   if(rupt.length) todo.push({lvl:'r',ic:'📦',txt:`${rupt.length} article${rupt.length>1?'s':''} en rupture : ${rupt.slice(0,3).map(a=>_esc(a.designation)).join(', ')}${rupt.length>3?'…':''}`,meta:'',act:'showStock()',btn:'Stock'});
   const lowS=stockAlerts.length-rupt.length; if(lowS>0) todo.push({lvl:'o',ic:'🛒',txt:`${lowS} article${lowS>1?'s':''} sous le seuil, à commander`,meta:'',act:'showStock()',btn:'Stock'});
@@ -5202,7 +5219,7 @@ function updateStockLabel(){
 <div class="screen" id="scStock">
   <div class="stk-head">
     <div><div class="project-title" style="font-size:26px">Stock</div><div style="font-size:12px;color:var(--text3)"><span id="stockCount"></span> · relié aux manques pièces et aux Andon</div></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="stockSearch" placeholder="Rechercher une pièce…" oninput="stockFilter=this.value;renderStock()" autocomplete="off"><button class="btn btn-outline btn-sm" onclick="scanBin()">📷 Scanner un bac</button><button class="btn btn-outline btn-sm" onclick="printBinLabels()">🏷️ Étiquettes des bacs</button><button class="btn btn-primary btn-sm" onclick="editStock()">+ Article</button></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="stockSearch" placeholder="Rechercher une pièce…" oninput="stockFilter=this.value;renderStock()" autocomplete="off"><button class="btn btn-outline btn-sm" onclick="scanBin()">📷 Scanner un bac</button><button class="btn btn-outline btn-sm sheet-btn" id="sheetBtn" onclick="openSheetCfg()">📗 Google Sheets</button><button class="btn btn-outline btn-sm" onclick="printBinLabels()">🏷️ Étiquettes des bacs</button><button class="btn btn-primary btn-sm" onclick="editStock()">+ Article</button></div>
   </div>
   <div class="stk-cats" id="stockCats"></div>
   <div class="stk-board" id="stockBoard"></div>
@@ -5797,7 +5814,12 @@ function flowButtons(s){
 const STOCK_COLS=[['rupture','🔴 Rupture / manque'],['a_commander','🟠 À commander'],['commande','🔵 Commandé'],['ok','🟢 En stock'],['inv','⚪ À inventorier']];
 let stockFilter='', stockCat='';
 const STOCK_CATS=['Sondes & capteurs','Flexibles','Joints','Visserie','Raccords','Consommables','Électrique','Divers'];
-function guessCat(d){ d=(d||'').toLowerCase(); if(/sonde|capteur|pt\b|tt-/.test(d)) return 'Sondes & capteurs'; if(/flexible/.test(d)) return 'Flexibles'; if(/joint/.test(d)) return 'Joints'; if(/vis|écrou|rondelle|entretoise|insert|boulon/.test(d)) return 'Visserie'; if(/raccord|vanne|té\b/.test(d)) return 'Raccords'; if(/loctite|graisse|film/.test(d)) return 'Consommables'; if(/câble|cable|résistance|bornier/.test(d)) return 'Électrique'; return 'Divers'; }
+function guessCat(d){ d=(d||'').toLowerCase().replace(/ecrou/g,'écrou').replace(/(^|\s)te(\s)/g,'$1té$2')+' ';
+  if(/sonde|capteur|pt\b|tt-|flow switch|pressostat|thermostat|manom/.test(d)) return 'Sondes & capteurs';
+  if(/flexible/.test(d)) return 'Flexibles'; if(/joint/.test(d)) return 'Joints';
+  if(/\bvis\b|écrou(?! tournant)|rondelle|entretoise|insert|boulon|goujon|tige filet/.test(d)) return 'Visserie';
+  if(/raccord|vanne|mamelon|coude|(^|\s)té(\s|$)|bouchon|réduction|bag\b|manchon|union|purgeur|filtre|écrou tournant|clapet|nipple|collet/.test(d)) return 'Raccords';
+  if(/loctite|graisse|film|colle|téflon|ruban/.test(d)) return 'Consommables'; if(/câble|cable|résistance|bornier|fusible|relais|contacteur/.test(d)) return 'Électrique'; return 'Divers'; }
 const catOf=a=>a.cat||guessCat(a.designation);
 function setStockCat(c){ stockCat=stockCat===c?'':c; renderStock(); }
 function showStock(){ exitTv(); showScreen('scStock'); i40Start(); renderStock(); }
@@ -5812,12 +5834,13 @@ function renderStock(){
   el.innerHTML=STOCK_COLS.map(([k,t])=>{ const items=list.filter(a=>stockStatus(a)===k); return `<div class="stk-col ${k}"><div class="stk-col-h">${t}<span>${items.length}</span></div>${items.map(a=>{
     const cov=stockCover(a);
     return `<div class="stk-card"><div class="stk-top"><b>${_esc(a.designation)}</b><span class="stk-qty">${a.qty==null?'?':a.qty}${a.unit?' '+_esc(a.unit):''}</span></div>
-      <div class="stk-meta">${_esc(catOf(a))} · ${_esc(a.ref)}${a.emplacement?' · '+_esc(a.emplacement):''} · seuil ${a.seuil||0}${a.parMachine?'':' · <span style="color:#9fdcff">hors nomenclature</span>'}${cov!=null?` · couvre <b>${cov}</b> machine${cov>1?'s':''}`:''}</div>
+      <div class="stk-meta">${_esc(catOf(a))} · ${_esc(a.ref)}${a.emplacement?' · '+_esc(a.emplacement):''} · seuil ${a.seuil||0}${cov!=null?` · couvre <b>${cov}</b> machine${cov>1?'s':''}`:''}</div>
+      ${(k==='a_commander'||k==='rupture')&&a.seuilMax?`<div class="stk-order">🛒 À commander : <b>${Math.max(a.moq||0,(a.seuilMax||0)-(a.qty||0))}</b>${a.fournisseur?' · '+_esc(a.fournisseur):''}${a.refFournisseur?' · réf. '+_esc(a.refFournisseur):''}</div>`:''}
       ${a.manque&&(a.linked||[]).length?`<div class="stk-warn">⚠ Manque signalé : ${(a.linked||[]).map(l=>_esc(l.sn||'')).join(', ')}</div>`:''}
       ${a.aReferencer?`<div class="stk-warn">Créé depuis un manque pièce : à compléter</div>`:''}
       <div class="stk-btns"><button onclick="openBin('${a.id}','out')">− Sortie</button><button onclick="openBin('${a.id}','in')">+ Entrée</button>${k==='inv'?`<button onclick="openBin('${a.id}','inv')">= Inventaire</button>`:''}<button onclick="printBinLabels(['${a.id}'])">🏷️</button>${k==='a_commander'||k==='rupture'?`<button onclick="stockSet('${a.id}',{commande:true})">Commandé</button>`:''}<button onclick="editStock('${a.id}')">✎</button></div></div>`; }).join('')}</div>`; }).join('');
 }
-async function stockSave(a){ const F=fs(); const i=stockList.findIndex(x=>x.id===a.id); if(i>=0) stockList[i]=a; else stockList.push(a); try{ await F.set(F.doc(F.db,'stock',a.id),a); }catch(e){ alert('Stock non enregistré (droits Firestore sur « stock »).'); console.warn(e); } renderStock(); i40Refresh(); }
+async function stockSave(a){ const F=fs(); const i=stockList.findIndex(x=>x.id===a.id); if(i>=0) stockList[i]=a; else stockList.push(a); if(typeof sheetPush==='function') sheetPush({articles:[sheetRow(a)]}); try{ await F.set(F.doc(F.db,'stock',a.id),a); }catch(e){ alert('Stock non enregistré (droits Firestore sur « stock »).'); console.warn(e); } renderStock(); i40Refresh(); }
 function stockSet(id,patch){ const a={...stockList.find(x=>x.id===id),...patch}; stockSave(a); }
 function editStock(id){
   const a=id?(stockList.find(x=>x.id===id)||window._stkDup):{ref:'',designation:'',qty:null,seuil:0,parMachine:0,unit:'pcs',emplacement:'',cat:stockCat||''};
@@ -5843,7 +5866,7 @@ function saveStockForm(id){
 }
 function dupStock(id){ const a=stockList.find(x=>x.id===id); document.getElementById('stkOverlay').remove();
   window._stkDup={...a,id:'',designation:a.designation+' (copie)',ref:a.ref+'-2',qty:null,history:[],linked:[],manque:false,commande:false,forceOrder:false}; editStock('__dup'); }
-async function deleteStock(id){ if(!confirm('Supprimer cet article ?')) return; const F=fs(); stockList=stockList.filter(x=>x.id!==id); try{ await F.del(F.doc(F.db,'stock',id)); }catch(e){} document.getElementById('stkOverlay').remove(); renderStock(); }
+async function deleteStock(id){ if(!confirm('Supprimer cet article ?')) return; const F=fs(); stockList=stockList.filter(x=>x.id!==id); if(typeof sheetPush==='function') sheetPush({deleted:id}); try{ await F.del(F.doc(F.db,'stock',id)); }catch(e){} document.getElementById('stkOverlay').remove(); renderStock(); }
 function seedStock(){
   const L=[['Joint plat DN150 PN25/40','JP-DN150',6],['Joint plat DN125 PN25/40','JP-DN125',3],['Vis M20x90','VIS-M20x90',32],['Vis M20x80','VIS-M20x80',100],['Vis CHC M6x40','VIS-M6x40',12],['Entretoise M6x30','ENT-M6x30',12],
     ['Vis CHC M8x30','VIS-M8x30',16],['Vis CHC M6x20','VIS-M6x20',16],['Joint torique 189,87 × 5,33','JT-189-5.33',2],['Joint torique 126,6 × 5,33','JT-126-5.33',2],['Insert réducteur M8 → M5','INS-M8M5',2],['Raccord 1/2 NPT – 1/2 SAE','RAC-12NPT-12SAE',4],
@@ -5885,10 +5908,12 @@ function applyStockMove(id,mode,n,machine){
   a.history=[{at:nowIso(),mode,d,qty:a.qty,by:who,machine:machine||''},...(a.history||[])].slice(0,40);
   if(mode!=='out'){ if(a.qty>(a.seuil||0)){ a.commande=false; a.forceOrder=false; }
     if(a.manque&&a.qty>0){ a.manque=false; (a.linked||[]).forEach(l=>andonList.filter(x=>!x.resolvedAt&&(x.reqId===l.reqId||(x.ref&&x.ref===a.ref))).forEach(x=>andonResolve(x.id,'Stock : pièce réapprovisionnée'))); a.linked=[]; } }
-  a.aReferencer=false; stockSave(a); return a;
+  a.aReferencer=false; stockSave(a);
+  if(typeof sheetPush==='function') sheetPush({move:{date:new Date().toLocaleString('fr-FR'),designation:a.designation,ref:a.ref,type:{inv:'Inventaire',in:'Entrée',out:'Sortie'}[mode],qty:mode==='out'?-n:n,after:a.qty,machine:machine||'',par:who}});
+  return a;
 }
 function stockMove(id,sign){ openBin(id,sign>0?'in':'out'); }
-function binEmpty(id){ const a={...stockList.find(x=>x.id===id)}; a.forceOrder=true; a.commande=false;
+function binEmpty(id){ const a={...stockList.find(x=>x.id===id)}; a.forceOrder=true; a.commande=false; if(typeof sheetPush==='function') sheetPush({move:{date:new Date().toLocaleString('fr-FR'),designation:a.designation,ref:a.ref,type:'Bac vide',qty:0,after:a.qty,machine:'',par:((window._currentUser&&window._currentUser.email)||'').split('@')[0]}});
   a.history=[{at:nowIso(),mode:'empty',d:0,qty:a.qty,by:(window._currentUser&&window._currentUser.email||'').split('@')[0]},...(a.history||[])].slice(0,40); stockSave(a); closeBin(); }
 function openBin(id,mode){
   const a=stockList.find(x=>x.id===id); if(!a){ alert('Article introuvable : l’étiquette correspond peut-être à un article supprimé.'); return; }
@@ -5968,7 +5993,12 @@ function hm(sec){ sec=Math.max(0,Math.round(sec)); const h=Math.floor(sec/3600),
 function hmIn(sec){ sec=Math.max(0,Math.round(sec)); const h=Math.floor(sec/3600), m=Math.round((sec%3600)/60); return `${h}h${String(m).padStart(2,'0')}`; }
 function parseHM(v){ v=String(v||'').trim().replace(',','.'); if(!v) return 0; const m=v.match(/^(\d+)\s*[h:]\s*(\d{1,2})?$/i); if(m) return (+m[1])*3600+(+(m[2]||0))*60; const n=parseFloat(v); return isNaN(n)?0:n*60; }
 document.addEventListener('firebaseReady',()=>setTimeout(()=>{ if(!window._fsOnSnapshot) return; window._fsOnSnapshot(window._fsCollection(window._db,'timeCorrections'),s=>{ corrMap={}; s.docs.forEach(d=>corrMap[d.id]=d.data()); },e=>console.warn('corrections',e)); },500));
-function timeCorr(sid,si,itemId){ const c=corrMap[String(sid)]; if(!c||!c.items) return 0; const k=si+'_'+itemId; let s=0; Object.entries(c.items).forEach(([kk,v])=>{ if(kk===k||kk.startsWith(k+'_a')) s+=v||0; }); return s; }
+function findSess(sid){ return (typeof liveSessions!=='undefined'&&liveSessions.find(x=>String(x.id)===String(sid)))||sessions.find(x=>String(x.id)===String(sid)); }
+function absKey(sid,k){ const c=corrMap[String(sid)]; return c&&c.abs&&c.abs[k]!=null?c.abs[k]:null; }
+function timeCorr(sid,si,itemId){ const c=corrMap[String(sid)]; if(!c) return 0; const k=si+'_'+itemId, ab=c.abs&&c.abs[k]!=null?c.abs[k]:null; let s=0;
+  if(c.items) Object.entries(c.items).forEach(([kk,v])=>{ if((kk===k&&ab==null)||kk.startsWith(k+'_a')) s+=v||0; });
+  if(ab!=null){ const ss=findSess(sid), it=ss&&ss.steps&&ss.steps[si]&&(ss.steps[si].items||[]).find(i=>i.id===itemId); const raw=(it&&it.actionTimers&&it.actionTimers.item&&it.actionTimers.item.seconds)||0; s+=ab-raw; }
+  return s; }
 function corrKey(sid,k){ const c=corrMap[String(sid)]; return c&&c.items?(c.items[k]||0):0; }
 function openTimeCorr(sid,keepOpen){
   if(!isTimeAdmin()){ alert('Seul l’administrateur peut corriger les temps.'); return; }
@@ -5979,15 +6009,17 @@ function openTimeCorr(sid,keepOpen){
     (st.items||[]).forEach((it,ii)=>{ const def=sd.items[ii]||{label:it.id,actions:[]}; const tm=it.actionTimers||{}, ti=tm.item||{};
       const running=ti.started&&!ti.stopped; const live=running&&!ti.paused?(Date.now()-new Date(ti.runningSince||ti.started))/1000:0;
       const sub={si,itemId:it.id,label:def.label,running,live:Math.round((ti.seconds||0)+live),lines:[]};
-      const head={e:E.length,key:si+'_'+it.id,si,itemId:it.id,ai:null,label:'Chrono de la sous-étape',raw:ti.seconds||0}; head.c=corrKey(s.id,head.key); E.push(head); sub.head=head;
+      const head={e:E.length,key:si+'_'+it.id,si,itemId:it.id,ai:null,label:'Chrono de la sous-étape',raw:ti.seconds||0,running,live:sub.live}; head.abs=absKey(s.id,head.key); head.c=head.abs!=null?head.abs-head.raw:corrKey(s.id,head.key); E.push(head); sub.head=head; sub.abs=head.abs;
       (def.actions||[]).forEach((a,ai)=>{ const r={e:E.length,key:si+'_'+it.id+'_a'+ai,si,itemId:it.id,ai,label:a.txt||('Ligne '+(ai+1)),info:[a.torque,a.info].filter(Boolean).join(' · '),raw:(tm[ai]&&tm[ai].seconds)||0}; r.c=corrKey(s.id,r.key); E.push(r); sub.lines.push(r); });
       sub.total=[head,...sub.lines].reduce((x,r)=>x+r.raw+r.c,0); sub.nc=[head,...sub.lines].filter(r=>r.c).length;
       g.subs.push(sub); });
-    g.total=g.subs.reduce((x,u)=>x+Math.max(0,u.total),0); g.nc=g.subs.reduce((x,u)=>x+u.nc,0); groups.push(g); });
+    g.total=g.subs.reduce((x,u)=>x+Math.max(0,u.total),0); g.nc=g.subs.reduce((x,u)=>x+u.nc,0);
+    g.rws=(st.reworks||[]).map(r=>{ const key='rw_'+si+'_'+r.id, ov=rwOverride(s.id,key); return {rid:r.id,key,si,type:r.type,label:(typeof rwType==='function'?rwType(r.type):['','🔧',r.type]),item:r.itemLabel||'',by:r.by||'',at:r.startedAt,comment:r.comment||'',raw:(typeof rwSec==='function'?rwSec(r):0),ov,open:!r.endedAt}; });
+    g.rwTot=g.rws.reduce((x,r)=>x+(r.ov!=null?r.ov:r.raw),0); groups.push(g); });
   const prev=keepOpen||tcOpenState(); const old=document.getElementById('tcOverlay'); const scroll=old?old.querySelector('.tc-acc').scrollTop:0; if(old) old.remove();
   const dflt=39*3600+15*60, tot=groups.reduce((a,g)=>a+g.total,0);
-  const line=r=>`<div class="tc-line ${r.ai==null?'head':''} ${r.c?'mod':''}"><div class="tc-lbl"><b>${_esc(r.label)}</b><small>${r.info?_esc(r.info)+' · ':''}${r.raw?'chrono '+hm(r.raw):'pas de chrono'}${r.c?` · correction ${r.c>0?'+':'−'}${hm(Math.abs(r.c))}`:''}</small></div>
-    <div class="tc-edit"><input class="tc-val" id="tcv_${r.e}" value="${hmIn(r.raw+r.c)}" inputmode="text" onkeydown="if(event.key==='Enter')tcSetRow('${s.id}',${r.e})" onfocus="this.select()" aria-label="Temps retenu"><button class="tc-ok" onclick="tcSetRow('${s.id}',${r.e})">OK</button><button class="tc-undo" ${r.c?'':'disabled'} onclick="tcUndoKey('${s.id}','${r.key}')" title="Revenir au chrono d’origine">↺</button></div></div>`;
+  const line=r=>`<div class="tc-line ${r.ai==null?'head':''} ${r.c||r.abs!=null?'mod':''}"><div class="tc-lbl"><b>${_esc(r.label)}</b><small>${r.info?_esc(r.info)+' · ':''}${r.running?`<span class="tc-orange">chrono en cours ${hm(r.live)} · encore en cours sur la tablette</span>`:(r.raw?'chrono '+hm(r.raw):'pas de chrono')}${r.abs!=null?` · <b>retenu ${hm(r.abs)}</b>`:(r.c?` · correction ${r.c>0?'+':'−'}${hm(Math.abs(r.c))}`:'')}</small></div>
+    <div class="tc-edit"><input class="tc-val" id="tcv_${r.e}" value="${hmIn(r.abs!=null?r.abs:(r.running?r.live:r.raw+r.c))}" inputmode="text" onkeydown="if(event.key==='Enter')tcSetRow('${s.id}',${r.e})" onfocus="this.select()" aria-label="Temps retenu"><button class="tc-ok" onclick="tcSetRow('${s.id}',${r.e})">OK</button><button class="tc-undo" ${r.c||r.abs!=null?'':'disabled'} onclick="tcUndoKey('${s.id}','${r.key}')" title="Revenir au chrono d’origine">↺</button></div></div>`;
   const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='tcOverlay';
   ov.innerHTML=`<div class="req-box tc-box" onclick="event.stopPropagation()">
     <h3>⏱ Correction des temps</h3>
@@ -6000,12 +6032,14 @@ function openTimeCorr(sid,keepOpen){
         <button class="btn btn-primary btn-sm" id="tcGo" onclick="tcApply('${s.id}')">Retirer aux sous-étapes cochées</button>
       </details></div>
     <div class="tc-acc">${groups.map(g=>`<details class="tc-step" data-k="s${g.si}" ${prev.includes('s'+g.si)?'open':''}>
-        <summary><span class="tc-chev">▸</span><span class="tc-sn">${g.si+1}</span><span class="tc-st">${g.icon?g.icon+' ':''}${_esc(g.name)}</span>${g.nc?`<span class="tc-badge">${g.nc} corrigée${g.nc>1?'s':''}</span>`:''}<span class="tc-tot ${g.total?'':'zero'}">${hm(g.total)}</span></summary>
+        <summary><span class="tc-chev">▸</span><span class="tc-sn">${g.si+1}</span><span class="tc-st">${g.icon?g.icon+' ':''}${_esc(g.name)}</span>${g.nc?`<span class="tc-badge">${g.nc} corrigée${g.nc>1?'s':''}</span>`:''}${g.rws.length?`<span class="tc-badge rw">🔧 ${hm(g.rwTot)}</span>`:''}<span class="tc-tot ${g.total?'':'zero'}">${hm(g.total)}</span></summary>
         <div class="tc-subs">${g.subs.map(u=>`<details class="tc-sub" data-k="u${u.si}_${u.itemId}" ${prev.includes('u'+u.si+'_'+u.itemId)?'open':''}>
           <summary><span class="tc-chev">▸</span><input type="checkbox" class="tc-cb" data-k="${u.head.key}" data-tot="${u.total}" onclick="event.stopPropagation()" ${u.total>=dflt&&!u.nc?'checked':''} title="Sélection pour la correction rapide"><span class="tc-st">${_esc(u.label)}${u.running?` <span class="tc-run">⏱ chrono en cours · ${hm(u.live)}</span>`:''}</span>${u.nc?`<span class="tc-badge">${u.nc}</span>`:''}<span class="tc-tot ${u.total?'':'zero'}">${hm(u.total)}</span></summary>
-          ${u.running?`<div class="tc-note">Ce chrono tourne encore : son temps n’est compté qu’une fois arrêté (dernière ligne cochée par le technicien).</div>`:''}
+          ${u.running&&u.abs==null?`<div class="tc-note">⏱ Chrono resté en marche depuis ${hm(u.live)} : saisissez le temps réel sur la ligne « Chrono de la sous-étape », il sera compté tout de suite.</div>`:''}${u.abs!=null?`<div class="tc-note ok">✓ Temps retenu imposé : ${hm(u.abs)}${u.running?' — le chrono de la tablette est ignoré, même s’il tourne encore.':''}</div>`:''}
           ${line(u.head)}${u.lines.map(line).join('')}
         </details>`).join('')}</div>
+        ${g.rws.length?`<div class="tc-rw"><div class="tc-rw-h">🔧 Reprises (NVA) · ${hm(g.rwTot)}</div>${g.rws.map(r=>`<div class="tc-line ${r.ov!=null?'mod':''}"><div class="tc-lbl"><b>${r.label[1]} ${_esc(r.label[2])}</b><small>${r.item?_esc(r.item)+' · ':''}${r.at?new Date(r.at).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})+' · ':''}${_esc(r.by)} · chrono ${hm(r.raw)}${r.open?' · <span style="color:#ffc46b">encore en cours sur la tablette</span>':''}${r.ov!=null?` · <b>retenu ${hm(r.ov)}</b>`:''}${r.comment?' · '+_esc(r.comment):''}</small></div>
+          <div class="tc-edit"><input class="tc-val" id="tcrw_${r.key}" value="${hmIn(r.ov!=null?r.ov:r.raw)}" onkeydown="if(event.key==='Enter')tcSetRw('${s.id}','${r.key}')" onfocus="this.select()" aria-label="Temps de reprise retenu"><button class="tc-ok" onclick="tcSetRw('${s.id}','${r.key}')">OK</button><button class="tc-undo" ${r.ov!=null?'':'disabled'} onclick="tcUndoRw('${s.id}','${r.key}')" title="Revenir au chrono d’origine">↺</button></div></div>`).join('')}</div>`:''}
       </details>`).join('')}</div>
     <div class="req-err" id="tcErr"></div>
     <div class="req-actions"><button class="btn btn-outline" onclick="document.getElementById('tcOverlay').remove()">Fermer</button></div></div>`;
@@ -6018,6 +6052,14 @@ async function tcSave(sid,mutator){
   const d=document.getElementById('scDashboard'); if(d&&d.classList.contains('active')&&typeof renderDashboard==='function') renderDashboard();
   return true;
 }
+function rwOverride(sid,key){ const c=corrMap[String(sid)]; return c&&c.rw&&c.rw[key]!=null?c.rw[key]:null; }
+async function tcSetRw(sid,key){
+  const v=(document.getElementById('tcrw_'+key)||{}).value, target=parseHM(v);
+  if(String(v||'').trim()===''||isNaN(target)||target<0){ document.getElementById('tcErr').textContent='Temps invalide : écrivez par exemple 0h25, 1h10 ou 0 pour annuler la reprise.'; return; }
+  const keep=tcOpenState(); const ok=await tcSave(sid,cur=>{ cur.rw=cur.rw||{}; cur.rw[key]=Math.round(target); cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key,set:Math.round(target),rework:true},...(cur.log||[])].slice(0,100); });
+  if(ok) openTimeCorr(sid,keep);
+}
+async function tcUndoRw(sid,key){ const keep=tcOpenState(); const ok=await tcSave(sid,cur=>{ if(cur.rw) delete cur.rw[key]; cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key,undo:true,rework:true},...(cur.log||[])].slice(0,100); }); if(ok) openTimeCorr(sid,keep); }
 function tcOpenState(){ return [...document.querySelectorAll('#tcOverlay details[open][data-k]')].map(d=>d.dataset.k); }
 function tcExpand(on){ document.querySelectorAll('#tcOverlay .tc-acc details').forEach(d=>d.open=on); }
 function tcMode(m){ window._tcMode=m; const add=m==='add';
@@ -6030,6 +6072,10 @@ async function tcSetRow(sid,e){
   const r=window._tcE[e], v=document.getElementById('tcv_'+e).value, target=parseHM(v);
   if(String(v).trim()===''||isNaN(target)||target<0){ document.getElementById('tcErr').textContent='Temps invalide : écrivez par exemple 1h30, 0h45 ou 45 (minutes).'; return; }
   const c=Math.round(target-r.raw), keep=tcOpenState();
+  if(r.ai==null&&(r.running||r.abs!=null)){
+    const ok=await tcSave(sid,cur=>{ cur.abs=cur.abs||{}; cur.abs[r.key]=Math.round(target); delete cur.items[r.key]; cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key:r.key,abs:Math.round(target)},...(cur.log||[])].slice(0,100); });
+    if(ok) openTimeCorr(sid,keep); return;
+  }
   const ok=await tcSave(sid,cur=>{ if(c) cur.items[r.key]=c; else delete cur.items[r.key]; cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key:r.key,set:target,delta:c-(r.c||0)},...(cur.log||[])].slice(0,100); });
   if(ok) openTimeCorr(sid,keep);
 }
@@ -6039,11 +6085,11 @@ async function tcApply(sid){
   if(!sel.length){ document.getElementById('tcErr').textContent='Cochez au moins une sous-étape.'; return; }
   const keep=tcOpenState(), add=window._tcMode==='add';
   if(!add){ const short=sel.filter(x=>x.tot<d); if(short.length&&!confirm(`${short.length} sous-étape(s) ont un temps inférieur à ${hm(d)} : leur temps sera ramené à 0. Continuer ?`)) return; }
-  const ok=await tcSave(sid,cur=>{ sel.forEach(x=>{ const delta=add?d:-Math.min(d,Math.max(0,x.tot)); cur.items[x.key]=(cur.items[x.key]||0)+delta; if(!cur.items[x.key]) delete cur.items[x.key];
+  const ok=await tcSave(sid,cur=>{ sel.forEach(x=>{ const delta=add?d:-Math.min(d,Math.max(0,x.tot)); if(cur.abs&&cur.abs[x.key]!=null){ cur.abs[x.key]=Math.max(0,cur.abs[x.key]+delta); } else { cur.items[x.key]=(cur.items[x.key]||0)+delta; if(!cur.items[x.key]) delete cur.items[x.key]; }
     cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key:x.key,delta},...(cur.log||[])].slice(0,100); }); });
   if(ok) openTimeCorr(sid,keep);
 }
-async function tcUndoKey(sid,key){ const keep=tcOpenState(); const ok=await tcSave(sid,cur=>{ delete cur.items[key]; cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key,delta:0,undo:true},...(cur.log||[])].slice(0,100); }); if(ok) openTimeCorr(sid,keep); }
+async function tcUndoKey(sid,key){ const keep=tcOpenState(); const ok=await tcSave(sid,cur=>{ delete cur.items[key]; if(cur.abs) delete cur.abs[key]; cur.log=[{at:new Date().toISOString(),by:TIME_ADMIN,key,delta:0,undo:true},...(cur.log||[])].slice(0,100); }); if(ok) openTimeCorr(sid,keep); }
 async function tcUndo(sid,si,itemId){ return tcUndoKey(sid,si+'_'+itemId); }
 
 
@@ -6267,7 +6313,7 @@ function nvaStats(list){
   let nva=0, va=0, n=0; const byType={}, byStep={}, byModel={};
   list.forEach(s=>{ const steps=(MODELS[s.modelId]||MODELS.eno180ltv3).getSteps(), mn=(MODELS[s.modelId]||{}).name||'';
     (s.steps||[]).forEach((st,si)=>{ (st.items||[]).forEach(it=>{ va+=Math.max(0,rawItemSeconds(it)+(typeof timeCorr==='function'?timeCorr(s.id,si,it.id):0)); });
-      (st.reworks||[]).forEach(r=>{ const sec=rwSec(r); nva+=sec; n++; byType[r.type]=(byType[r.type]||{n:0,s:0}); byType[r.type].n++; byType[r.type].s+=sec;
+      (st.reworks||[]).forEach(r=>{ const ov=typeof rwOverride==='function'?rwOverride(s.id,'rw_'+si+'_'+r.id):null; const sec=ov!=null?ov:rwSec(r); if(ov===0) return; nva+=sec; n++; byType[r.type]=(byType[r.type]||{n:0,s:0}); byType[r.type].n++; byType[r.type].s+=sec;
         const sn=(steps[si]||{}).name||st.id; byStep[sn]=(byStep[sn]||0)+sec; byModel[mn]=(byModel[mn]||0)+sec; }); }); });
   return {nva,va,n,pct:(nva+va)?Math.round(nva/(nva+va)*1000)/10:null,byType,byStep,byModel};
 }
@@ -6283,6 +6329,152 @@ function renderNvaSection(monthSessions){
   if(steps.length) h+=`<div class="db-card"><h3>Étapes qui génèrent le plus de reprises</h3>${steps.map(([k,v])=>`<div class="nva-row"><span>${_esc(k)}</span><span class="nva-bar"><i style="width:${Math.round(v/steps[0][1]*100)}%;background:#ff9f1a"></i></span><b>${hm(v)}</b><small></small></div>`).join('')}</div>`;
   if(!st.n) h+='<p class="db-ok" style="margin-bottom:14px">Aucune reprise déclarée ce mois-ci.</p>';
   return h;
+}
+
+
+// ===================== SYNCHRO GOOGLE SHEETS (via un script Apps Script de la feuille) =====================
+let sheetCfg={url:'',secret:''};
+document.addEventListener('firebaseReady',()=>setTimeout(()=>{ if(!window._fsOnSnapshot) return;
+  window._fsOnSnapshot(window._fsDoc(window._db,'planConfig','sheet'),d=>{ sheetCfg=d.exists()?{url:'',secret:'',...d.data()}:{url:'',secret:''}; const b=document.getElementById('sheetBtn'); if(b) b.classList.toggle('on',!!sheetCfg.url); },()=>{}); },700));
+function sheetRow(a){ return {id:a.id,designation:a.designation||'',ref:a.ref||'',famille:typeof catOf==='function'?catOf(a):'',emplacement:a.emplacement||'',qty:a.qty==null?'':a.qty,unit:a.unit||'',seuil:a.seuil||0,parMachine:a.parMachine||0,
+  statut:({rupture:'Rupture',a_commander:'À commander',commande:'Commandé',ok:'En stock',inv:'À inventorier'})[stockStatus(a)]||'',maj:new Date().toLocaleString('fr-FR'),par:((window._currentUser&&window._currentUser.email)||'').split('@')[0]}; }
+function sheetPush(payload){
+  if(!sheetCfg.url||window._sheetMute) return;
+  try{ fetch(sheetCfg.url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...payload,secret:sheetCfg.secret||''})}).catch(()=>{}); }catch(e){}
+}
+const SHEET_SCRIPT=`// ENOGIA — synchronisation du stock avec la feuille existante (onglet « STOCK »)
+// À coller dans Extensions > Apps Script de la feuille Google Sheets (pas un fichier .xlsx)
+const SECRET = 'CHANGEZ-MOI';          // même code secret que dans l’appli
+const ONGLET = 'STOCK';                // nom de l’onglet du stock
+const AJOUTER_NOUVELLES = true;        // une pièce créée dans l’appli et absente de la feuille est ajoutée en bas
+const JOURNAL = false;                 // true = journal des mouvements dans un onglet « Mouvements appli »
+// Titres des colonnes utilisées (repérées par leur titre, peu importe leur position)
+const COL = { ref:'Référence ENOGIA', des:'Désignation', empl:'Emplacement', qty:'QTY', min:'Seuil min', max:'Seuil MAX', moq:'MOQ', four:'Fournisseur', refFour:'Référence Fournisseur', fab:'Fabricant' };
+
+const norm = v => String(v == null ? '' : v).replace(/\\s+/g, ' ').trim().toLowerCase();
+function cadre_() {
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(ONGLET);
+  if (!sh) throw new Error('Onglet « ' + ONGLET + ' » introuvable');
+  const lastCol = sh.getLastColumn(), haut = sh.getRange(1, 1, Math.min(6, sh.getLastRow()), lastCol).getValues();
+  let hRow = -1, idx = {};
+  for (let r = 0; r < haut.length && hRow < 0; r++) {
+    const titres = haut[r].map(norm);
+    if (titres.indexOf(norm(COL.qty)) >= 0 && titres.indexOf(norm(COL.ref)) >= 0) {
+      hRow = r + 1; Object.keys(COL).forEach(k => { const i = titres.indexOf(norm(COL[k])); if (i >= 0) idx[k] = i + 1; });
+    }
+  }
+  if (hRow < 0) throw new Error('Ligne de titres introuvable (colonnes « ' + COL.ref + ' » et « ' + COL.qty + ' »)');
+  return { sh, hRow, idx };
+}
+function lignes_(c) {
+  const n = c.sh.getLastRow() - c.hRow; if (n <= 0) return [];
+  const data = c.sh.getRange(c.hRow + 1, 1, n, c.sh.getLastColumn()).getValues();
+  return data.map((r, i) => ({ row: c.hRow + 1 + i, v: r }));
+}
+const out_ = o => ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+
+// Lecture : l’appli importe les articles de la feuille
+function doGet(e) {
+  if ((e.parameter || {}).secret !== SECRET) return out_({ ok: false, error: 'code secret incorrect' });
+  try {
+    const c = cadre_(), g = (r, k) => c.idx[k] ? r.v[c.idx[k] - 1] : '';
+    const articles = lignes_(c).filter(r => String(g(r, 'ref')).trim()).map(r => ({
+      ref: String(g(r, 'ref')).trim(), designation: String(g(r, 'des')).trim(), emplacement: String(g(r, 'empl')).trim(),
+      qty: g(r, 'qty') === '' ? null : Number(g(r, 'qty')), seuil: Number(g(r, 'min')) || 0, seuilMax: Number(g(r, 'max')) || 0, moq: Number(g(r, 'moq')) || 0,
+      fournisseur: String(g(r, 'four')).trim(), refFournisseur: String(g(r, 'refFour')).trim(), fabricant: String(g(r, 'fab')).trim() }));
+    return out_({ ok: true, articles });
+  } catch (err) { return out_({ ok: false, error: String(err.message || err) }); }
+}
+
+// Écriture : chaque action de stock dans l’appli met à jour la colonne QTY de la bonne référence
+function doPost(e) {
+  const d = JSON.parse(e.postData.contents);
+  if (d.secret !== SECRET) return out_({ ok: false, error: 'code secret incorrect' });
+  const lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    const c = cadre_(), rows = lignes_(c), pos = {};
+    rows.forEach(r => { const k = norm(r.v[c.idx.ref - 1]); if (k && !pos[k]) pos[k] = r.row; });
+    (d.articles || []).forEach(a => {
+      const k = norm(a.ref); if (!k) return;
+      if (pos[k]) { if (a.qty !== '' && a.qty != null) c.sh.getRange(pos[k], c.idx.qty).setValue(Number(a.qty)); }
+      else if (AJOUTER_NOUVELLES) {
+        const r = c.sh.getLastRow() + 1;
+        c.sh.getRange(r, c.idx.ref).setValue(a.ref);
+        if (c.idx.des) c.sh.getRange(r, c.idx.des).setValue(a.designation || '');
+        if (c.idx.empl) c.sh.getRange(r, c.idx.empl).setValue(a.emplacement || '');
+        if (c.idx.min) c.sh.getRange(r, c.idx.min).setValue(a.seuil || 0);
+        if (a.qty !== '' && a.qty != null) c.sh.getRange(r, c.idx.qty).setValue(Number(a.qty));
+        pos[k] = r;
+      }
+    });
+    if (JOURNAL && d.move) {
+      const ss = SpreadsheetApp.getActiveSpreadsheet(), mv = ss.getSheetByName('Mouvements appli') || ss.insertSheet('Mouvements appli');
+      if (mv.getLastRow() === 0) mv.appendRow(['Date', 'Référence ENOGIA', 'Désignation', 'Mouvement', 'Quantité', 'Stock après', 'Machine', 'Par']);
+      const m = d.move; mv.appendRow([m.date, m.ref, m.designation, m.type, m.qty, m.after, m.machine, m.par]);
+    }
+    return out_({ ok: true });
+  } catch (err) { return out_({ ok: false, error: String(err.message || err) }); }
+  finally { lock.releaseLock(); }
+}
+`;
+function openSheetCfg(){
+  if(!(typeof isTimeAdmin==='function'&&isTimeAdmin())&&!(typeof isPlanner==='function'&&isPlanner())){ alert('Réglage réservé aux responsables.'); return; }
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='sheetOv';
+  ov.innerHTML=`<div class="req-box" style="max-width:640px" onclick="event.stopPropagation()"><h3>📗 Stock ↔ votre feuille Google Sheets</h3>
+    <div class="req-sub">Les pièces sont reconnues par leur <b>Référence ENOGIA</b>. Chaque entrée, sortie, inventaire ou prélèvement met à jour la colonne <b>QTY</b> de l’onglet <b>STOCK</b>. Les autres colonnes ne sont jamais modifiées.</div>
+    <ol class="sheet-steps"><li>Le fichier doit être au format <b>Google Sheets</b> (pas .xlsx) : <b>Fichier → Enregistrer au format Google Sheets</b>, puis travaillez dans cette nouvelle version.</li>
+      <li>Dans cette feuille : <b>Extensions → Apps Script</b>, remplacez tout le code par celui ci-dessous, changez <b>CHANGEZ-MOI</b> par un code secret, enregistrez.</li>
+      <li><b>Déployer → Nouveau déploiement → Application Web</b> : exécuter en tant que <b>Moi</b>, accès <b>Tout le monde</b>. Autorisez, puis copiez l’URL (…/exec).</li>
+      <li>Collez l’URL et le code secret ci-dessous, enregistrez, puis lancez l’<b>import</b>.</li></ol>
+    <label>Code Apps Script <button class="btn btn-outline btn-sm" style="float:right;margin-top:-6px" onclick="navigator.clipboard.writeText(document.getElementById('sheetCode').value).then(()=>toast('Code copié','ok'))">Copier</button></label>
+    <textarea id="sheetCode" readonly style="min-height:110px;font-family:monospace;font-size:11px">${_esc(SHEET_SCRIPT)}</textarea>
+    <label>URL de l’application Web</label><input id="sheetUrl" value="${_esc(sheetCfg.url||'')}" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off">
+    <label>Code secret</label><input id="sheetSecret" value="${_esc(sheetCfg.secret||'')}" autocomplete="off">
+    <div class="req-actions" style="margin-top:12px"><button class="btn btn-outline" onclick="document.getElementById('sheetOv').remove()">Fermer</button><button class="btn btn-primary" onclick="saveSheetCfg()">Enregistrer</button></div>
+    <div class="sheet-imp">
+      <b>Importer les articles de la feuille dans l’appli</b>
+      <label class="req-check" style="color:var(--text2)"><input type="checkbox" id="impQty" checked style="width:auto;margin-right:8px">Reprendre les quantités (QTY) de la feuille</label>
+      <label class="req-check" style="color:var(--text2)"><input type="checkbox" id="impDel" style="width:auto;margin-right:8px">Supprimer de l’appli les articles absents de la feuille (ex. articles de base créés pour tester)</label>
+      <button class="btn btn-primary btn-sm" onclick="sheetImport()">⬇ Importer depuis la feuille</button>
+      <button class="btn btn-outline btn-sm" onclick="sheetPushAll()">⬆ Envoyer toutes les quantités de l’appli vers la feuille</button>
+      <div class="req-err" id="sheetMsg"></div>
+    </div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov);
+}
+async function saveSheetCfg(){
+  const url=document.getElementById('sheetUrl').value.trim(), secret=document.getElementById('sheetSecret').value.trim();
+  if(url&&!/^https:\/\/script\.google\.com\//.test(url)){ alert('L’URL doit commencer par https://script.google.com/'); return; }
+  sheetCfg={url,secret};
+  try{ await window._fsSetDoc(window._fsDoc(window._db,'planConfig','sheet'),sheetCfg); toast('📗 Réglage enregistré','ok'); }catch(e){ alert('Réglage non enregistré : '+(e.message||e)); }
+}
+const refKey=r=>String(r||'').replace(/\s+/g,' ').trim().toLowerCase();
+async function sheetImport(){
+  const msg=document.getElementById('sheetMsg'); if(!sheetCfg.url){ msg.textContent='Enregistrez d’abord l’URL et le code secret.'; return; }
+  msg.style.color='var(--text2)'; msg.textContent='Lecture de la feuille…';
+  let j; try{ const r=await fetch(sheetCfg.url+'?secret='+encodeURIComponent(sheetCfg.secret||'')); j=await r.json(); }catch(e){ msg.style.color=''; msg.textContent='Impossible de lire la feuille : vérifiez l’URL et que l’accès est « Tout le monde ».'; return; }
+  if(!j.ok){ msg.style.color=''; msg.textContent='Erreur de la feuille : '+(j.error||'inconnue'); return; }
+  const takeQty=document.getElementById('impQty').checked, del=document.getElementById('impDel').checked;
+  const F=fs(), seen=new Set(); let nNew=0, nUpd=0, nDel=0; window._sheetMute=true;
+  try{
+    const jobs=[];
+    j.articles.forEach((s,i)=>{ const k=refKey(s.ref); if(!k||seen.has(k)) return; seen.add(k);
+      const ex=stockList.find(a=>refKey(a.ref)===k);
+      const base={designation:s.designation||s.ref,emplacement:s.emplacement||'',seuil:s.seuil||0,seuilMax:s.seuilMax||0,moq:s.moq||0,fournisseur:s.fournisseur||'',refFournisseur:s.refFournisseur||'',fabricant:s.fabricant||''};
+      let a; if(ex){ a={...ex,...base,qty:takeQty&&s.qty!=null&&!isNaN(s.qty)?s.qty:ex.qty}; nUpd++; }
+      else { a={id:'st'+Date.now().toString(36)+i,ref:s.ref,...base,qty:s.qty!=null&&!isNaN(s.qty)?s.qty:null,unit:'pcs',parMachine:0,cat:guessCat(s.designation),history:[],linked:[]}; nNew++; }
+      const idx=stockList.findIndex(x=>x.id===a.id); if(idx>=0) stockList[idx]=a; else stockList.push(a);
+      jobs.push(()=>F.set(F.doc(F.db,'stock',a.id),a)); });
+    if(del){ stockList.filter(a=>!seen.has(refKey(a.ref))).forEach(a=>{ nDel++; jobs.push(()=>F.del(F.doc(F.db,'stock',a.id))); }); stockList=stockList.filter(a=>seen.has(refKey(a.ref))); }
+    for(let i=0;i<jobs.length;i+=25){ msg.textContent=`Import… ${Math.min(i+25,jobs.length)}/${jobs.length}`; await Promise.all(jobs.slice(i,i+25).map(f=>f().catch(()=>{}))); }
+  } finally { window._sheetMute=false; }
+  msg.style.color='#7fe3d8'; msg.textContent=`✓ ${nNew} article(s) ajouté(s), ${nUpd} mis à jour${nDel?`, ${nDel} supprimé(s)`:''}.`;
+  renderStock(); i40Refresh();
+}
+function sheetPushAll(){
+  if(!sheetCfg.url){ document.getElementById('sheetMsg').textContent='Enregistrez d’abord l’URL et le code secret.'; return; }
+  if(!confirm('Remplacer la colonne QTY de la feuille par les quantités de l’appli pour toutes les références connues ?')) return;
+  const list=stockList.filter(a=>a.ref&&a.qty!=null); for(let i=0;i<list.length;i+=40) sheetPush({articles:list.slice(i,i+40).map(sheetRow)});
+  document.getElementById('sheetMsg').style.color='#7fe3d8'; document.getElementById('sheetMsg').textContent=`✓ ${list.length} quantité(s) envoyée(s) vers la feuille.`;
 }
 
 // ---------- KPI Industrie 4.0 (tableau de bord) ----------
