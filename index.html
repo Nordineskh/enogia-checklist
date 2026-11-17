@@ -287,7 +287,7 @@ body.tv-mode .tv-exit{display:block;position:absolute;top:14px;left:50%;transfor
 body.tv-mode .tv-exit:hover{opacity:1}
 .stk-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .stk-head input{background:#00364a;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-size:13px;min-width:220px}
-.stk-board{display:grid;grid-template-columns:repeat(5,minmax(220px,1fr));gap:10px;overflow-x:auto;align-items:start}
+.stk-board{display:grid;grid-template-columns:repeat(5,minmax(220px,1fr));gap:10px;overflow-x:auto;align-items:start;max-width:100%}
 .stk-col{background:#00364a;border:1px solid var(--border);border-radius:10px;padding:8px;min-height:120px}
 .stk-col-h{display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding:4px 4px 8px}
 .stk-col-h span{background:#fff2;border-radius:20px;padding:0 8px;font-size:11px;line-height:18px}
@@ -321,14 +321,14 @@ body.tv-mode .tv-exit:hover{opacity:1}
 .pl-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .pl-kpi{display:flex;gap:16px;font-size:12px;color:var(--text3);margin-top:4px}.pl-kpi b{color:#fff;font-size:15px;margin-left:4px}
 .pl-tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.pl-wk{font-size:13px;color:var(--text2);min-width:150px;text-align:center}
-.pl-body{display:flex;gap:12px;align-items:flex-start}
+.pl-body{display:flex;gap:12px;align-items:flex-start;min-width:0}
 .pl-back{width:280px;flex-shrink:0;max-height:calc(100vh - 200px);overflow:auto;background:#00364a;border:1px solid var(--border);border-radius:10px;padding:10px}
 .pl-back h3{font-size:14px;margin-bottom:4px}.pl-hint{font-size:11px;color:var(--text3);margin-bottom:8px}
 .pl-bg{border-top:1px solid var(--border);padding:6px 0}.pl-bg summary{cursor:pointer;font-size:12.5px;padding:3px 0}
 .pl-bi{font-size:12px;padding:7px 8px;margin:4px 0;border-radius:6px;background:var(--surface);border:1px solid var(--border);cursor:grab;display:flex;justify-content:space-between;gap:6px}
 .pl-bi span{color:var(--text3);white-space:nowrap}.pl-bi.step{border-style:dashed;color:#9fdcff}
 .pl-bi.sel,.pl-task.sel{outline:2px solid #f2c230;outline-offset:1px}
-.pl-grid-wrap{flex:1;overflow-x:auto}
+.pl-grid-wrap{flex:1;overflow-x:auto;min-width:0;max-width:100%}
 .pl-grid{width:100%;border-collapse:separate;border-spacing:4px;min-width:760px}
 .pl-grid th{font-size:12px;color:var(--text2);font-weight:600;padding:6px;text-align:left}.pl-grid th.today{color:#7fe3d8}
 .pl-tech{width:120px;vertical-align:top;font-size:13px !important;color:#fff !important}
@@ -342,7 +342,7 @@ body.tv-mode .tv-exit:hover{opacity:1}
 .pl-task.late{border-left-color:#ff3b30}.pl-task.late i{color:#ff8a82}.pl-task.part{border-left-color:#f2c230}.pl-task.part i{color:#ffd27a}.pl-task.gone{opacity:.4}
 .pl-del{position:absolute;top:3px;right:3px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px}
 .pl-empty{font-size:12px;color:var(--text3);padding:14px;text-align:center}
-@media (max-width:900px){ .pl-body{flex-direction:column} .pl-back{width:100%;max-height:300px} }
+@media (max-width:900px){ .pl-body{flex-direction:column;align-items:stretch} .pl-back{width:100%;max-height:300px} .pl-grid-wrap{width:100%} }
 body.tv-mode #scPlanTv{position:fixed;inset:0;z-index:3000;background:#04222d;display:block !important;overflow:hidden}
 #planTvBody{height:100vh;display:flex;flex-direction:column;padding:16px;gap:12px;color:#fff}
 .pt-top{display:flex;align-items:center;gap:20px}.pt-brand{font-family:var(--font-title);font-size:30px;letter-spacing:2px}
@@ -532,6 +532,65 @@ body.tv-mode #scPlanTv .tv-exit{top:auto;bottom:14px;left:auto;right:14px;transf
 .item-start-btn.paused{background:#ffffff0d;border-color:var(--text3);color:var(--text2);box-shadow:none;cursor:default}
 .item-pause-btn{flex:0 0 auto;min-width:120px;padding:11px 14px;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;background:#00364a;border:1px solid #e08a3c;color:#ffb877}
 .item-pause-btn.resume{background:var(--accent2);border-color:var(--accent2);color:#001824}
+
+/* ===================== RESPONSIVE ===================== */
+img,canvas,video{max-width:100%}
+body{padding-bottom:env(safe-area-inset-bottom,0px)}
+.item-card{container-type:inline-size}
+@container (max-width:440px){ .val-section{grid-template-columns:1fr} .action-spec{max-width:110px} }
+@media (max-width:1100px){ .screen{max-width:100%} }
+@media (max-width:900px){
+  .step-layout{grid-template-columns:1fr}
+  .viewer-canvas-wrap{min-height:240px}
+  .kpi-grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+  .screen [style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:repeat(auto-fit,minmax(150px,1fr)) !important}
+  .stk-board{grid-template-columns:repeat(5,minmax(240px,82vw));scroll-snap-type:x mandatory}
+  .stk-col{scroll-snap-align:start}
+}
+@media (max-width:640px){
+  .screen{padding:10px}
+  .hdr{padding:8px 10px;flex-wrap:wrap;gap:8px}
+  .hdr-right{flex-wrap:wrap;justify-content:flex-end;gap:6px}
+  .hdr-right .badge{max-width:46vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .enogia-logo-sub{display:none}
+  .app-menu-bar{padding:6px 10px}
+  .menu-dropdown{left:10px;right:10px;max-height:75vh;overflow:auto}
+  .input-row,.kpi-dates,.req-btns{grid-template-columns:1fr}
+  .screen [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr !important}
+  .hist-card{flex-wrap:wrap}
+  .hist-card>div:last-child{width:100%;justify-content:flex-end;flex-wrap:wrap}
+  .item-header{padding:12px 10px}
+  .item-body{padding:0 10px 12px}
+  .action-row{gap:8px}
+  .kpi-grid{grid-template-columns:1fr}
+  .kpi-card{padding:14px}
+  .project-title{font-size:22px !important}
+  .andon-btn{min-width:0}
+  .pl-head,.stk-head{align-items:stretch}
+  .pl-tools{width:100%}
+  .stk-head input{min-width:0;flex:1}
+  .as-item{min-width:230px}
+  .dash-section-title{font-size:16px}
+  table{font-size:11.5px}
+}
+@media (max-width:520px){
+  .req-overlay{align-items:flex-end;padding:0}
+  .req-box{max-width:100% !important;width:100%;border-radius:16px 16px 0 0;max-height:94vh;padding:16px 14px calc(16px + env(safe-area-inset-bottom,0px))}
+  .bin-pad button{padding:16px 8px}
+  .tc-line{flex-wrap:wrap}
+  .tc-edit{width:100%;justify-content:flex-end}
+  .steps-nav{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x proximity}
+  .step-dot{flex-shrink:0}
+}
+/* Écrans tactiles : cibles plus grandes, pas de zoom automatique iOS dans les champs */
+@media (pointer:coarse){
+  .action-check{width:26px;height:26px}
+  .btn,.menu-item,.req-chip,.stk-btns button,.pl-bi{min-height:40px}
+  .btn-sm{min-height:36px}
+  .step-dot{width:36px;height:36px}
+  input,select,textarea{font-size:16px !important}
+  .tc-val,.action-ohm-input{font-size:16px !important}
+}
 </style>
 </head>
 <body>
@@ -1220,6 +1279,10 @@ const STEPS_180LTV3=[
       {txt:'Fixer la vérine sur l\'armoire',torque:null,qty:1},
       {txt:'Fixer l\'antenne 4G sur l\'armoire',torque:null,qty:1}]},
     {id:'el4',label:'Chocke',actions:[{txt:'Fixer chocke ×2 au châssis',torque:null,qty:'8× M16'}]},
+    {id:'el_fx1',label:'Mise en place faisceaux 1',actions:[{txt:'Mise en place faisceaux 1',torque:null,qty:1}]},
+    {id:'el_fx2',label:'Mise en place faisceaux 2',actions:[{txt:'Mise en place faisceaux 2',torque:null,qty:1}]},
+    {id:'el_fx3',label:'Mise en place faisceaux 3',actions:[{txt:'Mise en place faisceaux 3',torque:null,qty:1}]},
+    {id:'el_pw',label:'Mise en place des câbles puissance',actions:[{txt:'Mise en place des câbles puissance',torque:null,qty:1}]},
   ]},
   {id:'boucleChd',name:'Boucle chaude',icon:'🔥',items:[
     {id:'bc1',label:'Évaporateur — partie haute',actions:[
@@ -1419,6 +1482,10 @@ const STEPS_180MTV3=[
       {txt:'Fixer la vérine sur l\'armoire',torque:null,qty:1},
       {txt:'Fixer l\'antenne 4G sur l\'armoire',torque:null,qty:1},
       {txt:'Fixer chocke ×2 au châssis (8× M16)',torque:null,qty:1}]},
+    {id:'mtvel_fx1',label:'Mise en place faisceaux 1',actions:[{txt:'Mise en place faisceaux 1',torque:null,qty:1}]},
+    {id:'mtvel_fx2',label:'Mise en place faisceaux 2',actions:[{txt:'Mise en place faisceaux 2',torque:null,qty:1}]},
+    {id:'mtvel_fx3',label:'Mise en place faisceaux 3',actions:[{txt:'Mise en place faisceaux 3',torque:null,qty:1}]},
+    {id:'mtvel_pw',label:'Mise en place des câbles puissance',actions:[{txt:'Mise en place des câbles puissance',torque:null,qty:1}]},
   ]},
   {id:'boucleChd_mtv3',name:'Boucle chaude',icon:'🔥',items:[
     {id:'mtvbc1',label:'Évaporateur — partie haute',actions:[
@@ -1604,6 +1671,10 @@ const STEPS_100LTV3=[
       {txt:'Fixer la vérine sur l\'armoire',torque:null,qty:1},
       {txt:'Fixer l\'antenne 4G sur l\'armoire',torque:null,qty:1},
       {txt:'Fixer chocke au châssis (4× M16)',torque:null,qty:1}]},
+    {id:'el100_fx1',label:'Mise en place faisceaux 1',actions:[{txt:'Mise en place faisceaux 1',torque:null,qty:1}]},
+    {id:'el100_fx2',label:'Mise en place faisceaux 2',actions:[{txt:'Mise en place faisceaux 2',torque:null,qty:1}]},
+    {id:'el100_fx3',label:'Mise en place faisceaux 3',actions:[{txt:'Mise en place faisceaux 3',torque:null,qty:1}]},
+    {id:'el100_pw',label:'Mise en place des câbles puissance',actions:[{txt:'Mise en place des câbles puissance',torque:null,qty:1}]},
   ]},
   {id:'bypass_100',name:'Assemblage Bypass',icon:'🔥',items:[
     {id:'bp100_1',label:'Bypass évaporateur',actions:[
@@ -1768,6 +1839,10 @@ const STEPS_40LTV3=[
     {id:'el40_3',label:'Vérine & Antenne 4G',actions:[
       {txt:'Fixer la vérine sur l\'armoire',torque:null,qty:1},
       {txt:'Fixer l\'antenne 4G sur l\'armoire',torque:null,qty:1}]},
+    {id:'el40_fx1',label:'Mise en place faisceaux 1',actions:[{txt:'Mise en place faisceaux 1',torque:null,qty:1}]},
+    {id:'el40_fx2',label:'Mise en place faisceaux 2',actions:[{txt:'Mise en place faisceaux 2',torque:null,qty:1}]},
+    {id:'el40_fx3',label:'Mise en place faisceaux 3',actions:[{txt:'Mise en place faisceaux 3',torque:null,qty:1}]},
+    {id:'el40_pw',label:'Mise en place des câbles puissance',actions:[{txt:'Mise en place des câbles puissance',torque:null,qty:1}]},
   ]},
   {id:'boucleChd_40',name:'Boucle chaude',icon:'🔥',items:[
     {id:'bc40_1',label:'Évaporateur — partie haute',actions:[
