@@ -545,6 +545,23 @@ body.tv-mode #scPlanTv .tv-exit{top:auto;bottom:14px;left:auto;right:14px;transf
 .toast.ok{border-color:var(--accent);background:#0b3f3c}
 .toast.out{opacity:0;transform:translateY(8px);transition:.4s}
 @keyframes toastIn{from{opacity:0;transform:translateY(10px)}}
+.rw-bar{margin-top:8px}
+.rw-btn{width:100%;padding:11px;border-radius:8px;border:1px dashed #b98cff88;background:#7a5bd614;color:#d7c4ff;font-weight:700;font-size:14px;font-family:var(--font);cursor:pointer}
+.rw-live{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;background:#7a5bd626;border:1px solid #9b7bff;color:#ece4ff;flex-wrap:wrap}
+.rw-live.paused{background:#ffffff0c;border-color:#7a8b92}
+.rw-live small{display:block;font-size:11.5px;opacity:.85;margin-top:2px}.rw-ic{font-size:22px}
+.rw-clock{font-weight:700;font-variant-numeric:tabular-nums}
+.rw-pause,.rw-end{border-radius:8px;padding:9px 12px;font-weight:700;font-size:13px;cursor:pointer;font-family:var(--font);border:1px solid #fff4;background:#fff1;color:#fff}
+.rw-end{background:#2aa99e;border-color:#2aa99e}
+.rw-hist{font-size:11px;color:var(--text3);margin-top:5px}
+.rw-types{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.rw-type{display:flex;align-items:center;gap:8px;text-align:left;padding:11px 10px;border-radius:8px;border:1px solid var(--border);background:#00364a;color:var(--text);font-size:13px;font-family:var(--font);cursor:pointer;line-height:1.2}
+.rw-type span{font-size:20px}.rw-type.on{background:#7a5bd6;border-color:#9b7bff;color:#fff}
+.rw-go{min-height:46px;font-size:15px}
+.nva-row{display:grid;grid-template-columns:minmax(150px,1.3fr) 2fr 70px 30px;gap:10px;align-items:center;font-size:12.5px;padding:5px 0}
+.nva-row b{text-align:right}.nva-row small{color:var(--text3)}
+.nva-bar{height:9px;border-radius:5px;background:#ffffff12;overflow:hidden}.nva-bar i{display:block;height:100%;background:#9b7bff;border-radius:5px}
+@media (max-width:640px){ .nva-row{grid-template-columns:1fr 60px 26px} .nva-bar{grid-column:1/4;grid-row:2} .rw-live button{flex:1} }
 /* Tableau de bord */
 .db-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:4px 0 14px;position:sticky;top:0;z-index:15;background:var(--bg)}
 .db-tabs button{flex-shrink:0;background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap}
@@ -3580,6 +3597,7 @@ function renderStep(){
     </div>
     ${renderStepRequests(currentStep)}
     ${typeof renderAndonBar==='function'?renderAndonBar(currentStep):''}
+    ${typeof renderReworkBar==='function'?renderReworkBar(currentStep):''}
     ${step.memoImg&&window[step.memoImg]?`<details class="step-memo"><summary>📐 Mémo technicien — ${step.memoTitle||'Plan'}<span class="sm-hint">Toucher pour afficher</span></summary><img src="${window[step.memoImg]}" alt="${step.memoTitle||'Plan'}" onclick="viewPhoto(this.src)"></details>`:''}`;
 
   // Checklist items
@@ -4396,6 +4414,7 @@ async function renderDashboard(){
   const todo=[];
   openAndon.sort((a,b)=>(a.color==='red'?0:1)-(b.color==='red'?0:1)).forEach(a=>todo.push({lvl:a.color==='red'?'r':'o',ic:'🚨',txt:`Andon ${a.color==='red'?'rouge':'orange'} · <b>${_esc(a.sn||'')}</b> · ${_esc(a.stepName||'')} — ${_esc(a.reason)}`,meta:fmtMin(minsSince(a.createdAt))+(a.ackAt?' · pris en charge':''),act:`openSessionById('${a.sessionId}',${a.si||0})`,btn:'Ouvrir'}));
   sessions.forEach(s=>sessionRequests(s).filter(r=>r.kind==='nc'&&r.status!=='closed').forEach(r=>todo.push({lvl:'o',ic:'⚠️',txt:`NC ouverte · <b>${_esc(s.serie||s.projet||'')}</b> — ${_esc(NC_TYPES[r.type]||r.type)}${r.desc?' : '+_esc(r.desc.slice(0,60)):''}`,meta:new Date(r.date).toLocaleDateString('fr-FR'),act:`openSessionById('${s.id}',${r.si})`,btn:'Ouvrir'})));
+  sessions.forEach(s=>(s.steps||[]).forEach((st,si)=>(st.reworks||[]).filter(r=>!r.endedAt).forEach(r=>todo.push({lvl:'o',ic:'🔧',txt:`Reprise en cours · <b>${_esc(s.serie||s.projet||'')}</b> — ${_esc(rwType(r.type)[2])}`,meta:hm(rwSec(r))+(r.by?' · '+_esc(r.by):''),act:`openSessionById('${s.id}',${si})`,btn:'Ouvrir'}))));
   const rupt=stockAlerts.filter(a=>stockStatus(a)==='rupture');
   if(rupt.length) todo.push({lvl:'r',ic:'📦',txt:`${rupt.length} article${rupt.length>1?'s':''} en rupture : ${rupt.slice(0,3).map(a=>_esc(a.designation)).join(', ')}${rupt.length>3?'…':''}`,meta:'',act:'showStock()',btn:'Stock'});
   const lowS=stockAlerts.length-rupt.length; if(lowS>0) todo.push({lvl:'o',ic:'🛒',txt:`${lowS} article${lowS>1?'s':''} sous le seuil, à commander`,meta:'',act:'showStock()',btn:'Stock'});
@@ -4415,7 +4434,8 @@ async function renderDashboard(){
     ${sup('🎯 Qualité 1er passage',fpRate==null?'—':fpRate+' %',`${fpPass}/${fpTotal} sous-étapes`,pctCol(fpRate,80,60))}
     ${sup('⏱️ Livrées à temps',kpiRetard==null?'—':kpiRetard+' %',`${onTimeCount}/${sessionsWithDeadline.length} avec date de fin`,pctCol(kpiRetard,80,60))}
     ${sup('🚨 Andon ouverts',openAndon.length,openAndon.length?openAndon.filter(a=>a.color==='red').length+' rouge(s)':'tout tourne',openAndon.length?'#ff6b62':'var(--green)')}
-    ${sup('📦 À commander',stockAlerts.length,rupt.length?rupt.length+' en rupture':'aucune rupture',stockAlerts.length?'#f0a500':'var(--green)')}</div>`;
+    ${sup('📦 À commander',stockAlerts.length,rupt.length?rupt.length+' en rupture':'aucune rupture',stockAlerts.length?'#f0a500':'var(--green)')}
+    ${(()=>{ const n=typeof nvaStats==='function'?nvaStats(monthSessions):{pct:null,n:0,nva:0}; return sup('🔧 NVA reprises',n.pct==null?'—':n.pct+' %',`${n.n} reprise${n.n>1?'s':''} · ${hm(n.nva)}`,n.pct==null?'var(--text3)':n.pct<=5?'var(--green)':n.pct<=10?'var(--yellow)':'#ff6b62'); })()}</div>`;
   syn+=`<div class="db-card"><h3>À traiter maintenant ${todo.length?`<span class="db-n">${todo.length}</span>`:''}</h3>${todo.length?`<div class="db-todo">${todo.slice(0,12).map(x=>`<div class="db-td ${x.lvl}"><span class="ic">${x.ic}</span><div>${x.txt}${x.meta?`<small>${x.meta}</small>`:''}</div><button class="btn btn-outline btn-sm" onclick="${x.act}">${x.btn}</button></div>`).join('')}${todo.length>12?`<p class="db-more">+ ${todo.length-12} autre(s)</p>`:''}</div>`:'<p class="db-ok">✓ Rien d’urgent : aucune alerte, aucune NC ouverte, aucun retard.</p>'}</div>`;
   syn+=`<div class="db-card"><h3>Machines en cours <small>touchez une ligne pour ouvrir la checklist</small></h3>${machinesLive.length?`<div class="db-mach">${machinesLive.map(m=>`<button class="db-m" onclick="openSessionById('${m.id}')"><span class="dot" style="background:${andonDot[m.andon]||'#7a8b92'}" title="${_esc(ANDON_TXT[m.andon]||'')}"></span><span class="sn"><b>${_esc(m.sn)}</b><small>${_esc(m.model)}</small></span><span class="st">${_esc(m.stepName||'')}<small>${zoneLbl[m.zone]||''}${m.op?' · '+_esc(m.op):''}</small></span><span class="pg"><i style="width:${m.pct}%"></i></span><span class="pc">${m.pct}%</span></button>`).join('')}</div>`:'<p class="db-ok">Aucune machine en cours.</p>'}</div>`;
   syn+=`<div style="text-align:center;margin-top:6px"><button class="export-btn" onclick="exportDashboard()">📥 Exporter le rapport mensuel (CSV)</button></div>`;
@@ -4426,7 +4446,7 @@ async function renderDashboard(){
   Object.entries(byModel).forEach(([modelName,ms])=>{ mach+=`<div class="dash-section-title">⚙️ ${modelName}</div><div class="kpi-grid">${ms.map(s=>renderKPICard(s,isAdmin)).join('')}</div>`; });
   html+=pane('mach',mach);
   // Qualité
-  html+=pane('qual',`<div class="db-tiles">${sup('🎯 1er passage',fpRate==null?'—':fpRate+' %',`${fpPass}/${fpTotal} sous-étapes VE`,pctCol(fpRate,80,60))}${sup('⚠️ Non-conformités',ncTotal,'ce mois','#ff6b62')}${sup('📐 Nomenclatures',kpiNomencl==null?'—':kpiNomencl+' %',`${ncErreurGameme} gamme · ${ncDefautAssemblage} assemblage · ${nomenReqTotal} non-respect`,pctCol(kpiNomencl,90,70))}${sup('⭐ Avancement OP moyen',avgQ+' %','des machines du mois',pctCol(avgQ,80,50))}</div>`+renderNCChart(monthSessions)+renderRequestsSection(monthSessions));
+  html+=pane('qual',`<div class="db-tiles">${sup('🎯 1er passage',fpRate==null?'—':fpRate+' %',`${fpPass}/${fpTotal} sous-étapes VE`,pctCol(fpRate,80,60))}${sup('⚠️ Non-conformités',ncTotal,'ce mois','#ff6b62')}${sup('📐 Nomenclatures',kpiNomencl==null?'—':kpiNomencl+' %',`${ncErreurGameme} gamme · ${ncDefautAssemblage} assemblage · ${nomenReqTotal} non-respect`,pctCol(kpiNomencl,90,70))}${sup('⭐ Avancement OP moyen',avgQ+' %','des machines du mois',pctCol(avgQ,80,50))}</div>`+(typeof renderNvaSection==='function'?renderNvaSection(monthSessions):'')+renderNCChart(monthSessions)+renderRequestsSection(monthSessions));
   // Temps
   html+=pane('temps',renderStepTimeChart(monthSessions)+renderOpComparison(monthSessions)+renderTimeSection(monthSessions));
   // Planning & flux
@@ -6190,6 +6210,79 @@ function afterValidate(si,ii){
   if(next>=0){ toast('✓ '+defs[ii].label+' validée — suite : '+defs[next].label,'ok');
     setTimeout(()=>{ document.querySelectorAll('.item-body.open').forEach(b=>b.classList.remove('open')); const b=document.getElementById('body_'+defs[next].id); if(b){ b.classList.add('open'); const card=b.closest('.item-card')||b; card.scrollIntoView({behavior:'smooth',block:'start'}); } },150); }
   else { toast('✓ Étape '+(si+1)+' terminée côté technicien — passez à l’étape suivante','ok'); const n=document.getElementById('btnNext'); if(n){ n.classList.add('pulse'); setTimeout(()=>n.classList.remove('pulse'),4000); n.scrollIntoView({behavior:'smooth',block:'center'}); } }
+}
+
+
+// ===================== REPRISES (NVA) : bouton par étape, chrono début / fin =====================
+const RW_TYPES=[['chassis','🏗️','Modification châssis'],['serrage','🔩','Reprise de serrage'],['ecrous','⚙️','Écrous à modifier / remplacer'],['percage','🕳️','Perçage de trous'],
+  ['taraudage','🌀','Reprise de taraudage'],['soudure','🔥','Soudure / meulage'],['remontage','🔁','Démontage / remontage'],['piece','🧩','Pièce non conforme à reprendre'],['autre','✏️','Autre']];
+const rwType=k=>RW_TYPES.find(x=>x[0]===k)||['autre','✏️','Autre'];
+const rwClock=s=>{ s=Math.max(0,Math.round(s)); const h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60; return (h?h+':'+String(m).padStart(2,'0'):String(m))+':'+String(x).padStart(2,'0'); };
+const rwSec=r=>Math.round((r.seconds||0)+(!r.endedAt&&!r.paused&&r.runningSince?(Date.now()-new Date(r.runningSince))/1000:0));
+function stepReworks(si){ const ss=session.steps[si]; if(!ss.reworks) ss.reworks=[]; return ss.reworks; }
+function renderReworkBar(si){
+  if(!session) return ''; const list=(session.steps[si].reworks||[]); const act=list.find(r=>!r.endedAt);
+  const done=list.filter(r=>r.endedAt), tot=done.reduce((a,r)=>a+rwSec(r),0);
+  return `<div class="rw-bar" id="rwBar">${act?`<div class="rw-live ${act.paused?'paused':''}">
+      <span class="rw-ic">${rwType(act.type)[1]}</span><div style="flex:1;min-width:0"><b>Reprise en cours — ${_esc(rwType(act.type)[2])}</b><small>${act.itemLabel?_esc(act.itemLabel)+' · ':''}${act.paused?'en pause':'chrono'} <span class="rw-clock" data-rw="${act.id}">${rwClock(rwSec(act))}</span>${act.comment?' · '+_esc(act.comment):''}</small></div>
+      <button class="rw-pause" onclick="rwPause('${act.id}')">${act.paused?'▶ Reprendre':'⏸ Pause'}</button><button class="rw-end" onclick="rwEnd('${act.id}')">✓ Fin de reprise</button></div>`
+    :`<button class="rw-btn" onclick="openReworkForm()">🔧 Reprise</button>`}
+    ${done.length?`<div class="rw-hist">${done.length} reprise${done.length>1?'s':''} sur cette étape · ${hm(tot)} : ${done.slice(-3).map(r=>`${rwType(r.type)[1]} ${_esc(rwType(r.type)[2])} (${hm(rwSec(r))})`).join(' · ')}</div>`:''}</div>`;
+}
+function refreshRwBar(){ const el=document.getElementById('rwBar'); if(el&&session){ const d=document.createElement('div'); d.innerHTML=renderReworkBar(currentStep); el.replaceWith(d.firstElementChild); } }
+setInterval(()=>{ if(!session) return; document.querySelectorAll('.rw-clock[data-rw]').forEach(el=>{ const r=(session.steps[currentStep].reworks||[]).find(x=>x.id===el.dataset.rw); if(r) el.textContent=rwClock(rwSec(r)); }); },1000);
+function openReworkForm(){
+  const si=currentStep, step=ACTIVE_STEPS[si]; window._rw={type:null,itemId:''};
+  const openItem=document.querySelector('.item-body.open'); const openId=openItem?openItem.id.replace(/^body_/,''):'';
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='rwOverlay';
+  ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()"><h3>🔧 Démarrer une reprise</h3>
+    <div class="req-sub">Étape ${si+1} — ${_esc(step.name)} · ${_esc(session.serie||'')} · le temps de reprise est compté en non-valeur ajoutée (NVA).</div>
+    <label>Type de reprise</label><div class="rw-types">${RW_TYPES.map(([k,ic,l])=>`<button class="rw-type" data-k="${k}" onclick="window._rw.type='${k}';this.parentNode.querySelectorAll('.rw-type').forEach(b=>b.classList.toggle('on',b===this))"><span>${ic}</span>${l}</button>`).join('')}</div>
+    <label>Sous-étape concernée (facultatif)</label><select id="rwItem"><option value="">Toute l’étape</option>${step.items.map(i=>`<option value="${i.id}" ${i.id===openId?'selected':''}>${_esc(i.label)}</option>`).join('')}</select>
+    <label>Précision (facultatif)</label><input id="rwComment" placeholder="ex. trou Ø8 décalé sur longeron" autocomplete="off">
+    <div class="req-err" id="rwErr"></div>
+    <div class="req-actions"><button class="btn btn-outline" onclick="document.getElementById('rwOverlay').remove()">Annuler</button><button class="btn btn-primary rw-go" onclick="rwStart()">▶ Démarrer la reprise</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov);
+}
+function rwStart(){
+  if(!window._rw.type){ document.getElementById('rwErr').textContent='Choisissez le type de reprise.'; return; }
+  const si=currentStep, itemId=(document.getElementById('rwItem')||{}).value||'', now=new Date().toISOString();
+  const def=itemId?ACTIVE_STEPS[si].items.find(i=>i.id===itemId):null;
+  // le temps de reprise ne doit pas gonfler le chrono de montage : on met en pause les chronos de l'étape
+  const paused=[]; session.steps[si].items.forEach((it,ii)=>{ const t=it.actionTimers&&it.actionTimers.item; if(t&&t.started&&!t.stopped&&!t.paused&&typeof _bankItemTime==='function'){ _bankItemTime(t,now); t.paused=true; (t.pauses=t.pauses||[]).push({from:now,to:null,reason:'reprise'}); paused.push(ii); } });
+  stepReworks(si).push({id:'rw'+Date.now().toString(36),type:window._rw.type,itemId,itemLabel:def?def.label:'',comment:((document.getElementById('rwComment')||{}).value||'').trim(),
+    by:session.steps[si].stepOp||session.op||'',user:(window._currentUser&&window._currentUser.email)||'',startedAt:now,runningSince:now,seconds:0,paused:false,endedAt:null,pausedItems:paused});
+  document.getElementById('rwOverlay').remove(); saveState(); renderStep(); toast('🔧 Reprise démarrée — le chrono tourne','ok');
+}
+function rwPause(id){ const r=stepReworks(currentStep).find(x=>x.id===id); if(!r||r.endedAt) return; const now=new Date().toISOString();
+  if(r.paused){ r.paused=false; r.runningSince=now; } else { r.seconds=rwSec(r); r.paused=true; r.runningSince=null; } saveState(); refreshRwBar(); }
+function rwEnd(id){
+  const si=currentStep, r=stepReworks(si).find(x=>x.id===id); if(!r||r.endedAt) return; const now=new Date().toISOString();
+  r.seconds=rwSec(r); r.paused=false; r.runningSince=null; r.endedAt=now;
+  (r.pausedItems||[]).forEach(ii=>{ const t=(session.steps[si].items[ii].actionTimers||{}).item; if(t&&t.paused&&!t.stopped){ t.paused=false; t.runningSince=now; const last=(t.pauses||[]).slice(-1)[0]; if(last&&!last.to) last.to=now; } });
+  saveState(); renderStep(); toast(`✓ Reprise terminée : ${hm(r.seconds)} en NVA`,'ok');
+}
+// ---------- Indicateur NVA ----------
+function nvaStats(list){
+  let nva=0, va=0, n=0; const byType={}, byStep={}, byModel={};
+  list.forEach(s=>{ const steps=(MODELS[s.modelId]||MODELS.eno180ltv3).getSteps(), mn=(MODELS[s.modelId]||{}).name||'';
+    (s.steps||[]).forEach((st,si)=>{ (st.items||[]).forEach(it=>{ va+=Math.max(0,rawItemSeconds(it)+(typeof timeCorr==='function'?timeCorr(s.id,si,it.id):0)); });
+      (st.reworks||[]).forEach(r=>{ const sec=rwSec(r); nva+=sec; n++; byType[r.type]=(byType[r.type]||{n:0,s:0}); byType[r.type].n++; byType[r.type].s+=sec;
+        const sn=(steps[si]||{}).name||st.id; byStep[sn]=(byStep[sn]||0)+sec; byModel[mn]=(byModel[mn]||0)+sec; }); }); });
+  return {nva,va,n,pct:(nva+va)?Math.round(nva/(nva+va)*1000)/10:null,byType,byStep,byModel};
+}
+function renderNvaSection(monthSessions){
+  const st=nvaStats(monthSessions); const types=Object.entries(st.byType).sort((a,b)=>b[1].s-a[1].s), max=types.length?types[0][1].s:1;
+  const steps=Object.entries(st.byStep).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  let h='<div class="dash-section-title">🔧 Reprises — temps non à valeur ajoutée (NVA)</div>';
+  h+=`<div class="db-tiles">
+    <div class="db-tile" style="border-top-color:${st.pct==null?'var(--text3)':st.pct<=5?'var(--green)':st.pct<=10?'var(--yellow)':'#ff6b62'}"><span>📉 Part de NVA</span><b style="color:${st.pct==null?'var(--text3)':st.pct<=5?'var(--green)':st.pct<=10?'var(--yellow)':'#ff6b62'}">${st.pct==null?'—':st.pct+' %'}</b><small>reprises / temps total chronométré</small></div>
+    <div class="db-tile" style="border-top-color:#ff9f1a"><span>⏱ Temps de reprise</span><b>${hm(st.nva)}</b><small>${st.n} reprise${st.n>1?'s':''} ce mois</small></div>
+    <div class="db-tile" style="border-top-color:var(--accent)"><span>✅ Temps de montage (VA)</span><b>${hm(st.va)}</b><small>chronos des sous-étapes</small></div></div>`;
+  if(types.length) h+=`<div class="db-card"><h3>Temps de reprise par type</h3>${types.map(([k,v])=>{ const t=rwType(k); return `<div class="nva-row"><span>${t[1]} ${_esc(t[2])}</span><span class="nva-bar"><i style="width:${Math.round(v.s/max*100)}%"></i></span><b>${hm(v.s)}</b><small>${v.n}×</small></div>`; }).join('')}</div>`;
+  if(steps.length) h+=`<div class="db-card"><h3>Étapes qui génèrent le plus de reprises</h3>${steps.map(([k,v])=>`<div class="nva-row"><span>${_esc(k)}</span><span class="nva-bar"><i style="width:${Math.round(v/steps[0][1]*100)}%;background:#ff9f1a"></i></span><b>${hm(v)}</b><small></small></div>`).join('')}</div>`;
+  if(!st.n) h+='<p class="db-ok" style="margin-bottom:14px">Aucune reprise déclarée ce mois-ci.</p>';
+  return h;
 }
 
 // ---------- KPI Industrie 4.0 (tableau de bord) ----------
