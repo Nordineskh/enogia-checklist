@@ -7,7 +7,7 @@
 <title>ENOGIA — Checklist Montage</title>
 <link href="https://fonts.googleapis.com/css2?family=Abel&family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://unpkg.com/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js"></script>
 <style>
 :root{
   /* Charte ENOGIA */
@@ -648,6 +648,17 @@ body.tv-mode #scPlanTv .tv-exit{top:auto;bottom:14px;left:auto;right:14px;transf
 .ve-btn[disabled]{opacity:.45;cursor:default}
 .ve-all small{font-size:11.5px;color:var(--text3);text-align:center}
 .ve-all.done{padding:10px 12px;border-radius:8px;background:#2aa99e1f;border:1px solid #2aa99e66;color:#7fe3d8;font-weight:700;font-size:13px;text-align:center}
+.sn-box{max-width:560px}
+.sn-cam{position:relative;border-radius:10px;overflow:hidden;background:#000;aspect-ratio:16/9;margin:6px 0 8px}
+.sn-cam video{width:100%;height:100%;object-fit:cover;display:block}
+.sn-frame{position:absolute;left:8%;right:8%;top:37%;bottom:37%;border:3px solid #f2c230;border-radius:8px;box-shadow:0 0 0 9999px #0008}
+.sn-frame span{position:absolute;top:-26px;left:0;right:0;text-align:center;font-size:12px;font-weight:700;color:#f2c230;text-shadow:0 1px 3px #000}
+.sn-res{min-height:40px;display:flex;flex-direction:column;gap:8px}.sn-res small{font-size:12px;color:var(--text2)}
+.sn-val{font-size:22px !important;font-weight:700;letter-spacing:1px;text-align:center;padding:10px !important}
+.sn-chips{display:flex;flex-wrap:wrap;gap:6px}.sn-chips button{background:#00364a;border:1px solid var(--border);color:var(--text);border-radius:20px;padding:7px 12px;font-size:13px;font-family:monospace;cursor:pointer}
+.sn-ok{width:100%;min-height:46px;font-size:15px}
+.sn-file{display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+button.btn-scan{font-size:16px;min-width:38px}
 /* Tableau de bord */
 .db-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:4px 0 14px;position:sticky;top:0;z-index:15;background:var(--bg)}
 .db-tabs button{flex-shrink:0;background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap}
@@ -3836,10 +3847,7 @@ function renderStep(){
         <td>
           <div class="sn-input-wrap">
             <input type="text" class="sn-input" data-comp="${k}" value="${sstate.snData[k]||''}" oninput="saveSN('${k}',this.value)" placeholder="SN…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-            <label class="btn-scan" title="Prendre en photo">
-              📸
-              <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanSerialNumber('${k}', this)">
-            </label>
+            <button type="button" class="btn-scan" title="Lire le N° de série à la caméra" onclick="snScan('${k}')">📸</button>
           </div>
         </td>
         <td><input type="text" value="${sstate.snData[k+'_op']||''}" oninput="saveSN('${k}_op',this.value)" style="width:70px" placeholder="OP"></td>
@@ -3847,6 +3855,7 @@ function renderStep(){
       </tr>`;
     }).join('')}
     </tbody></table></div></div>`;
+    setTimeout(()=>{ if(typeof ocrWarm==='function') ocrWarm(); },800);   // prépare la lecture pendant que le technicien travaille
   } else snSec.innerHTML='';
 
   // Comment
@@ -4166,64 +4175,6 @@ function saveOhmVal(si,ii,ai,val){const it=session.steps[si].items[ii];if(!it.oh
 function saveStepOp(si,val){session.steps[si].stepOp=val;saveState();}
 function saveStepVe(si,val){session.steps[si].stepVe=val;saveState();}
 function saveSN(key,val){session.steps[currentStep].snData[key]=val;saveState();}
-function scanSerialNumber(compKey, input) {
-  if (!input.files || !input.files[0]) return;
-  
-  const textInput = document.querySelector(`.sn-input[data-comp="${compKey}"]`);
-  if (textInput) {
-    textInput.value = "";
-    textInput.placeholder = "Analyse de la photo...";
-  }
-
-  const file = input.files[0];
-  const reader = new FileReader();
-  
-  reader.onload = function(e) {
-    // Lance le moteur OCR de Tesseract.js chargé en haut de page
-    Tesseract.recognize(
-      e.target.result,
-      'eng', // Mode anglais (idéal pour filtrer les caractères de numéros de série sans accents)
-      { 
-        logger: m => {
-          if (m.status === 'recognizing' && textInput) {
-            textInput.placeholder = `Lecture... ${Math.round(m.progress * 100)}%`;
-          }
-        } 
-      }
-    ).then(({ data: { text } }) => {
-      if (textInput) textInput.placeholder = "SN…";
-      
-      if (!text || text.trim() === "") {
-        alert("Aucun texte détecté. Assurez-vous que le numéro est bien visible et net.");
-        return;
-      }
-
-      // Nettoie le texte : isole les lignes, garde uniquement lettres, chiffres et tirets
-      const lines = text.split('\n')
-                        .map(l => l.trim().replace(/[^a-zA-Z0-9\-_]/g, ''))
-                        .filter(l => l.length > 2);
-      
-      if (lines.length > 0) {
-        // Enregistre la ligne lue la plus pertinente (souvent la première)
-        const detectedSN = lines[0].toUpperCase();
-        if (textInput) {
-          textInput.value = detectedSN;
-        }
-        // Sauvegarde la valeur lue dans votre session
-        saveSN(compKey, detectedSN);
-      } else {
-        alert("Impossible d'isoler un numéro de série exploitable sur cette image.");
-      }
-    }).catch(err => {
-      console.error(err);
-      if (textInput) textInput.placeholder = "SN…";
-      alert("Une erreur est survenue lors du traitement de l'image.");
-    });
-  };
-  
-  reader.readAsDataURL(file);
-}
-
 function saveStepComment(si,val){session.steps[si].comment=val;saveState();}
 
 // Utilisateurs dispensés du blocage des valeurs ohmiques
@@ -6757,6 +6708,88 @@ function veValidateAll(si){
   if(after.done.length===after.total){ toast(`✅ Étape ${si+1} soldée : tout est vérifié`,'ok'); const n=document.getElementById('btnNext'); if(n){ n.classList.add('pulse'); setTimeout(()=>n.classList.remove('pulse'),4000); } }
   else toast(`✓ ${v.ready.length} sous-étape${v.ready.length>1?'s':''} vérifiée${v.ready.length>1?'s':''} — reste ${after.total-after.done.length}`,'ok');
 }
+
+// ===================== N° DE SÉRIE PAR PHOTO : caméra directe + OCR rapide =====================
+// Moteur OCR chargé une seule fois et préparé à l'avance (avant : rechargé à chaque photo = lent)
+let ocrWorker=null, ocrReady=null;
+function ocrWarm(){
+  if(ocrReady||typeof Tesseract==='undefined') return ocrReady;
+  ocrReady=(async()=>{ const w=await Tesseract.createWorker('eng',1);
+    await w.setParameters({tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-/._',preserve_interword_spaces:'1'});
+    ocrWorker=w; return w; })().catch(e=>{ console.warn('OCR',e); ocrReady=null; });
+  return ocrReady;
+}
+// Prépare l'image : recadrage, niveaux de gris, contraste automatique, mise à l'échelle
+function ocrPrep(src,sx,sy,sw,sh){
+  const scale=Math.min(3,Math.max(1,1100/sw)), c=document.createElement('canvas'); c.width=Math.round(sw*scale); c.height=Math.round(sh*scale);
+  const g=c.getContext('2d'); g.imageSmoothingQuality='high'; g.drawImage(src,sx,sy,sw,sh,0,0,c.width,c.height);
+  const d=g.getImageData(0,0,c.width,c.height), p=d.data; let mn=255,mx=0;
+  for(let i=0;i<p.length;i+=4){ const v=.299*p[i]+.587*p[i+1]+.114*p[i+2]; p[i]=v; if(v<mn) mn=v; if(v>mx) mx=v; }
+  const k=255/Math.max(1,mx-mn); for(let i=0;i<p.length;i+=4){ const v=Math.max(0,Math.min(255,(p[i]-mn)*k)); p[i]=p[i+1]=p[i+2]=v; }
+  g.putImageData(d,0,0); return c;
+}
+// Extrait les candidats « numéro de série » du texte lu, les plus probables d'abord
+function snCandidates(text){
+  const out=[], seen=new Set(), raw=String(text||'').toUpperCase();
+  const kw=raw.match(/(?:S\/?N|SERIAL(?:\s*N[O0])?|N[O0°]\s*S[EÉ]RIE|NR|N[O0])[\s:.#-]*([A-Z0-9][A-Z0-9\-\/._]{3,})/);
+  if(kw){ out.push(kw[1]); seen.add(kw[1]); }
+  raw.split(/\s+/).map(x=>x.replace(/^[^A-Z0-9]+|[^A-Z0-9]+$/g,'')).filter(Boolean).forEach(tok=>{ if(seen.has(tok)) return; seen.add(tok);
+    if(tok.length<4||tok.length>24||!/\d/.test(tok)) return; if(/^(SN|S\/N|SERIAL|TYPE|MODEL)$/.test(tok)) return; out.push(tok); });
+  return out.sort((a,b)=>{ const sc=t=>(kw&&t===kw[1]?100:0)+(/[A-Z]/.test(t)&&/\d/.test(t)?10:0)+Math.min(t.length,14); return sc(b)-sc(a); }).slice(0,6);
+}
+let snScanState=null;
+async function snScan(compKey){
+  ocrWarm();
+  const ov=document.createElement('div'); ov.className='req-overlay sn-ov'; ov.id='snOv';
+  ov.innerHTML=`<div class="req-box sn-box" onclick="event.stopPropagation()"><h3>📸 N° de série</h3>
+    <div class="sn-cam"><video id="snVid" playsinline muted></video><div class="sn-frame"><span>Placez le numéro dans le cadre</span></div></div>
+    <div class="sn-res" id="snRes"><small id="snMsg">Préparation de la lecture…</small></div>
+    <div class="req-actions"><button class="btn btn-outline" onclick="snClose()">Annuler</button><label class="btn btn-outline sn-file">🖼️ Photo<input type="file" accept="image/*" capture="environment" style="display:none" onchange="snFromFile(this)"></label><button class="btn btn-primary" id="snShot" onclick="snCapture()">📸 Lire le numéro</button></div></div>`;
+  document.body.appendChild(ov);
+  snScanState={compKey,stream:null,det:null,loop:0};
+  ocrReady&&ocrReady.then(()=>{ const m=document.getElementById('snMsg'); if(m&&!snScanState.text) m.textContent='Prêt : cadrez le numéro puis « Lire le numéro ».'; });
+  try{
+    const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}}});
+    snScanState.stream=st; const v=document.getElementById('snVid'); v.srcObject=st; await v.play();
+    try{ const tr=st.getVideoTracks()[0], cap=tr.getCapabilities?tr.getCapabilities():{}; if(cap.focusMode&&cap.focusMode.includes('continuous')) tr.applyConstraints({advanced:[{focusMode:'continuous'}]}); }catch(e){}
+    // codes-barres / QR / Data Matrix des plaques signalétiques : lecture instantanée si l'appareil le permet
+    if('BarcodeDetector' in window){ try{ snScanState.det=new BarcodeDetector({formats:['code_128','code_39','qr_code','data_matrix','ean_13']});
+      const tick=async()=>{ if(!snScanState||!document.getElementById('snOv')) return; try{ const r=await snScanState.det.detect(v); if(r.length&&r[0].rawValue){ snShow([r[0].rawValue.trim()],'Code-barres lu'); return; } }catch(e){} snScanState.loop=setTimeout(tick,350); }; tick(); }catch(e){} }
+  }catch(e){ document.getElementById('snMsg').textContent='Caméra indisponible : utilisez « 🖼️ Photo ».'; document.querySelector('.sn-cam').style.display='none'; }
+}
+function snClose(){ if(snScanState){ clearTimeout(snScanState.loop); try{ snScanState.stream&&snScanState.stream.getTracks().forEach(t=>t.stop()); }catch(e){} } snScanState=null; const o=document.getElementById('snOv'); if(o) o.remove(); }
+async function snRead(canvas,psm){
+  const m=document.getElementById('snMsg'); if(m) m.textContent='Lecture en cours…';
+  const w=await ocrWarm(); if(!w){ if(m) m.textContent='Lecture impossible (moteur OCR non chargé). Saisissez le numéro à la main.'; return; }
+  await w.setParameters({tessedit_pageseg_mode:psm});
+  const {data}=await w.recognize(canvas); const c=snCandidates(data.text);
+  if(c.length) snShow(c,'Numéro lu'); else if(m) m.textContent='Aucun numéro reconnu : rapprochez-vous, évitez les reflets, puis réessayez.';
+}
+async function snCapture(){
+  const v=document.getElementById('snVid'); if(!v||!v.videoWidth) return;
+  const W=v.videoWidth,H=v.videoHeight, bw=W*.84, bh=H*.26;      // même zone que le cadre affiché
+  document.getElementById('snShot').disabled=true;
+  try{ await snRead(ocrPrep(v,(W-bw)/2,(H-bh)/2,bw,bh),'7'); } finally{ const b=document.getElementById('snShot'); if(b) b.disabled=false; }
+}
+function snFromFile(input){
+  const f=input.files&&input.files[0]; if(!f) return; const img=new Image(), url=URL.createObjectURL(f);
+  img.onload=async()=>{ URL.revokeObjectURL(url); const k=Math.min(1,1600/Math.max(img.width,img.height)); const c=document.createElement('canvas'); c.width=img.width*k; c.height=img.height*k; c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    await snRead(ocrPrep(c,0,0,c.width,c.height),'6'); };
+  img.src=url;
+}
+function snShow(list,title){
+  if(!snScanState) return; snScanState.text=true; clearTimeout(snScanState.loop);
+  document.getElementById('snRes').innerHTML=`<small>${title} — touchez le bon numéro, ou corrigez-le :</small>
+    <input id="snVal" class="sn-val" value="${_esc(list[0])}" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    ${list.length>1?`<div class="sn-chips">${list.map(x=>`<button onclick="document.getElementById('snVal').value='${_esc(x).replace(/'/g,"\\'")}'">${_esc(x)}</button>`).join('')}</div>`:''}
+    <button class="btn btn-primary sn-ok" onclick="snAccept()">✓ Enregistrer ce numéro</button>`;
+}
+function snAccept(){
+  const v=(document.getElementById('snVal').value||'').trim().toUpperCase(); if(!v||!snScanState) return; const k=snScanState.compKey;
+  saveSN(k,v); const inp=document.querySelector(`.sn-input[data-comp="${k}"]`); if(inp) inp.value=v; snClose(); toast('✓ N° de série enregistré : '+v,'ok');
+}
+// Compatibilité avec l'ancien bouton photo
+function scanSerialNumber(compKey,input){ snScan(compKey).then(()=>snFromFile(input)); }
 
 // ---------- KPI Industrie 4.0 (tableau de bord) ----------
 function renderI40Section(monthSessions){
