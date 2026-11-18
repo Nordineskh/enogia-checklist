@@ -419,7 +419,53 @@ body.tv-mode #scPlanTv .tv-exit{top:auto;bottom:14px;left:auto;right:14px;transf
 .sheet-imp label.req-check{margin:0 !important}
 .stk-order{font-size:11.5px;color:#9fdcff;margin-top:4px}
 .sheet-steps{font-size:12.5px;color:var(--text2);padding-left:18px;margin:4px 0 6px;line-height:1.55}
-.stk-cats{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px}
+.stk-tools{display:flex;gap:6px;flex-wrap:wrap}
+.stk-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.stk-kpi{display:flex;flex-direction:column;align-items:flex-start;gap:1px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 11px;cursor:pointer;color:var(--text);font-family:var(--font);text-align:left;position:relative}
+.stk-kpi i{position:absolute;top:11px;right:11px;width:10px;height:10px;border-radius:50%}
+.stk-kpi b{font-size:22px;line-height:1.1}.stk-kpi span{font-size:11.5px;color:var(--text3)}
+.stk-kpi.on{border-color:var(--accent2);box-shadow:0 0 0 2px #0086c255}
+.stk-bar{display:flex;gap:8px;align-items:center;margin-bottom:8px;position:sticky;top:0;z-index:12;background:var(--bg);padding:6px 0}
+.stk-bar input{flex:1;min-width:0;background:#00364a;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-size:14px}
+.stk-views{display:flex;background:#00364a;border:1px solid var(--border);border-radius:10px;padding:3px;flex-shrink:0}
+.stk-views button{background:none;border:none;color:var(--text2);padding:8px 11px;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.stk-views button.on{background:var(--accent2);color:#fff}
+.stk-res{font-size:12px;color:var(--text3);margin:2px 0 8px}
+.stk-list-view,.stk-order-view{overflow-x:auto}
+.stk-table{width:100%;border-collapse:collapse;font-size:13px}
+.stk-table th{position:sticky;top:0;background:#00364a;font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);text-align:left;padding:8px;cursor:pointer;white-space:nowrap;user-select:none}
+.stk-table th.sorted{color:#9fdcff}
+.stk-table td{padding:8px;border-top:1px solid #ffffff10;vertical-align:middle}
+.stk-table tbody tr{cursor:pointer}.stk-table tbody tr:hover{background:#ffffff08}
+.stk-table .num{text-align:right;font-variant-numeric:tabular-nums}
+.stk-table td small{display:block;font-size:10.5px;color:var(--text3);margin-top:1px}
+.c-st{width:18px}.c-st i{display:block;width:10px;height:10px;border-radius:50%}
+.c-ref{font-weight:700;white-space:nowrap;color:#9fdcff}.c-empl{white-space:nowrap;color:var(--text2)}
+.c-qty{font-size:16px;font-weight:700}.st-rupture .c-qty{color:#ff8a82}.st-a_commander .c-qty{color:#ffc46b}.st-inv .c-qty{color:var(--text3)}
+.c-ord b{color:#ffc46b}.c-mm{color:var(--text2);white-space:nowrap}.c-four{font-size:12px;color:var(--text2)}
+.c-act{white-space:nowrap;text-align:right}.c-act button{background:none;border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:4px 7px;margin-left:3px;cursor:pointer}
+.stk-more{display:block;margin:12px auto}
+.ord-grp{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px}
+.ord-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}.ord-h b{font-size:15px}.ord-h span{font-size:12px;color:var(--text3);margin-right:auto}
+.stk-table.ord tbody tr{cursor:default}
+@media (max-width:760px){
+  .stk-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .stk-bar{flex-direction:column;align-items:stretch}
+  .stk-views{justify-content:space-between}.stk-views button{flex:1}
+  .stk-list-view .stk-table thead{display:none}
+  .stk-list-view .stk-table tr{display:grid;grid-template-columns:14px 1fr auto;gap:2px 8px;padding:9px 6px;border-top:1px solid #ffffff10}
+  .stk-list-view .stk-table td{border:none;padding:0}
+  .stk-list-view .c-st{grid-row:1/4;padding-top:4px !important}
+  .stk-list-view .c-des{grid-column:2;grid-row:1;font-weight:600}
+  .stk-list-view .c-qty{grid-column:3;grid-row:1;text-align:right}
+  .stk-list-view .c-ref{grid-column:2;grid-row:2;font-size:12px}
+  .stk-list-view .c-empl{grid-column:2;grid-row:3;font-size:12px}
+  .stk-list-view .c-mm{grid-column:3;grid-row:2;font-size:11px}
+  .stk-list-view .c-ord{grid-column:3;grid-row:3;font-size:12px}
+  .stk-list-view .c-four,.stk-list-view .c-act{display:none}
+}
+.stk-cats{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;margin:0 0 10px;padding-bottom:2px}
+.stk-cats button{flex-shrink:0}
 .stk-cats button{background:#00364a;border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font)}
 .stk-cats button.on{background:var(--accent2);border-color:var(--accent2);color:#fff}
 .stk-cats button span{opacity:.7;margin-left:3px}
@@ -5216,13 +5262,16 @@ function updateStockLabel(){
   <div id="planTvBody"></div>
   <button class="tv-exit" onclick="exitTv()">✕ Quitter l’écran planning</button>
 </div>
-<div class="screen" id="scStock">
+<div class="screen" id="scStock" style="max-width:1280px">
   <div class="stk-head">
-    <div><div class="project-title" style="font-size:26px">Stock</div><div style="font-size:12px;color:var(--text3)"><span id="stockCount"></span> · relié aux manques pièces et aux Andon</div></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="stockSearch" placeholder="Rechercher une pièce…" oninput="stockFilter=this.value;renderStock()" autocomplete="off"><button class="btn btn-outline btn-sm" onclick="scanBin()">📷 Scanner un bac</button><button class="btn btn-outline btn-sm sheet-btn" id="sheetBtn" onclick="openSheetCfg()">📗 Google Sheets</button><button class="btn btn-outline btn-sm" onclick="printBinLabels()">🏷️ Étiquettes des bacs</button><button class="btn btn-primary btn-sm" onclick="editStock()">+ Article</button></div>
+    <div><div class="project-title" style="font-size:26px">Stock</div><div style="font-size:12px;color:var(--text3)"><span id="stockCount"></span> · synchronisé avec Google Sheets · relié aux manques pièces et aux Andon</div></div>
+    <div class="stk-tools"><button class="btn btn-primary btn-sm" onclick="scanBin()">📷 Scanner un bac</button><button class="btn btn-outline btn-sm" onclick="editStock()">+ Article</button><button class="btn btn-outline btn-sm" onclick="printBinLabels(stockFiltered().map(a=>a.id))" title="Étiquettes des articles affichés">🏷️ Étiquettes</button><button class="btn btn-outline btn-sm sheet-btn" id="sheetBtn" onclick="openSheetCfg()">📗 Sheets</button></div>
   </div>
+  <div class="stk-kpis" id="stockKpis"></div>
+  <div class="stk-bar"><input id="stockSearch" type="search" placeholder="🔎 Référence, désignation, emplacement, fournisseur…" oninput="stockFilter=this.value;stockLimit=120;renderStock()" autocomplete="off">
+    <div class="stk-views"><button data-v="list" onclick="setStockView('list')">☰ Liste</button><button data-v="order" onclick="setStockView('order')">🛒 À commander</button><button data-v="kanban" onclick="setStockView('kanban')">▦ Kanban</button></div></div>
   <div class="stk-cats" id="stockCats"></div>
-  <div class="stk-board" id="stockBoard"></div>
+  <div id="stockBoard"></div>
 </div>
 <div class="screen" id="scVSM" style="padding:0;max-width:100%;margin:0">
 <div style="display:flex;height:calc(100vh - 97px)">
@@ -5824,10 +5873,70 @@ const catOf=a=>a.cat||guessCat(a.designation);
 function setStockCat(c){ stockCat=stockCat===c?'':c; renderStock(); }
 function showStock(){ exitTv(); showScreen('scStock'); i40Start(); renderStock(); }
 function stockCover(a){ return a.parMachine>0&&a.qty!=null?Math.floor(a.qty/a.parMachine):null; }
+// ===================== STOCK : vues Liste / À commander / Kanban =====================
+let stockView='list', stockStat='', stockSort={k:'stat',dir:1}, stockLimit=120, stockSelOrder=new Set();
+const ST_ORDER={rupture:0,a_commander:1,commande:2,inv:3,ok:4};
+const ST_LBL={rupture:'Rupture',a_commander:'À commander',commande:'Commandé',ok:'En stock',inv:'À inventorier'};
+const ST_DOT={rupture:'#ff3b30',a_commander:'#ff9f1a',commande:'#2b8fd6',ok:'#2aa99e',inv:'#7a8b92'};
+function toOrder(a){ const q=a.qty||0; if(a.seuilMax) return Math.max(a.moq||0,a.seuilMax-q,1); return Math.max(a.moq||0,(a.seuil||0)*2-q,1); }
+function stockFiltered(){ const q=stockFilter.toLowerCase().trim();
+  return stockList.filter(a=>(!q||(a.ref+' '+a.designation+' '+(a.emplacement||'')+' '+(a.fournisseur||'')+' '+(a.refFournisseur||'')+' '+catOf(a)).toLowerCase().includes(q))&&(!stockCat||catOf(a)===stockCat)&&(!stockStat||stockStatus(a)===stockStat)); }
+function setStockView(v){ stockView=v; stockLimit=120; renderStock(); }
+function setStockStat(s){ stockStat=stockStat===s?'':s; stockLimit=120; renderStock(); }
+function setStockSort(k){ stockSort=stockSort.k===k?{k,dir:-stockSort.dir}:{k,dir:1}; renderStock(); }
 function renderStock(){
   const el=document.getElementById('stockBoard'); if(!el) return;
+  document.querySelectorAll('.stk-views button').forEach(b=>b.classList.toggle('on',b.dataset.v===stockView));
+  const cnt={}; stockList.forEach(a=>{ const s=stockStatus(a); cnt[s]=(cnt[s]||0)+1; });
+  document.getElementById('stockCount').textContent=`${stockList.length} article${stockList.length>1?'s':''}`;
+  document.getElementById('stockKpis').innerHTML=[['','Tous',stockList.length,'#9fdcff'],['rupture','Rupture',cnt.rupture||0,ST_DOT.rupture],['a_commander','À commander',cnt.a_commander||0,ST_DOT.a_commander],['commande','Commandé',cnt.commande||0,ST_DOT.commande],['ok','En stock',cnt.ok||0,ST_DOT.ok],['inv','À inventorier',cnt.inv||0,ST_DOT.inv]]
+    .map(([k,l,n,c])=>`<button class="stk-kpi ${stockStat===k?'on':''}" onclick="setStockStat('${k}')"><i style="background:${c}"></i><b>${n}</b><span>${l}</span></button>`).join('');
+  const cats=STOCK_CATS.filter(c=>stockList.some(a=>catOf(a)===c));
+  document.getElementById('stockCats').innerHTML=`<button class="${!stockCat?'on':''}" onclick="stockCat='';renderStock()">Toutes familles</button>`+cats.map(c=>`<button class="${stockCat===c?'on':''}" onclick="setStockCat('${c.replace(/'/g,"\\'")}')">${c} <span>${stockList.filter(a=>catOf(a)===c).length}</span></button>`).join('');
+  if(!stockList.length){ el.className='stk-board'; el.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="emo">📦</div><p>Aucun article. Importez votre feuille Google Sheets (📗) ou créez vos articles.</p></div>`; return; }
+  if(stockView==='kanban'){ el.className='stk-board'; return renderStockKanban(); }
+  if(stockView==='order'){ el.className='stk-order-view'; return renderStockOrder(el); }
+  // ---- Liste ----
+  el.className='stk-list-view';
+  const L=stockFiltered(); const key={stat:a=>ST_ORDER[stockStatus(a)]*1e6+String(a.emplacement||'zz').localeCompare('')||0,ref:a=>a.ref||'',des:a=>a.designation||'',empl:a=>a.emplacement||'',qty:a=>a.qty==null?-1:a.qty,four:a=>a.fournisseur||''}[stockSort.k];
+  L.sort((x,y)=>{ if(stockSort.k==='stat'){ const d=ST_ORDER[stockStatus(x)]-ST_ORDER[stockStatus(y)]; if(d) return d*stockSort.dir; return String(x.emplacement||'').localeCompare(String(y.emplacement||''),'fr',{numeric:true}); }
+    const a=key(x), b=key(y); return (typeof a==='number'?a-b:String(a).localeCompare(String(b),'fr',{numeric:true}))*stockSort.dir; });
+  const th=(k,l,cls='')=>`<th class="${cls} ${stockSort.k===k?'sorted':''}" onclick="setStockSort('${k}')">${l}${stockSort.k===k?(stockSort.dir>0?' ▲':' ▼'):''}</th>`;
+  const shown=L.slice(0,stockLimit);
+  el.innerHTML=`<div class="stk-res">${L.length} article${L.length>1?'s':''}${stockFilter||stockCat||stockStat?' (filtrés)':''} · touchez une ligne pour faire une sortie, une entrée ou un inventaire</div>
+  <table class="stk-table"><thead><tr>${th('stat','','c-st')}${th('ref','Réf. ENOGIA')}${th('des','Désignation')}${th('empl','Empl.')}${th('qty','QTY','num')}<th class="num">Min / Max</th><th class="num">À cder</th>${th('four','Fournisseur','c-four')}<th></th></tr></thead><tbody>
+  ${shown.map(a=>{ const s=stockStatus(a), al=s==='rupture'||s==='a_commander';
+    return `<tr class="st-${s}" onclick="openBin('${a.id}')"><td class="c-st"><i style="background:${ST_DOT[s]}" title="${ST_LBL[s]}"></i></td>
+      <td class="c-ref">${_esc(a.ref)}</td><td class="c-des">${_esc(a.designation)}<small>${_esc(catOf(a))}${a.manque?' · <b style="color:#ff8a82">manque signalé</b>':''}${a.forceOrder?' · bac vide':''}</small></td>
+      <td class="c-empl">${_esc(a.emplacement||'—')}</td><td class="num c-qty">${a.qty==null?'?':a.qty}</td><td class="num c-mm">${a.seuil||0}${a.seuilMax?' / '+a.seuilMax:''}</td>
+      <td class="num c-ord">${al?`<b>${toOrder(a)}</b>`:''}</td><td class="c-four">${_esc(a.fournisseur||'')}<small>${_esc(a.refFournisseur||'')}</small></td>
+      <td class="c-act" onclick="event.stopPropagation()"><button title="Étiquette QR" onclick="printBinLabels(['${a.id}'])">🏷️</button><button title="Modifier" onclick="editStock('${a.id}')">✎</button></td></tr>`; }).join('')}
+  </tbody></table>${L.length>stockLimit?`<button class="btn btn-outline stk-more" onclick="stockLimit+=200;renderStock()">Afficher ${Math.min(200,L.length-stockLimit)} articles de plus (${L.length-stockLimit} restants)</button>`:''}`;
+}
+// ---- Vue « À commander » : regroupée par fournisseur, prête pour la commande ----
+function renderStockOrder(el){
+  const q=stockFilter.toLowerCase().trim();
+  const need=stockList.filter(a=>['rupture','a_commander'].includes(stockStatus(a))&&(!q||(a.ref+' '+a.designation+' '+(a.fournisseur||'')).toLowerCase().includes(q))&&(!stockCat||catOf(a)===stockCat));
+  const onOrder=stockList.filter(a=>stockStatus(a)==='commande');
+  const groups={}; need.forEach(a=>{ const f=a.fournisseur||'Sans fournisseur'; (groups[f]=groups[f]||[]).push(a); });
+  const fk=Object.keys(groups).sort((a,b)=>groups[b].length-groups[a].length);
+  el.innerHTML=`<div class="stk-res">${need.length} article${need.length>1?'s':''} à commander chez ${fk.length} fournisseur${fk.length>1?'s':''} · quantité calculée avec Seuil MAX et MOQ</div>
+  ${fk.length?fk.map(f=>`<div class="ord-grp"><div class="ord-h"><b>${_esc(f)}</b><span>${groups[f].length} réf.</span>
+      <button class="btn btn-outline btn-sm" onclick="copyOrder('${_esc(f).replace(/'/g,"\\'")}')">📋 Copier la commande</button><button class="btn btn-primary btn-sm" onclick="markOrdered('${_esc(f).replace(/'/g,"\\'")}')">✓ Marquer commandé</button></div>
+    <table class="stk-table ord"><thead><tr><th></th><th>Réf. ENOGIA</th><th>Désignation</th><th>Réf. fournisseur</th><th class="num">Stock</th><th class="num">Min / Max</th><th class="num">MOQ</th><th class="num">À commander</th></tr></thead><tbody>
+    ${groups[f].sort((a,b)=>ST_ORDER[stockStatus(a)]-ST_ORDER[stockStatus(b)]).map(a=>`<tr class="st-${stockStatus(a)}"><td class="c-st"><i style="background:${ST_DOT[stockStatus(a)]}"></i></td><td class="c-ref">${_esc(a.ref)}</td><td class="c-des">${_esc(a.designation)}</td><td>${_esc(a.refFournisseur||'—')}</td><td class="num c-qty">${a.qty==null?'?':a.qty}</td><td class="num">${a.seuil||0}${a.seuilMax?' / '+a.seuilMax:''}</td><td class="num">${a.moq||'—'}</td><td class="num c-ord"><b>${toOrder(a)}</b></td></tr>`).join('')}
+    </tbody></table></div>`).join(''):'<p class="db-ok">✓ Rien à commander : tous les articles sont au-dessus de leur seuil.</p>'}
+  ${onOrder.length?`<div class="ord-grp"><div class="ord-h"><b>🔵 En commande</b><span>${onOrder.length} réf.</span></div><table class="stk-table ord"><tbody>${onOrder.map(a=>`<tr><td class="c-ref">${_esc(a.ref)}</td><td class="c-des">${_esc(a.designation)}</td><td>${_esc(a.fournisseur||'')}</td><td class="num">stock ${a.qty??'?'}</td><td><button class="btn btn-outline btn-sm" onclick="openBin('${a.id}','in')">Réceptionner</button></td></tr>`).join('')}</tbody></table></div>`:''}`;
+}
+function orderLines(f){ return stockList.filter(a=>['rupture','a_commander'].includes(stockStatus(a))&&(a.fournisseur||'Sans fournisseur')===f); }
+function copyOrder(f){ const L=orderLines(f); const txt=`Commande ${f} — ${new Date().toLocaleDateString('fr-FR')}\n`+L.map(a=>`${a.refFournisseur||a.ref}\t${a.designation}\tQté : ${toOrder(a)}`).join('\n');
+  navigator.clipboard.writeText(txt).then(()=>toast(`📋 Commande ${f} copiée (${L.length} lignes)`,'ok')).catch(()=>alert(txt)); }
+function markOrdered(f){ const L=orderLines(f); if(!L.length||!confirm(`Marquer ${L.length} article(s) ${f} comme commandés ?`)) return; L.forEach(a=>stockSave({...a,commande:true,forceOrder:false,commandeAt:new Date().toISOString()})); toast(`✓ ${L.length} article(s) passés en « Commandé »`,'ok'); }
+
+function renderStockKanban(){
+  const el=document.getElementById('stockBoard'); if(!el) return;
   const q=stockFilter.toLowerCase(); const list=stockList.filter(a=>(!q||(a.ref+' '+a.designation+' '+(a.emplacement||'')+' '+catOf(a)).toLowerCase().includes(q))&&(!stockCat||catOf(a)===stockCat));
-  const cats=STOCK_CATS.filter(c=>stockList.some(a=>catOf(a)===c)); const ce=document.getElementById('stockCats');
+  const cats=STOCK_CATS.filter(c=>stockList.some(a=>catOf(a)===c)); const ce=null;
   if(ce) ce.innerHTML=cats.map(c=>`<button class="${stockCat===c?'on':''}" onclick="setStockCat('${c.replace(/'/g,"\\'")}')">${c} <span>${stockList.filter(a=>catOf(a)===c).length}</span></button>`).join('');
   document.getElementById('stockCount').textContent=`${stockList.length} article${stockList.length>1?'s':''}`;
   if(!stockList.length){ el.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="emo">📦</div><p>Aucun article. Créez vos articles un par un, ou partez de la liste de base tirée de vos checklists.</p><button class="btn btn-primary" style="margin-top:10px" onclick="seedStock()">Créer les articles de base</button></div>`; return; }
