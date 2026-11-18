@@ -341,6 +341,30 @@ body.tv-mode .tv-exit:hover{opacity:1}
 .pl-task.todo{border-left-color:#7a8b92}.pl-task.run{border-left-color:#2ee07a}.pl-task.run i{color:#2ee07a}.pl-task.done{border-left-color:#2aa99e;opacity:.6}.pl-task.done i{color:#7fe3d8}
 .pl-task.late{border-left-color:#ff3b30}.pl-task.late i{color:#ff8a82}.pl-task.part{border-left-color:#f2c230}.pl-task.part i{color:#ffd27a}.pl-task.gone{opacity:.4}
 .pl-del{position:absolute;top:3px;right:3px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px}
+.pl-fer{display:block;font-size:10px;color:#ffc46b;font-weight:400}
+.pl-cell.pl-off{background:repeating-linear-gradient(135deg,#ffffff06 0 8px,transparent 8px 16px);opacity:.7}
+.pl-bf{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-size:13px;margin:4px 0 6px}
+.pl-hint.sel{color:#ffd27a;font-weight:600}
+.pl-pjg{border-top:1px solid var(--border);padding:6px 0}
+.pl-pjg>summary{cursor:pointer;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;padding:4px 0;list-style:none}
+.pl-pjg>summary::-webkit-details-marker{display:none}
+.pl-pjg>summary b{font-size:15px;color:#9fdcff}.pl-pjg>summary span{font-size:11px;color:var(--text3)}.pl-pjg>summary em{font-style:normal;font-size:10.5px;color:var(--text3);margin-left:auto}
+.pl-stp{margin:3px 0 3px 4px;border-left:2px solid var(--border);padding-left:6px}
+.pl-stp>summary{cursor:pointer;font-size:12.5px;padding:5px 0;display:flex;align-items:center;gap:5px;list-style:none}
+.pl-stp>summary::-webkit-details-marker{display:none}
+.pl-stp>summary em{font-style:normal;margin-left:auto;font-size:10.5px;color:var(--text3)}
+.pl-chev{font-size:10px;color:var(--text3);transition:transform .2s}.pl-stp[open] .pl-chev{transform:rotate(90deg)}
+.pl-pj{color:#9fdcff}
+.pl-duo{display:block;color:#d7c4ff;font-size:10.5px;font-weight:600;margin-top:2px}
+.pl-task.duo{border-left-style:double;border-left-width:4px}
+.pl-btns{position:absolute;top:3px;right:3px;display:flex;gap:2px}
+.pl-btns button{background:#00000033;border:none;color:var(--text2);border-radius:4px;cursor:pointer;font-size:11px;padding:2px 4px}
+.pl-task{padding-right:46px !important}
+.pl-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin:8px 0}
+.pl-pk{display:flex !important;flex-direction:column;gap:1px;padding:10px;border:1px solid var(--border);border-radius:8px;background:#00364a;cursor:pointer;text-transform:none !important;letter-spacing:0 !important;font-size:13px !important;color:var(--text) !important;margin:0 !important}
+.pl-pk input{display:none}.pl-pk small{font-size:11px;color:var(--text3)}
+.pl-pk.on{background:#0086c2;border-color:#0086c2}.pl-pk.on small{color:#dff3ff}
+.pt-duo{display:block;font-size:14px;color:#d7c4ff;margin-top:-2px}
 .pl-empty{font-size:12px;color:var(--text3);padding:14px;text-align:center}
 @media (max-width:900px){ .pl-body{flex-direction:column;align-items:stretch} .pl-back{width:100%;max-height:300px} .pl-grid-wrap{width:100%} }
 body.tv-mode #scPlanTv{position:fixed;inset:0;z-index:3000;background:#04222d;display:block !important;overflow:hidden}
@@ -1443,6 +1467,14 @@ const STEPS_180LTV3=[
     {id:'bf3',label:'Sondes TT-21 & TT-22',actions:[
       {txt:'Visser sondes TT-21 & TT-22 — Loctite 272',torque:null,qty:2}]},
   ]},
+  {id:'cond',name:'Conditionnement',icon:'📦',items:[
+    {id:'cond_net',label:'Nettoyage',actions:[{txt:'Nettoyage de la machine',torque:null,qty:1}]},
+    {id:'cond_carter',label:'Mise en place carter',actions:[{txt:'Mise en place carter',torque:null,qty:1}]},
+    {id:'cond_emb',label:'Emballage',actions:[{txt:'Emballage de la machine',torque:null,qty:1}]},
+  ]},
+  {id:'livr',name:'Livraison',icon:'🚚',items:[
+    {id:'livr_charg',label:'Chargement',actions:[{txt:'Chargement de la machine',torque:null,qty:1}]},
+  ]},
 ];
 
 
@@ -1641,6 +1673,14 @@ const STEPS_180MTV3=[
     {id:'mtvbf3',label:'Sondes TT-21 & TT-22',actions:[
       {txt:'Sondes TT-21 & TT-22 — Loctite 272',torque:null,qty:2}]},
   ]},
+  {id:'cond',name:'Conditionnement',icon:'📦',items:[
+    {id:'cond_net',label:'Nettoyage',actions:[{txt:'Nettoyage de la machine',torque:null,qty:1}]},
+    {id:'cond_carter',label:'Mise en place carter',actions:[{txt:'Mise en place carter',torque:null,qty:1}]},
+    {id:'cond_emb',label:'Emballage',actions:[{txt:'Emballage de la machine',torque:null,qty:1}]},
+  ]},
+  {id:'livr',name:'Livraison',icon:'🚚',items:[
+    {id:'livr_charg',label:'Chargement',actions:[{txt:'Chargement de la machine',torque:null,qty:1}]},
+  ]},
 ];
 
 // ===================== STEPS ENO 100 LTV3 =====================
@@ -1813,6 +1853,14 @@ const STEPS_100LTV3=[
       {txt:'Vannes papillon entre brides vis M20x140 + Rondelle M20',torque:'100 Nm',qty:16},
       {txt:'Sondes TT-11 & TT-12 — Loctite 272',torque:null,qty:2},
       {txt:'Actionneurs sur les vannes',torque:null,qty:2}]},
+  ]},
+  {id:'cond',name:'Conditionnement',icon:'📦',items:[
+    {id:'cond_net',label:'Nettoyage',actions:[{txt:'Nettoyage de la machine',torque:null,qty:1}]},
+    {id:'cond_carter',label:'Mise en place carter',actions:[{txt:'Mise en place carter',torque:null,qty:1}]},
+    {id:'cond_emb',label:'Emballage',actions:[{txt:'Emballage de la machine',torque:null,qty:1}]},
+  ]},
+  {id:'livr',name:'Livraison',icon:'🚚',items:[
+    {id:'livr_charg',label:'Chargement',actions:[{txt:'Chargement de la machine',torque:null,qty:1}]},
   ]},
 ];
 
@@ -1993,6 +2041,14 @@ const STEPS_40LTV3=[
     {id:'bf40_1',label:'Condenseur — partie haute',actions:[
       {txt:'Mise en place vanne + purgeur',torque:null,qty:1},
       {txt:'Sondes TT-21 & TT-22 — Loctite 272',torque:null,qty:2}]},
+  ]},
+  {id:'cond',name:'Conditionnement',icon:'📦',items:[
+    {id:'cond_net',label:'Nettoyage',actions:[{txt:'Nettoyage de la machine',torque:null,qty:1}]},
+    {id:'cond_carter',label:'Mise en place carter',actions:[{txt:'Mise en place carter',torque:null,qty:1}]},
+    {id:'cond_emb',label:'Emballage',actions:[{txt:'Emballage de la machine',torque:null,qty:1}]},
+  ]},
+  {id:'livr',name:'Livraison',icon:'🚚',items:[
+    {id:'livr_charg',label:'Chargement',actions:[{txt:'Chargement de la machine',torque:null,qty:1}]},
   ]},
 ];
 
@@ -3437,7 +3493,13 @@ function loadSession(id){
   currentModel = MODELS[modelId] || MODELS['eno180ltv3'];
   ACTIVE_STEPS = currentModel.getSteps();
   // Migration : synchroniser session.steps avec ACTIVE_STEPS (si structure modifiee)
+  const _wasComplete = !!session.completed || ((session.steps||[]).length>0 && session.steps.every(st=>(st.items||[]).every(it=>it.opDone)));
   ACTIVE_STEPS.forEach((step, si) => {
+    if(!session.steps[si] && _wasComplete && /^(cond|livr)$/.test(step.id)){
+      const d=session.completed||new Date().toISOString();
+      session.steps[si]={id:step.id,snData:{},stepOp:'',stepVe:'',items:(step.items||[]).map(it=>({id:it.id,actions:it.actions.map(()=>true),opDone:true,opName:'Historique',opDate:new Date(d).toLocaleDateString('fr-FR'),opAt:d,opComment:'Étape ajoutée après la fin de cette checklist',veDone:true,veName:'Historique',veDate:new Date(d).toLocaleDateString('fr-FR'),veComment:'',ncReason:'',firstPassResult:'pass',ncCount:0,photos:[],actionTimers:{},ohmValues:{}}))};
+      return;
+    }
     if(!session.steps[si]){
       session.steps[si] = { id:step.id, items:(step.items||[]).map(it=>({id:it.id,actions:it.actions.map(()=>false),opDone:false,opName:'',opDate:'',opComment:'',veDone:false,veName:'',veDate:'',veComment:'',ncReason:'',firstPassResult:null,ncCount:0,photos:[],actionTimers:{},ohmValues:{}})), snData:{}, comment:'', stepOp:'', stepVe:''};
     } else {
@@ -4523,6 +4585,19 @@ let dashTab='syn';
 function setDashTab(k){ dashTab=k; document.querySelectorAll('#dashboardContent .db-pane').forEach(p=>p.hidden=p.dataset.tab!==k); document.querySelectorAll('#dashboardContent .db-tabs button').forEach((b,i)=>b.classList.toggle('on',b.getAttribute('onclick')===`setDashTab('${k}')`)); window.scrollTo({top:0,behavior:'smooth'}); }
 function openSessionById(id,si){ const s=sessions.find(x=>String(x.id)===String(id))||(typeof liveSessions!=='undefined'&&liveSessions.find(x=>String(x.id)===String(id))); if(!s){ alert('Checklist introuvable.'); return; } if(!sessions.includes(s)) sessions.push(s); loadSession(s.id); if(si!=null){ currentStep=si; renderStep(); } window.scrollTo(0,0); }
 
+
+// ===================== JOURS OUVRÉS (hors week-ends et jours fériés français) =====================
+const _ferCache={};
+function easterSunday(y){ const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1; return new Date(y,mo-1,da); }
+function feries(y){ if(_ferCache[y]) return _ferCache[y]; const e=easterSunday(y), add=n=>{ const d=new Date(e); d.setDate(d.getDate()+n); return d; };
+  const L=[[0,1,'Jour de l’an'],[4,1,'Fête du travail'],[4,8,'Victoire 1945'],[6,14,'Fête nationale'],[7,15,'Assomption'],[10,1,'Toussaint'],[10,11,'Armistice'],[11,25,'Noël']].map(([m,d,n])=>[new Date(y,m,d),n]);
+  L.push([add(1),'Lundi de Pâques'],[add(39),'Ascension'],[add(50),'Lundi de Pentecôte']);
+  const map={}; L.forEach(([d,n])=>{ map[`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`]=n; }); return (_ferCache[y]=map); }
+function ferieName(d){ d=new Date(d); return feries(d.getFullYear())[`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`]||null; }
+function isWorkday(d){ d=new Date(d); const w=d.getDay(); return w!==0&&w!==6&&!ferieName(d); }
+function workDaysBetween(a,b){ a=new Date(a); b=new Date(b); if(!(b>a)) return 0; let n=0; const cur=new Date(a); cur.setHours(0,0,0,0);
+  while(cur<b){ const next=new Date(cur); next.setDate(next.getDate()+1); if(isWorkday(cur)){ const s=Math.max(cur,a), e=Math.min(next,b); n+=Math.max(0,(e-s)/86400000); } cur.setTime(next); } return n; }
+const fmtWd=n=>{ const r=Math.round(n*2)/2; return (r%1?r.toFixed(1).replace('.',','):r)+' j'; };
 function renderGantt(sessions, isAdmin){
   if(!sessions.length) return '';
 
@@ -4538,21 +4613,23 @@ function renderGantt(sessions, isAdmin){
   });
   if(!minDate) return '';
 
-  minDate = new Date(minDate); minDate.setDate(minDate.getDate()-3);
-  maxDate = new Date(maxDate); maxDate.setDate(maxDate.getDate()+3);
-  const spanMs = maxDate - minDate;
-  const today = new Date();
-  const todayPct = Math.min(100, Math.max(0, (today-minDate)/spanMs*100));
-
-  // Build day ticks (every 7 days)
-  const ticks = [];
-  let cur = new Date(minDate);
+  minDate = new Date(minDate); minDate.setHours(0,0,0,0); minDate.setDate(minDate.getDate()-3);
+  maxDate = new Date(maxDate); maxDate.setHours(0,0,0,0); maxDate.setDate(maxDate.getDate()+4);
+  const today = new Date(); if(today>maxDate){ maxDate=new Date(today); maxDate.setDate(maxDate.getDate()+2); }
+  // Axe en jours ouvrés : week-ends et jours fériés sont retirés de l'échelle
+  const spanWd = Math.max(1, workDaysBetween(minDate,maxDate));
+  const pos = d => Math.min(100, Math.max(0, workDaysBetween(minDate,d)/spanWd*100));
+  const todayPct = pos(today);
+  const ticks = [], fer = [];
+  let cur = new Date(minDate), lastWeek = -1;
   while(cur <= maxDate){
-    ticks.push({date:new Date(cur), pct:(cur-minDate)/spanMs*100});
-    cur.setDate(cur.getDate()+7);
+    const wk = Math.floor((cur - new Date(2000,0,3))/604800000);
+    if(isWorkday(cur) && wk!==lastWeek){ ticks.push({date:new Date(cur), pct:pos(cur)}); lastWeek=wk; }
+    const fn=ferieName(cur); if(fn&&cur.getDay()!==0&&cur.getDay()!==6) fer.push({date:new Date(cur),name:fn,pct:pos(cur)});
+    cur.setDate(cur.getDate()+1);
   }
 
-  let html = '<div class="dash-section-title">📅 Planning Gantt</div>';
+  let html = '<div class="dash-section-title">📅 Planning Gantt <span style="font-size:11px;text-transform:none;letter-spacing:0;color:var(--text3)">· en jours ouvrés, hors week-ends et jours fériés</span></div>';
   html += '<div class="gantt-wrap">';
 
   // Legend
@@ -4572,6 +4649,7 @@ function renderGantt(sessions, isAdmin){
   ticks.forEach(t=>{
     html += `<span style="position:absolute;left:${t.pct}%;transform:translateX(-50%);font-size:9px;color:var(--text3);white-space:nowrap">${t.date.getDate()}/${t.date.getMonth()+1}</span>`;
   });
+  fer.forEach(f=>{ html += `<span title="${f.name} (${f.date.toLocaleDateString('fr-FR')}) — jour férié, non compté" style="position:absolute;left:${f.pct}%;top:-13px;transform:translateX(-50%);font-size:10px;cursor:help">🎌</span>`; });
   html += '</div>';
 
   // Rows
@@ -4604,21 +4682,23 @@ function renderGantt(sessions, isAdmin){
 
     // Planned bar
     if(planS && planE){
-      const l = Math.max(0,(planS-minDate)/spanMs*100);
-      const w = Math.max(0.5,(planE-planS)/spanMs*100);
+      const planE2 = new Date(planE); planE2.setDate(planE2.getDate()+1);
+      const l = pos(planS);
+      const w = Math.max(0.5,pos(planE2)-l);
       html += `<div style="position:absolute;left:${l}%;width:${w}%;top:6px;height:20px;background:#0086c222;border:1px dashed #0086c2aa;border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:9px;color:#0086c2;overflow:hidden;white-space:nowrap">
-        📐 ${Math.round((planE-planS)/(1000*60*60*24))}j
+        📐 ${fmtWd(workDaysBetween(planS,planE2))}
       </div>`;
     }
 
     // Real bar
     if(startD && endD){
-      const l = Math.max(0,(startD-minDate)/spanMs*100);
-      const w = Math.max(0.5,(endD-startD)/spanMs*100);
+      const l = pos(startD);
+      const w = Math.max(0.5,pos(endD)-l);
       const color = s.completed ? 'var(--accent)' : isLate ? '#e05555' : 'var(--accent2)';
-      const realDays = Math.round((endD-startD)/(1000*60*60*24));
+      const _a=new Date(startD); _a.setHours(0,0,0,0); const _b=new Date(endD); _b.setHours(0,0,0,0); _b.setDate(_b.getDate()+1);
+      const realDays = fmtWd(workDaysBetween(_a,_b));
       html += `<div style="position:absolute;left:${l}%;width:${w}%;top:8px;height:16px;background:${color};border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:9px;color:#fff;font-weight:700;overflow:hidden;white-space:nowrap;z-index:2">
-        ${s.completed?'✓':isLate?'⚠':'▶'} ${realDays}j
+        ${s.completed?'✓':isLate?'⚠':'▶'} ${realDays}
       </div>`;
     }
 
@@ -5733,8 +5813,12 @@ function i40Machines(){
   (liveSessions.length?liveSessions:sessions).forEach(s=>{
     const model=MODELS[s.modelId]||MODELS.eno180ltv3, steps=model.getSteps(), p=calcProgress(s).pct;
     let zone,level,step=null,stepName;
-    if(p<100){ let si=(s.steps||[]).findIndex(st=>(st.items||[]).some(it=>!it.opDone)); if(si<0) si=steps.length-1; step=si+1; stepName=(steps[si]||{}).name||'';
-      const half=Math.ceil(steps.length/2); zone=step<=half?'z1':'z2'; const st10=Math.round(step*10/steps.length); level=zone==='z1'?Math.max(3,st10):Math.max(6,st10); }
+    const isPost=x=>/^(cond|livr)$/.test((x||{}).id||''), montN=steps.filter(x=>!isPost(x)).length||steps.length, newFlow=(s.steps||[]).some(x=>isPost(x));
+    if(p<100){ let si=(s.steps||[]).findIndex(st=>(st.items||[]).some(it=>!it.opDone)); if(si<0) si=steps.length-1; const sd=steps[si]||{};
+      if(isPost(sd)){ const ss=s.steps[si]||{items:[]}; const started=sd.id==='livr'||(ss.items||[]).some(it=>it.opDone||(it.actionTimers&&it.actionTimers.item&&it.actionTimers.item.started));
+        step=si+1; zone=started?'z4':'z3'; level=started?12:11; stepName=started?sd.name:'Banc d’essai'; }
+      else { step=si+1; stepName=sd.name||''; const half=Math.ceil(montN/2); zone=step<=half?'z1':'z2'; const st10=Math.round(step*10/montN); level=zone==='z1'?Math.max(3,st10):Math.max(6,Math.min(10,st10)); } }
+    else if(newFlow){ return; }
     else { const f=flowOf(s); if(f==='shipped') return; zone=f==='cond'?'z4':'z3'; level=f==='cond'?12:11; stepName=f==='cond'?'Conditionnement':'Banc d’essai'; }
     const li=p<100?lateInfo(s,std):{late:false};
     out.push({id:s.id,sn:s.serie&&s.serie!=='–'?s.serie:(s.projet||'Sans n°'),projet:s.projet,model:model.name,zone,level,step,stepName,pct:p,op:s.op||'',andon:andonColorFor(s),late:li.late,lateTxt:li.late?`${li.item} : ${li.el} min (standard ${li.ref} min)`:'',started:s.started});
@@ -5855,6 +5939,7 @@ function openSessionFromUrl(){
 // ---------- Flux après checklist : banc d'essai → conditionnement → expédiée ----------
 async function setFlow(id,flow){ const F=fs(); flowMap[String(id)]={flow,at:nowIso()}; try{ await F.set(F.doc(F.db,'machineFlow',String(id)),{flow,at:nowIso(),[flow+'At']:nowIso()},{merge:true}); }catch(e){ console.warn(e); } renderHistory(); i40Refresh(); }
 function flowButtons(s){
+  if((s.steps||[]).some(st=>st.id==='livr')) return '';
   const f=flowOf(s), lbl={test:'🧪 Banc d’essai',cond:'📦 Conditionnement',shipped:'🚚 Expédiée'}, next={test:'cond',cond:'shipped'}[f];
   return `<span class="flow-chip ${f}">${lbl[f]}</span>${next?`<button class="btn btn-outline btn-sm" onclick="setFlow(${s.id},'${next}')">→ ${lbl[next].slice(2)}</button>`:''}`;
 }
@@ -6251,27 +6336,51 @@ function planBacklog(){
     (s.steps||[]).forEach((st,si)=>{ const stepPlanned=planTasks.some(t=>String(t.sessionId)===String(s.id)&&t.si===si&&!t.itemId); if(stepPlanned) return;
       const items=(st.items||[]).map((it,ii)=>({it,def:(steps[si]||{items:[]}).items[ii]||{label:it.id}})).filter(x=>!x.it.opDone&&!planTasks.some(t=>String(t.sessionId)===String(s.id)&&t.si===si&&t.itemId===x.it.id));
       if(!items.length) return;
-      out.push({sid:s.id,sn:s.serie&&s.serie!=='–'?s.serie:(s.projet||'Sans n°'),model:model.name,si,stepName:(steps[si]||{}).name||st.id,icon:(steps[si]||{}).icon||'',
+      out.push({sid:s.id,pj:(s.projet&&s.projet!=='–'?s.projet:'')||'Sans PJ',serie:s.serie&&s.serie!=='–'?s.serie:'',sn:s.serie&&s.serie!=='–'?s.serie:(s.projet||'Sans n°'),model:model.name,si,stepName:(steps[si]||{}).name||st.id,icon:(steps[si]||{}).icon||'',
         items:items.map(x=>({itemId:x.it.id,label:x.def.label,std:stdFor(s,si,x.it.id)}))});
     }); });
   return out;
 }
 const taskStd=t=>t.std||1800;
-function techLoad(tech,date){ return planTasks.filter(t=>t.tech===tech&&t.date===date).reduce((a,t)=>a+taskStd(t),0); }
+// Une tâche peut être confiée à plusieurs techniciens (binôme) : techs = ['A','B']
+const techsOf=t=>Array.isArray(t.techs)&&t.techs.length?t.techs:(t.tech?[t.tech]:[]);
+const hasTech=(t,tech)=>techsOf(t).includes(tech);
+function pjOf(t){ if(t.pj) return t.pj; const s=(typeof findSess==='function'?findSess(t.sessionId):null); return (s&&s.projet&&s.projet!=='–'?s.projet:'')||t.sn||'Sans PJ'; }
+function techLoad(tech,date){ return planTasks.filter(t=>hasTech(t,tech)&&t.date===date).reduce((a,t)=>a+taskStd(t),0); }
 
 // ---------- actions ----------
-async function planWrite(t){ const F=fs(); const i=planTasks.findIndex(x=>x.id===t.id); if(i>=0) planTasks[i]=t; else planTasks.push(t); planRerender(); try{ await F.set(F.doc(F.db,'planning',t.id),t); }catch(e){ alert('Planning non enregistré : '+(e.message||e)); } }
+async function planWrite(t){ const F=fs(); if(t.techs){ t.techs=[...new Set(t.techs.filter(Boolean))]; t.tech=t.techs[0]||''; } const i=planTasks.findIndex(x=>x.id===t.id); if(i>=0) planTasks[i]=t; else planTasks.push(t); planRerender(); try{ await F.set(F.doc(F.db,'planning',t.id),t); }catch(e){ alert('Planning non enregistré : '+(e.message||e)); } }
 async function planRemove(id){ const F=fs(); planTasks=planTasks.filter(x=>x.id!==id); planRerender(); try{ await F.del(F.doc(F.db,'planning',id)); }catch(e){} }
 function planPick(data){ if(!isPlanner()) return; planSel=(planSel&&JSON.stringify(planSel)===JSON.stringify(data))?null:data; renderPlanning(); }
 function planDrop(tech,date,data){
   data=data||planSel; if(!data||!isPlanner()) return; planSel=null;
   const who=(window._currentUser&&window._currentUser.email)||'';
-  if(data.kind==='task'){ const t=planTasks.find(x=>x.id===data.id); if(t) planWrite({...t,tech,date}); return; }
+  if(data.kind==='task'){ const tk=planTasks.find(x=>x.id===data.id); if(!tk) return; let techs=techsOf(tk).slice();
+    if(data.fromTech&&techs.includes(data.fromTech)&&techs.length>1){ if(data.fromTech!==tech) techs=techs.map(x=>x===data.fromTech?tech:x); }
+    else techs=techs.length>1&&techs.includes(tech)?techs:(techs.length>1?techs.map(x=>x===(data.fromTech||techs[0])?tech:x):[tech]);
+    planWrite({...tk,techs,date}); return; }
   const b=planBacklog().find(x=>String(x.sid)===String(data.sid)&&x.si===data.si); if(!b) return;
-  if(data.itemId){ const it=b.items.find(i=>i.itemId===data.itemId); if(!it) return;
-    planWrite({id:'pl'+Date.now().toString(36),sessionId:b.sid,sn:b.sn,model:b.model,si:b.si,stepName:b.stepName,itemId:it.itemId,label:it.label,std:it.std,tech,date,createdBy:who,createdAt:nowIso()}); }
-  else { planWrite({id:'pl'+Date.now().toString(36),sessionId:b.sid,sn:b.sn,model:b.model,si:b.si,stepName:b.stepName,itemId:null,label:'Étape entière',std:b.items.reduce((a,i)=>a+(i.std||1800),0),tech,date,createdBy:who,createdAt:nowIso()}); }
+  const base={id:'pl'+Date.now().toString(36),sessionId:b.sid,pj:b.pj,sn:b.serie||b.pj,model:b.model,si:b.si,stepName:b.stepName,techs:[tech],date,createdBy:who,createdAt:nowIso()};
+  if(data.itemId){ const it=b.items.find(i=>i.itemId===data.itemId); if(!it) return; planWrite({...base,itemId:it.itemId,label:it.label,std:it.std}); }
+  else planWrite({...base,itemId:null,label:'Étape entière',std:b.items.reduce((a,i)=>a+(i.std||1800),0)});
 }
+// Retirer un technicien d'une tâche (la tâche disparaît s'il était seul)
+function planRemoveTech(id,tech){ const tk=planTasks.find(x=>x.id===id); if(!tk) return; const techs=techsOf(tk).filter(x=>x!==tech); if(techs.length) planWrite({...tk,techs}); else planRemove(id); }
+// Choisir les techniciens d'une tâche (binôme)
+function planEditTechs(id){
+  const tk=planTasks.find(x=>x.id===id); if(!tk) return; const cur=techsOf(tk);
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='plTechOv';
+  ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()"><h3>👥 Techniciens sur la tâche</h3>
+    <div class="req-sub"><b>${_esc(pjOf(tk))}</b> · ${_esc(tk.stepName)}${tk.itemId?' › '+_esc(tk.label):' (étape entière)'} · ${dayLbl(tk.date)}</div>
+    <div class="pl-pick">${planTeam.techs.map(n=>`<label class="pl-pk ${cur.includes(n)?'on':''}"><input type="checkbox" value="${_esc(n)}" ${cur.includes(n)?'checked':''} onchange="this.parentNode.classList.toggle('on',this.checked)"><span>${_esc(n)}</span><small>${hm(techLoad(n,tk.date))} ce jour</small></label>`).join('')}</div>
+    <div class="req-mailnote">Cochez 2 techniciens pour un binôme : la tâche apparaît dans le planning de chacun et compte dans la charge des deux.</div>
+    <div class="req-err" id="plTechErr"></div>
+    <div class="req-actions"><button class="btn btn-outline" onclick="document.getElementById('plTechOv').remove()">Annuler</button><button class="btn btn-primary" onclick="planSaveTechs('${id}')">Enregistrer</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov);
+}
+function planSaveTechs(id){ const sel=[...document.querySelectorAll('#plTechOv input:checked')].map(x=>x.value); if(!sel.length){ document.getElementById('plTechErr').textContent='Choisissez au moins un technicien.'; return; }
+  const tk=planTasks.find(x=>x.id===id); document.getElementById('plTechOv').remove(); if(tk) planWrite({...tk,techs:sel}); }
+let planBackFilter='';
 function planDragStart(ev,data){ ev.dataTransfer.setData('text/plain',JSON.stringify(data)); ev.dataTransfer.effectAllowed='move'; }
 function planDropEv(ev,tech,date){ ev.preventDefault(); ev.currentTarget.classList.remove('over'); try{ planDrop(tech,date,JSON.parse(ev.dataTransfer.getData('text/plain'))); }catch(e){} }
 function planWeekNav(n){ const m=planWeek||mondayOf(new Date()); const d=new Date(m); d.setDate(d.getDate()+n*7); planWeek=n===0?mondayOf(new Date()):d; renderPlanning(); }
@@ -6290,16 +6399,16 @@ function planEditTeam(){
 // ---------- KPI respect planning ----------
 function planRespect(keys,tech){
   const tk=todayKey(); let plan=0, ok=0;
-  planTasks.filter(t=>keys.includes(t.date)&&t.date<=tk&&(!tech||t.tech===tech)).forEach(t=>{ const s=taskStatus(t); if(s.st==='gone') return; plan++; if(s.st==='done'&&s.doneAt&&dKey(s.doneAt)<=t.date) ok++; });
+  planTasks.filter(t=>keys.includes(t.date)&&t.date<=tk&&(!tech||hasTech(t,tech))).forEach(t=>{ const s=taskStatus(t); if(s.st==='gone') return; plan++; if(s.st==='done'&&s.doneAt&&dKey(s.doneAt)<=t.date) ok++; });
   return {plan,ok,pct:plan?Math.round(ok/plan*100):null};
 }
-function lastDays(n){ const out=[]; for(let i=0;i<n;i++){ const d=new Date(); d.setDate(d.getDate()-i); if(d.getDay()!==0&&d.getDay()!==6) out.push(dKey(d)); } return out; }
+function lastDays(n){ const out=[]; for(let i=0;i<n;i++){ const d=new Date(); d.setDate(d.getDate()-i); if(typeof isWorkday==='function'?isWorkday(d):(d.getDay()!==0&&d.getDay()!==6)) out.push(dKey(d)); } return out; }
 function doneToday(){
   const tk=todayKey(), out=[];
   (liveSessions.length?liveSessions:sessions).forEach(s=>{ const steps=(MODELS[s.modelId]||MODELS.eno180ltv3).getSteps();
     (s.steps||[]).forEach((st,si)=>(st.items||[]).forEach((it,ii)=>{ if(!it.opDone) return; const d=itemDoneAt(it); if(!d||dKey(d)!==tk) return;
       const planned=planTasks.find(t=>String(t.sessionId)===String(s.id)&&t.si===si&&(!t.itemId||t.itemId===it.id));
-      out.push({at:d,sn:s.serie&&s.serie!=='–'?s.serie:s.projet,step:(steps[si]||{}).name||'',label:((steps[si]||{items:[]}).items[ii]||{}).label||it.id,tech:planned?planned.tech:(it.opName||s.op||''),planned:!!planned}); })); });
+      out.push({at:d,sn:(s.projet&&s.projet!=='–'?s.projet:'')||s.serie,step:(steps[si]||{}).name||'',label:((steps[si]||{items:[]}).items[ii]||{}).label||it.id,tech:planned?techsOf(planned).join(' + '):(it.opName||s.op||''),planned:!!planned}); })); });
   return out.sort((a,b)=>b.at.localeCompare(a.at));
 }
 
@@ -6307,28 +6416,39 @@ function doneToday(){
 function showPlanning(){ exitTv(); showScreen('scPlanning'); i40Start(); planStart(); renderPlanning(); }
 function renderPlanning(){
   const el=document.getElementById('planBody'); if(!el) return; const ed=isPlanner(), keys=weekKeys(), tk=todayKey(), cap=(planTeam.capH||7)*3600;
-  const techs=planTeam.techs.length?planTeam.techs:[...new Set(planTasks.map(t=>t.tech))];
+  const techs=planTeam.techs.length?planTeam.techs:[...new Set(planTasks.flatMap(techsOf))];
   document.getElementById('planWeekLbl').textContent=`Semaine du ${new Date(keys[0]+'T12:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long'})}`;
   const rw=planRespect(lastDays(7)), rd=planRespect([tk]);
   document.getElementById('planKpi').innerHTML=`<span>Respect du jour <b>${rd.pct==null?'—':rd.pct+' %'}</b> <small>${rd.ok}/${rd.plan}</small></span><span>Respect 7 jours <b>${rw.pct==null?'—':rw.pct+' %'}</b> <small>${rw.ok}/${rw.plan}</small></span>`;
   document.querySelectorAll('.plan-ed').forEach(x=>x.style.display=ed?'':'none');
   const back=planBacklog();
-  const chip=(t)=>{ const s=taskStatus(t); const cls={done:'done',run:'run',pause:'run',late:'late',partial:'part',todo:'todo',gone:'gone'}[s.st];
-    const sel=planSel&&planSel.kind==='task'&&planSel.id===t.id;
-    return `<div class="pl-task ${cls} ${sel?'sel':''}" ${ed?`draggable="true" ondragstart='planDragStart(event,${JSON.stringify({kind:'task',id:t.id})})' onclick='event.stopPropagation();planPick(${JSON.stringify({kind:'task',id:t.id})})'`:''}>
-      <b>${_esc(t.sn)}</b> · ${_esc(t.stepName)}<br><span>${_esc(t.itemId?t.label:'Étape entière')} · ${hm(taskStd(t))}${t.std?'':' (estimé)'}</span>
+  const chip=(t,tech)=>{ const s=taskStatus(t); const cls={done:'done',run:'run',pause:'run',late:'late',partial:'part',todo:'todo',gone:'gone'}[s.st];
+    const sel=planSel&&planSel.kind==='task'&&planSel.id===t.id&&planSel.fromTech===tech, others=techsOf(t).filter(x=>x!==tech), dd={kind:'task',id:t.id,fromTech:tech};
+    return `<div class="pl-task ${cls} ${sel?'sel':''} ${others.length?'duo':''}" ${ed?`draggable="true" ondragstart='planDragStart(event,${JSON.stringify(dd)})' onclick='event.stopPropagation();planPick(${JSON.stringify(dd)})'`:''}>
+      <b class="pl-pj">${_esc(pjOf(t))}</b> · ${_esc(t.stepName)}<br><span>${_esc(t.itemId?t.label:'Étape entière')} · ${hm(taskStd(t))}${t.std?'':' (estimé)'}</span>
+      ${others.length?`<span class="pl-duo">👥 avec ${others.map(x=>_esc(x.split(' ')[0])).join(', ')}</span>`:''}
       <i>${{done:'✓ Réalisée',run:'● En cours'+(s.live?' · '+hm(s.live):''),pause:'⏸ En pause',late:'⚠ En retard',partial:'Entamée',todo:'À faire',gone:'Machine terminée'}[s.st]}</i>
-      ${ed?`<button class="pl-del" onclick="event.stopPropagation();planRemove('${t.id}')" title="Retirer du planning">✕</button>`:''}</div>`; };
+      ${ed?`<span class="pl-btns"><button onclick="event.stopPropagation();planEditTechs('${t.id}')" title="Techniciens / binôme">👥</button><button onclick="event.stopPropagation();planRemoveTech('${t.id}','${_esc(tech).replace(/'/g,"\\'")}')" title="Retirer">✕</button></span>`:''}</div>`; };
+  // réservoir regroupé par PJ → étapes → sous-étapes
+  const bf=planBackFilter.toLowerCase().trim(); const byPj={};
+  back.filter(b=>!bf||(b.pj+' '+b.serie+' '+b.model+' '+b.stepName).toLowerCase().includes(bf)).forEach(b=>{ (byPj[b.pj]=byPj[b.pj]||{pj:b.pj,serie:b.serie,model:b.model,steps:[]}).steps.push(b); });
+  const pjs=Object.values(byPj).sort((a,b)=>a.pj.localeCompare(b.pj,'fr',{numeric:true}));
+  const isSel=(sid,si,itemId)=>planSel&&planSel.kind==='backlog'&&planSel.sid==sid&&planSel.si===si&&(planSel.itemId||null)===(itemId||null);
   el.innerHTML=`
-    ${ed?`<aside class="pl-back"><h3>Tâches à planifier</h3>${planSel?`<div class="pl-hint">👉 Touchez une case (technicien / jour) pour placer la tâche sélectionnée.</div>`:`<div class="pl-hint">Glissez une tâche sur un technicien et un jour, ou touchez-la puis touchez la case.</div>`}
-      ${back.length?back.map(b=>`<details class="pl-bg" open><summary><b>${_esc(b.sn)}</b> · ${b.icon} ${_esc(b.stepName)}</summary>
-        <div class="pl-bi step ${planSel&&!planSel.itemId&&planSel.sid==b.sid&&planSel.si===b.si?'sel':''}" draggable="true" ondragstart='planDragStart(event,${JSON.stringify({kind:'backlog',sid:b.sid,si:b.si,itemId:null})})' onclick='planPick(${JSON.stringify({kind:'backlog',sid:b.sid,si:b.si,itemId:null})})'>▣ Étape entière (${b.items.length} sous-étapes · ${hm(b.items.reduce((a,i)=>a+(i.std||1800),0))})</div>
-        ${b.items.map(i=>`<div class="pl-bi ${planSel&&planSel.itemId===i.itemId&&planSel.sid==b.sid&&planSel.si===b.si?'sel':''}" draggable="true" ondragstart='planDragStart(event,${JSON.stringify({kind:'backlog',sid:b.sid,si:b.si,itemId:i.itemId})})' onclick='planPick(${JSON.stringify({kind:'backlog',sid:b.sid,si:b.si,itemId:i.itemId})})'>${_esc(i.label)} <span>${i.std?hm(i.std):'≈ 30 min'}</span></div>`).join('')}
-      </details>`).join(''):'<p class="pl-empty">Tout est planifié.</p>'}</aside>`:''}
-    <div class="pl-grid-wrap"><table class="pl-grid"><thead><tr><th>Technicien</th>${keys.map(k=>`<th class="${k===tk?'today':''}">${dayLbl(k)}</th>`).join('')}</tr></thead><tbody>
-      ${techs.length?techs.map(tech=>`<tr><th class="pl-tech">${_esc(tech)}</th>${keys.map(k=>{ const L=techLoad(tech,k), ts=planTasks.filter(t=>t.tech===tech&&t.date===k);
+    ${ed?`<aside class="pl-back"><h3>Tâches à planifier</h3>
+      <input class="pl-bf" type="search" placeholder="🔎 Filtrer : PJ, gamme, étape…" value="${_esc(planBackFilter)}" oninput="planBackFilter=this.value;renderPlanning();const i=document.querySelector('.pl-bf');i.focus();i.setSelectionRange(i.value.length,i.value.length)">
+      ${planSel?`<div class="pl-hint sel">👉 Touchez maintenant une case (technicien / jour) pour placer la tâche.</div>`:`<div class="pl-hint">Glissez une étape entière ou une sous-étape sur un technicien et un jour, ou touchez-la puis touchez la case. Ensuite 👥 sur la tâche pour ajouter un 2ᵉ technicien.</div>`}
+      ${pjs.length?pjs.map(g=>`<details class="pl-pjg" open><summary><b>${_esc(g.pj)}</b><span>${_esc(g.model)}${g.serie?' · S/N '+_esc(g.serie):''}</span><em>${g.steps.length} étape${g.steps.length>1?'s':''}</em></summary>
+        ${g.steps.map(b=>`<details class="pl-stp"><summary><span class="pl-chev">▸</span>${b.icon} ${b.si+1}. ${_esc(b.stepName)}<em>${b.items.length} · ${hm(b.items.reduce((a,i)=>a+(i.std||1800),0))}</em></summary>
+          <div class="pl-bi step ${isSel(b.sid,b.si,null)?'sel':''}" draggable="true" ondragstart='planDragStart(event,${JSON.stringify({kind:'backlog',sid:b.sid,si:b.si,itemId:null})})' onclick='planPick(${JSON.stringify({kind:'backlog',sid:b.sid,si:b.si,itemId:null})})'>▣ Étape entière <span>${hm(b.items.reduce((a,i)=>a+(i.std||1800),0))}</span></div>
+          ${b.items.map(i=>`<div class="pl-bi ${isSel(b.sid,b.si,i.itemId)?'sel':''}" draggable="true" ondragstart='planDragStart(event,${JSON.stringify({kind:'backlog',sid:b.sid,si:b.si,itemId:i.itemId})})' onclick='planPick(${JSON.stringify({kind:'backlog',sid:b.sid,si:b.si,itemId:i.itemId})})'>${_esc(i.label)} <span>${i.std?hm(i.std):'≈ 30 min'}</span></div>`).join('')}
+        </details>`).join('')}
+      </details>`).join(''):`<p class="pl-empty">${bf?'Aucun résultat.':'Tout est planifié.'}</p>`}</aside>`:''}
+    <div class="pl-grid-wrap"><table class="pl-grid"><thead><tr><th>Technicien</th>${keys.map(k=>{ const fn=typeof ferieName==='function'?ferieName(new Date(k+'T12:00')):null; return `<th class="${k===tk?'today':''}">${dayLbl(k)}${fn?`<small class="pl-fer">🎌 ${fn}</small>`:''}</th>`; }).join('')}</tr></thead><tbody>
+      ${techs.length?techs.map(tech=>`<tr><th class="pl-tech">${_esc(tech)}</th>${keys.map(k=>{ const L=techLoad(tech,k), ts=planTasks.filter(t=>hasTech(t,tech)&&t.date===k);
+        if(typeof ferieName==='function'&&ferieName(new Date(k+'T12:00'))) return `<td class="pl-cell pl-off"><div class="pl-lt">Jour férié</div>${ts.map(x=>chip(x,tech)).join('')}</td>`;
         return `<td class="pl-cell ${k===tk?'today':''} ${planSel&&ed?'target':''}" ${ed?`ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="planDropEv(event,'${_esc(tech).replace(/'/g,"\\'")}','${k}')" onclick="planDrop('${_esc(tech).replace(/'/g,"\\'")}','${k}')"`:''}>
-          <div class="pl-load"><span style="width:${Math.min(100,L/cap*100)}%" class="${L>cap?'over':''}"></span></div><div class="pl-lt">${hm(L)} / ${planTeam.capH||7} h</div>${ts.map(chip).join('')}</td>`; }).join('')}</tr>`).join('')
+          <div class="pl-load"><span style="width:${Math.min(100,L/cap*100)}%" class="${L>cap?'over':''}"></span></div><div class="pl-lt">${hm(L)} / ${planTeam.capH||7} h</div>${ts.map(x=>chip(x,tech)).join('')}</td>`; }).join('')}</tr>`).join('')
         :`<tr><td colspan="6" class="pl-empty">${ed?'Commencez par définir l’équipe avec le bouton « 👥 Équipe ».':'Aucun planning pour le moment.'}</td></tr>`}
     </tbody></table></div>`;
 }
@@ -6338,9 +6458,9 @@ function showPlanTv(){ showScreen('scPlanTv'); document.body.classList.add('tv-m
   clearInterval(planTvTimer); planTvTimer=setInterval(()=>{ if(document.getElementById('scPlanTv').classList.contains('active')) renderPlanTv(); else clearInterval(planTvTimer); },1000); }
 function renderPlanTv(){
   const el=document.getElementById('planTvBody'); if(!el) return; const tk=todayKey();
-  const techs=planTeam.techs.length?planTeam.techs:[...new Set(planTasks.filter(t=>t.date===tk).map(t=>t.tech))];
+  const techs=planTeam.techs.length?planTeam.techs:[...new Set(planTasks.filter(t=>t.date===tk).flatMap(techsOf))];
   const rd=planRespect([tk]), rw=planRespect(lastDays(7)), dt=doneToday(), openA=andonList.filter(a=>!a.resolvedAt);
-  const tasksOf=tech=>planTasks.filter(t=>t.tech===tech&&(t.date===tk||(t.date<tk&&taskStatus(t).st!=='done'&&taskStatus(t).st!=='gone')));
+  const tasksOf=tech=>planTasks.filter(t=>hasTech(t,tech)&&(t.date===tk||(t.date<tk&&taskStatus(t).st!=='done'&&taskStatus(t).st!=='gone')));
   el.innerHTML=`<div class="pt-top"><div class="pt-brand">ENOGIA · Planning atelier</div><div class="pt-kpis">
       <div><b class="${rd.pct!=null&&rd.pct<80?'bad':''}">${rd.pct==null?'—':rd.pct+' %'}</b><span>respect du jour (${rd.ok}/${rd.plan})</span></div>
       <div><b>${rw.pct==null?'—':rw.pct+' %'}</b><span>respect 7 jours</span></div><div><b>${dt.length}</b><span>tâches réalisées aujourd’hui</span></div>
@@ -6351,8 +6471,8 @@ function renderPlanTv(){
       const cur=ts.find(x=>x.s.st==='run'||x.s.st==='pause'), todo=ts.filter(x=>x!==cur&&x.s.st!=='done').sort((a,b)=>(a.s.st==='late'?0:1)-(b.s.st==='late'?0:1)), done=ts.filter(x=>x.s.st==='done');
       const L=ts.reduce((a,x)=>a+taskStd(x.t),0);
       return `<div class="pt-col"><div class="pt-tech">${_esc(tech)}<span>${done.length}/${ts.length} · ${hm(L)}</span></div>
-        ${cur?`<div class="pt-cur ${cur.s.st}"><small>${cur.s.st==='pause'?'⏸ En pause':'● En cours'}</small><b>${_esc(cur.t.sn)}</b><div>${_esc(cur.t.stepName)}${cur.t.itemId?' › '+_esc(cur.t.label):''}</div><div class="pt-chrono ${(cur.s.live||0)>taskStd(cur.t)*1.1?'over':''}">${hm(cur.s.live||0)}<span> / ${hm(taskStd(cur.t))}</span></div></div>`:`<div class="pt-cur idle"><small>Aucune tâche en cours</small></div>`}
-        <div class="pt-next">${todo.map(x=>`<div class="${x.s.st}"><em><b>${_esc(x.t.sn)}</b> · ${_esc(x.t.stepName)}${x.t.itemId?' › '+_esc(x.t.label):''}</em><span>${x.s.st==='late'?'⚠ en retard':x.s.st==='partial'?'entamée':hm(taskStd(x.t))}</span></div>`).join('')||'<p>Rien d’autre de prévu aujourd’hui.</p>'}</div></div>`; }).join('')||'<div class="pt-col"><p>Aucun planning défini pour aujourd’hui.</p></div>'}</div>
+        ${cur?`<div class="pt-cur ${cur.s.st}"><small>${cur.s.st==='pause'?'⏸ En pause':'● En cours'}</small><b>${_esc(pjOf(cur.t))}</b>${techsOf(cur.t).length>1?`<span class="pt-duo">👥 avec ${techsOf(cur.t).filter(n=>n!==tech).map(n=>_esc(n.split(' ')[0])).join(', ')}</span>`:''}<div>${_esc(cur.t.stepName)}${cur.t.itemId?' › '+_esc(cur.t.label):''}</div><div class="pt-chrono ${(cur.s.live||0)>taskStd(cur.t)*1.1?'over':''}">${hm(cur.s.live||0)}<span> / ${hm(taskStd(cur.t))}</span></div></div>`:`<div class="pt-cur idle"><small>Aucune tâche en cours</small></div>`}
+        <div class="pt-next">${todo.map(x=>`<div class="${x.s.st}"><em><b>${_esc(pjOf(x.t))}</b> · ${_esc(x.t.stepName)}${techsOf(x.t).length>1?' · 👥 '+techsOf(x.t).filter(n=>n!==tech).map(n=>_esc(n.split(' ')[0])).join(', '):''}${x.t.itemId?' › '+_esc(x.t.label):''}</em><span>${x.s.st==='late'?'⚠ en retard':x.s.st==='partial'?'entamée':hm(taskStd(x.t))}</span></div>`).join('')||'<p>Rien d’autre de prévu aujourd’hui.</p>'}</div></div>`; }).join('')||'<div class="pt-col"><p>Aucun planning défini pour aujourd’hui.</p></div>'}</div>
     <div class="pt-done"><b>✓ Réalisées aujourd’hui</b>${dt.slice(0,14).map(d=>`<span>${new Date(d.at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})} · ${_esc(d.sn)} · ${_esc(d.label)} · ${_esc(d.tech)}${d.planned?'':' · hors planning'}</span>`).join('')||'<span>Aucune tâche validée pour le moment.</span>'}</div>`;
 }
 
@@ -6607,7 +6727,7 @@ function renderI40Section(monthSessions){
     ${tile('🐢 En retard maintenant',late.length,'sous-étape > 130 % du standard','#f2c230')}
     ${tile('📦 Articles à commander',alerts.length,`${stockList.length} articles suivis`,'#f0a500')}
     ${(()=>{ const r=typeof planRespect==='function'?planRespect(lastDays(7)):{pct:null,ok:0,plan:0}; return tile('📅 Respect du planning',r.pct==null?'—':r.pct+' %',`${r.ok}/${r.plan} tâches à l’heure · 7 jours`,r.pct==null?'var(--text3)':r.pct>=90?'var(--accent)':r.pct>=70?'#f2c230':'#ff3b30'); })()}</div>`;
-  if(typeof planRespect==='function'&&planTeam.techs.length){ const days=lastDays(7); const rows=planTeam.techs.map(tc=>{ const r=planRespect(days,tc); const ts=planTasks.filter(x=>x.tech===tc&&days.includes(x.date)).map(x=>({x,s:taskStatus(x)})).filter(o=>o.s.st==='done'); const real=ts.reduce((a,o)=>a+(o.s.real||0),0), prev=ts.reduce((a,o)=>a+taskStd(o.x),0); return {tc,r,real,prev}; });
+  if(typeof planRespect==='function'&&planTeam.techs.length){ const days=lastDays(7); const rows=planTeam.techs.map(tc=>{ const r=planRespect(days,tc); const ts=planTasks.filter(x=>hasTech(x,tc)&&days.includes(x.date)).map(x=>({x,s:taskStatus(x)})).filter(o=>o.s.st==='done'); const real=ts.reduce((a,o)=>a+(o.s.real||0),0), prev=ts.reduce((a,o)=>a+taskStd(o.x),0); return {tc,r,real,prev}; });
     h+=`<div style="overflow-x:auto;margin-bottom:16px"><div style="font-size:12px;color:var(--text3);margin-bottom:6px">Respect du planning par technicien (7 derniers jours ouvrés)</div><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:480px"><tr style="color:var(--text3);font-size:10px;text-transform:uppercase;text-align:left"><th style="padding:5px">Technicien</th><th style="padding:5px">Respect</th><th style="padding:5px">Tâches à l’heure</th><th style="padding:5px">Temps réel / prévu</th></tr>${rows.map(o=>`<tr style="border-top:1px solid var(--border)"><td style="padding:5px">${_esc(o.tc)}</td><td style="padding:5px;font-weight:700;color:${o.r.pct==null?'var(--text3)':o.r.pct>=90?'var(--accent)':o.r.pct>=70?'#f2c230':'#ff6b62'}">${o.r.pct==null?'—':o.r.pct+' %'}</td><td style="padding:5px">${o.r.ok}/${o.r.plan}</td><td style="padding:5px">${o.prev?`${hm(o.real)} / ${hm(o.prev)} <span style="color:${o.real>o.prev*1.1?'#ff6b62':'var(--accent)'}">(${Math.round(o.real/o.prev*100)} %)</span>`:'—'}</td></tr>`).join('')}</table></div>`; }
   if(pTop.length) h+=`<div style="margin-bottom:14px"><div style="font-size:12px;color:var(--text3);margin-bottom:6px">Pareto des causes d’arrêt et d’appel</div>${pTop.map(([k,v])=>`<div style="display:grid;grid-template-columns:180px 1fr 30px;gap:8px;align-items:center;font-size:12px;margin:3px 0"><span>${_esc(k)}</span><span style="height:10px;border-radius:5px;background:#ff9f1a;width:${Math.round(v/pMax*100)}%"></span><b>${v}</b></div>`).join('')}</div>`;
   if(late.length) h+=`<div style="margin-bottom:14px;font-size:12px"><div style="color:var(--text3);margin-bottom:4px">Machines en retard</div>${late.map(m=>`<div>🐢 <b>${_esc(m.sn)}</b> — ${_esc(m.lateTxt)}</div>`).join('')}</div>`;
