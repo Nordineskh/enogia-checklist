@@ -639,13 +639,81 @@ function kitCart(x,z,colorM){
   [.35,.8].forEach(y=>{ partsBox(g,-.3,y+.18,0,M.blue,.8); partsBox(g,.3,y+.18,0,M.white,.8); });
   return g;
 }
+// ---------- Semi-remorque : tracteur cabine avancée + plateau 13,6 m (arrière à quai) ----------
+const TRK={
+  cab:new THREE.MeshStandardMaterial({color:'#f4f6f7',roughness:.35,metalness:.25}),
+  cabBlue:new THREE.MeshStandardMaterial({color:'#1b84cf',roughness:.4,metalness:.2}),
+  chassis:new THREE.MeshStandardMaterial({color:'#24292c',roughness:.6,metalness:.4}),
+  glass:new THREE.MeshStandardMaterial({color:'#132a35',roughness:.08,metalness:.6}),
+  chrome:new THREE.MeshStandardMaterial({color:'#d9dee1',roughness:.15,metalness:.95}),
+  tyre:new THREE.MeshStandardMaterial({color:'#151719',roughness:.9}),
+  rim:new THREE.MeshStandardMaterial({color:'#b9c0c4',roughness:.3,metalness:.8}),
+  deck:new THREE.MeshStandardMaterial({color:'#7b6a55',roughness:.85}),
+  trail:new THREE.MeshStandardMaterial({color:'#5f6a70',roughness:.5,metalness:.4}),
+  lightW:new THREE.MeshStandardMaterial({color:'#fff7d6',emissive:'#fff2c0',emissiveIntensity:.6}),
+  lightR:new THREE.MeshStandardMaterial({color:'#c4231a',emissive:'#ff2a1a',emissiveIntensity:.5}),
+  lightO:new THREE.MeshStandardMaterial({color:'#ff9a1a',emissive:'#ff9a1a',emissiveIntensity:.4}),
+  strap:new THREE.MeshStandardMaterial({color:'#f2c230',roughness:.7})
+};
+function truckWheel(p,x,z,twin){
+  const g=new THREE.Group(); g.position.set(x,.5,z); p.add(g);
+  const side=z>0?1:-1;
+  (twin?[0,-.3]:[0]).forEach(o=>{ const t=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,.3,24),TRK.tyre); t.rotation.x=Math.PI/2; t.position.z=o*side; t.castShadow=true; g.add(t); });
+  const r=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.32,18),TRK.rim); r.rotation.x=Math.PI/2; r.position.z=.01*side; g.add(r);
+  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.1,.12,.36,10),TRK.chrome); hub.rotation.x=Math.PI/2; hub.position.z=.03*side; g.add(hub);
+  return g;
+}
 function makeTruck(x,z,rot,cargo){
   const g=new THREE.Group(); g.position.set(x,0,z); g.rotation.y=rot; scene.add(g);
-  box(9,.35,2.5,M.dark,0,1.15,0,g);
-  [-3.6,-2.4,3.2].forEach(px=>[-1.05,1.05].forEach(pz=>{const w=cyl(.48,.48,.36,M.black,18,g); w.rotation.x=Math.PI/2; w.position.set(px,.5,pz);}));
-  box(2.2,2.4,2.5,M.white,5.6,1.7,0,g); box(.05,.9,2.2,M.screen,6.72,2.3,0,g,false); box(2.2,.3,2.5,M.orange,5.6,.75,0,g);
-  if(cargo==='machine'){ const c=buildMachine(12); c.scale.setScalar(.95); c.position.set(-.8,1.32,0); g.add(c); }
-  else { [-3,-1.4,.2,1.8].forEach((px,i)=>{ box(1.2,.14,1.1,M.wood,px,1.4,0,g); partsBox(g,px,1.7,0,[M.blue,M.white,M.orange,M.blue][i],1.4); }); }
+  // ===== Plateau : de x=0 (arrière, côté quai) à x=13.6 (avant) =====
+  const TL=13.6, TW=2.55, DH=1.32;
+  box(TL,.14,TW,TRK.deck,TL/2,DH,0,g);                                   // plancher bois
+  box(TL,.22,.12,TRK.trail,TL/2,DH-.17,-TW/2+.06,g); box(TL,.22,.12,TRK.trail,TL/2,DH-.17,TW/2-.06,g); // rives
+  [-.45,.45].forEach(zz=>box(TL-.3,.38,.16,TRK.chassis,TL/2+.1,DH-.45,zz,g)); // longerons
+  for(let i=0;i<14;i++) box(.08,.18,TW-.2,TRK.chassis,.6+i*.95,DH-.25,0,g);   // traverses
+  for(let i=0;i<10;i++){ [-1,1].forEach(s=>box(.06,.12,.04,TRK.chrome,.8+i*1.35,DH-.08,s*(TW/2+.01),g)); } // ranchers
+  box(.12,1.5,TW,TRK.trail,TL-.06,DH+.75,0,g);                            // ridelle avant
+  [1.3,2.65,4.0].forEach(ax=>[-1,1].forEach(s=>truckWheel(g,ax,s*(TW/2-.36),true))); // essieux tri arrière
+  [-1,1].forEach(s=>{ box(4.2,.06,.04,TRK.chrome,2.65,.95,s*(TW/2-.05),g); box(.04,.55,.5,TRK.chassis,.2,.78,s*(TW/2-.3),g); }); // pare-boue / bavettes
+  [-1,1].forEach(s=>{ box(4.6,.28,.05,TRK.chrome,7.9,.72,s*(TW/2-.02),g); });  // protections latérales
+  [-.7,.7].forEach(zz=>{ box(.12,1.0,.12,TRK.chassis,10.6,.62,zz,g); box(.35,.06,.35,TRK.chassis,10.6,.1,zz,g); }); // béquilles
+  box(.1,.18,TW-.1,TRK.chassis,.05,.86,0,g);                               // pare-cycliste arrière
+  [-1,1].forEach(s=>{ box(.04,.18,.38,TRK.lightR,-.02,1.05,s*.95,g); box(.04,.08,.12,TRK.lightO,-.02,1.05,s*.62,g); });
+  // ===== Tracteur cabine avancée (européen), devant le plateau =====
+  const T=new THREE.Group(); T.position.set(TL-2.5,0,0); g.add(T);
+  box(5.9,.32,1.0,TRK.chassis,3.0,.92,0,T);                              // châssis
+  const fw=cyl(.75,.75,.08,TRK.chassis,24,T); fw.position.set(1.7,1.12,0);  // sellette
+  [1.4,5.0].forEach((ax,i)=>[-1,1].forEach(s=>truckWheel(T,ax,s*(TW/2-.33),i===0)));
+  [-1,1].forEach(s=>{ box(1.3,.08,.5,TRK.cab,1.4,1.08,s*(TW/2-.33),T); }); // ailes
+  const tank=cyl(.32,.32,1.3,TRK.chrome,20,T); tank.rotation.z=Math.PI/2; tank.position.set(3.05,.85,-(TW/2-.35));
+  box(1.0,.5,.45,TRK.chassis,3.05,.85,TW/2-.32,T);                           // coffre batteries
+  // cabine
+  const C=new THREE.Group(); C.position.set(4.75,0,0); T.add(C);
+  box(2.25,2.55,TW-.05,TRK.cab,0,2.5,0,C);                                   // caisse
+  box(2.25,.9,TW-.03,TRK.cabBlue,0,1.6,0,C);                                 // bas de cabine bleu ENOGIA
+  box(.6,.5,TW-.25,TRK.cab,-.35,3.98,0,C);                                   // déflecteur de toit
+  const wind=box(.05,1.05,TW-.25,TRK.glass,1.14,3.05,0,C,false);              // pare-brise
+  [-1,1].forEach(s=>{ box(.9,.85,.04,TRK.glass,.45,3.05,s*(TW/2-.02),C,false); box(.05,.4,.04,TRK.chassis,-.15,2.2,s*(TW/2-.01),C); }); // vitres latérales, poignées
+  box(.1,.12,TW-.15,TRK.cab,1.16,3.62,0,C);                                   // pare-soleil
+  for(let i=0;i<5;i++) box(.04,.08,TW-.7,TRK.chrome,1.14,1.45+i*.16,0,C);     // calandre
+  box(.18,.36,TW,TRK.chassis,1.15,.98,0,C);                                   // pare-chocs
+  [-1,1].forEach(s=>{ box(.05,.18,.42,TRK.lightW,1.25,1.12,s*(TW/2-.38),C); box(.05,.06,.14,TRK.lightO,1.25,1.25,s*(TW/2-.12),C);
+    box(.06,.48,.16,TRK.chassis,.95,3.05,s*(TW/2+.3),C); box(.4,.04,.04,TRK.chassis,.85,3.3,s*(TW/2+.15),C); // rétroviseurs
+    box(.38,.06,.3,TRK.chrome,.6,.72,s*(TW/2-.1),C); box(.38,.06,.3,TRK.chrome,.6,1.1,s*(TW/2-.1),C); }); // marchepieds
+  // logo ENOGIA sur les portières et le bandeau de pare-brise
+  (function(){ const c=document.createElement('canvas'); c.width=512; c.height=128; const g2=c.getContext('2d'); g2.clearRect(0,0,512,128);
+    g2.fillStyle='#1b84cf'; g2.font='700 86px Abel, Roboto, Arial, sans-serif'; g2.textAlign='center'; g2.textBaseline='middle'; g2.fillText('ENOGIA',256,68);
+    const tx=new THREE.CanvasTexture(c); tx.encoding=THREE.sRGBEncoding; const mat=new THREE.MeshBasicMaterial({map:tx,transparent:true});
+    [-1,1].forEach(s=>{ const pl=new THREE.Mesh(new THREE.PlaneGeometry(1.5,.38),mat); pl.position.set(.2,2.35,s*(TW/2-.01+.02)); pl.rotation.y=s>0?0:Math.PI; C.add(pl); });
+    const front=new THREE.Mesh(new THREE.PlaneGeometry(1.4,.32),mat); front.position.set(1.135,3.82,0); front.rotation.y=Math.PI/2; C.add(front); })();
+  const ex=cyl(.07,.07,1.6,TRK.chrome,12,C); ex.position.set(-1.25,3.2,TW/2-.25);   // cheminée
+  [-.6,-.2,.2,.6].forEach(zz=>{ const l=new THREE.Mesh(new THREE.SphereGeometry(.05,8,6),TRK.lightO); l.position.set(.2,4.25,zz); C.add(l); }); // feux de gabarit
+  // ===== Chargement =====
+  if(cargo==='machine'){
+    const m=buildMachine(12); m.position.set(5.2,DH+.07,0); g.add(m);
+    [3.3,5.2,7.1].forEach(xx=>{ box(.06,.03,TW+.05,TRK.strap,xx,DH+MH+.55,0,g); [-1,1].forEach(s=>box(.06,MH+.5,.03,TRK.strap,xx,DH+(MH+.5)/2,s*(TW/2+.01),g)); });
+    box(2.4,.14,1.2,M.wood,10.4,DH+.14,0,g); partsBox(g,10.0,DH+.45,0,M.wood,1.6); partsBox(g,10.9,DH+.45,0,M.wood,1.6);
+  } else { [2,4,6,8].forEach((px,i)=>{ box(1.2,.14,1.1,M.wood,px,DH+.14,0,g); partsBox(g,px,DH+.45,0,[M.blue,M.white,M.orange,M.blue][i],1.4); }); }
   return g;
 }
 function fenceRect(x0,z0,x1,z1,gap){
@@ -735,7 +803,7 @@ const DROPS=[];
 placeMachine('z4a',3.75,-3.4,12); placeMachine('z4b',9.95,-3.4,12);
 (function(){ const g=new THREE.Group(); g.position.set(4.5,0,-7.1); scene.add(g); box(.8,1.6,.8,M.dark,0,.8,0,g); const r=cyl(.18,.18,.6,M.dark,14,g); r.position.set(0,1.1,.5); obst(4.05,-7.55,4.95,-6.65,.2);
   partsBox(scene,8.0,.2,-7.2,M.wood,1.6); partsBox(scene,8.0,.52,-7.2,M.wood,1.4); obst(7.5,-7.6,8.5,-6.8,.15); })();
-makeTruck(18.9,-4.0,0,'machine');
+makeTruck(13.35,-4.0,0,'machine');
 // Stock extérieur au fond (derrière le mur de gauche), sous abri, avec cage NC
 (function stockExt(){
   const x0=-20, x1=-13.5, z0=-6.2, z1=6.2;
@@ -1077,7 +1145,7 @@ tickClock(); setInterval(tickClock,1000);
 function resize(){ const w=window.innerWidth,h=window.innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
 window.addEventListener('resize',resize); resize();
 (function(){ const seen=new Set();
-  [M,M2,MX].forEach(D=>Object.values(D).forEach(m=>{ if(!m||!m.isMaterial||seen.has(m)) return; seen.add(m); if(m.color&&!m.map) m.color.convertSRGBToLinear(); if(m.emissive) m.emissive.convertSRGBToLinear(); }));
+  [M,M2,MX,TRK].forEach(D=>Object.values(D).forEach(m=>{ if(!m||!m.isMaterial||seen.has(m)) return; seen.add(m); if(m.color&&!m.map) m.color.convertSRGBToLinear(); if(m.emissive) m.emissive.convertSRGBToLinear(); }));
   scene.traverse(o=>{ const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[]; ms.forEach(m=>{ if(seen.has(m)) return; seen.add(m); if(m.color&&!m.map) m.color.convertSRGBToLinear(); if(m.emissive) m.emissive.convertSRGBToLinear(); }); });
   scene.background.convertSRGBToLinear(); scene.fog.color.convertSRGBToLinear(); })();
 renderer.toneMappingExposure=1.2;
