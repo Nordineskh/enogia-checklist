@@ -4543,6 +4543,7 @@ async function renderDashboard(){
   const rupt=stockAlerts.filter(a=>stockStatus(a)==='rupture');
   if(rupt.length) todo.push({lvl:'r',ic:'📦',txt:`${rupt.length} article${rupt.length>1?'s':''} en rupture : ${rupt.slice(0,3).map(a=>_esc(a.designation)).join(', ')}${rupt.length>3?'…':''}`,meta:'',act:'showStock()',btn:'Stock'});
   const lowS=stockAlerts.length-rupt.length; if(lowS>0) todo.push({lvl:'o',ic:'🛒',txt:`${lowS} article${lowS>1?'s':''} sous le seuil, à commander`,meta:'',act:'showStock()',btn:'Stock'});
+  machinesLive.filter(m=>m.behind).forEach(m=>todo.push({lvl:'o',ic:'☑️',txt:`<b>${_esc(m.sn)}</b> — ${m.behind} sous-étape${m.behind>1?'s':''} non validée${m.behind>1?'s':''} dans les étapes précédentes`,meta:'la machine est placée à l’étape '+m.step+', où l’équipe travaille',act:`openSessionById('${m.id}')`,btn:'Ouvrir'}));
   machinesLive.filter(m=>m.late).forEach(m=>todo.push({lvl:'o',ic:'🐢',txt:`Retard · <b>${_esc(m.sn)}</b> — ${_esc(m.lateTxt)}`,meta:'',act:`openSessionById('${m.id}')`,btn:'Ouvrir'}));
   sessions.filter(s=>{ const d=dashCache[String(s.id)]||{}; return s.started&&!s.completed&&d.plannedEnd&&new Date()>new Date(d.plannedEnd+'T23:59:59'); }).forEach(s=>todo.push({lvl:'r',ic:'📅',txt:`Date de fin dépassée · <b>${_esc(s.serie||s.projet||'')}</b> (prévue le ${new Date((dashCache[String(s.id)]||{}).plannedEnd).toLocaleDateString('fr-FR')})`,meta:'',act:`openSessionById('${s.id}')`,btn:'Ouvrir'}));
   if(typeof planTasks!=='undefined'){ const late=planTasks.filter(t=>taskStatus(t).st==='late'); if(late.length) todo.push({lvl:'o',ic:'📋',txt:`${late.length} tâche${late.length>1?'s':''} planifiée${late.length>1?'s':''} en retard`,meta:'',act:'showPlanning()',btn:'Planning'}); }
@@ -5814,7 +5815,17 @@ function i40Machines(){
     const model=MODELS[s.modelId]||MODELS.eno180ltv3, steps=model.getSteps(), p=calcProgress(s).pct;
     let zone,level,step=null,stepName;
     const isPost=x=>/^(cond|livr)$/.test((x||{}).id||''), montN=steps.filter(x=>!isPost(x)).length||steps.length, newFlow=(s.steps||[]).some(x=>isPost(x));
-    if(p<100){ let si=(s.steps||[]).findIndex(st=>(st.items||[]).some(it=>!it.opDone)); if(si<0) si=steps.length-1; const sd=steps[si]||{};
+    let behind=0;
+    if(p<100){
+      // Étape réellement atteinte : la plus avancée où l'équipe a travaillé (validation OP ou chrono lancé),
+      // même si une sous-étape d'une étape précédente n'a pas été validée (pièce manquante, oubli…)
+      const act=it=>it.opDone||(it.actionTimers&&it.actionTimers.item&&it.actionTimers.item.started);
+      const first=(s.steps||[]).findIndex(st=>(st.items||[]).some(it=>!it.opDone));
+      let reach=-1; (s.steps||[]).forEach((st,i)=>{ if((st.items||[]).some(act)) reach=i; });
+      let si=first<0?steps.length-1:first;
+      if(reach>si){ const rs=s.steps[reach]; si=(rs.items||[]).every(it=>it.opDone)?Math.min(reach+1,steps.length-1):reach; }
+      (s.steps||[]).forEach((st,i)=>{ if(i<si) behind+=(st.items||[]).filter(it=>!it.opDone).length; });
+      const sd=steps[si]||{};
       if(isPost(sd)){ const ss=s.steps[si]||{items:[]}; const started=sd.id==='livr'||(ss.items||[]).some(it=>it.opDone||(it.actionTimers&&it.actionTimers.item&&it.actionTimers.item.started));
         step=si+1; zone=started?'z4':'z3'; level=started?12:11; stepName=started?sd.name:'Banc d’essai'; }
       else { step=si+1; stepName=sd.name||''; zone=step<=5?'z1':'z2';   // règle atelier : étapes 1-5 montage mécanique, à partir de l'étape 6 montage électrique
@@ -5822,7 +5833,8 @@ function i40Machines(){
     else if(newFlow){ return; }
     else { const f=flowOf(s); if(f==='shipped') return; zone=f==='cond'?'z4':'z3'; level=f==='cond'?12:11; stepName=f==='cond'?'Conditionnement':'Banc d’essai'; }
     const li=p<100?lateInfo(s,std):{late:false};
-    out.push({id:s.id,sn:s.serie&&s.serie!=='–'?s.serie:(s.projet||'Sans n°'),projet:s.projet,model:model.name,zone,level,step,stepName,pct:p,op:s.op||'',andon:andonColorFor(s),late:li.late,lateTxt:li.late?`${li.item} : ${li.el} min (standard ${li.ref} min)`:'',started:s.started});
+    if(behind) stepName=(stepName||'')+` · ⚠ ${behind} sous-étape${behind>1?'s':''} non validée${behind>1?'s':''} avant`;
+    out.push({id:s.id,behind,sn:(s.projet&&s.projet!=='–'?s.projet:'')||(s.serie&&s.serie!=='–'?s.serie:'Sans n°'),serie:s.serie,projet:s.projet,model:model.name,zone,level,step,stepName,pct:p,op:s.op||'',andon:andonColorFor(s),late:li.late,lateTxt:li.late?`${li.item} : ${li.el} min (standard ${li.ref} min)`:'',started:s.started});
   });
   return out.sort((a,b)=>String(a.started).localeCompare(String(b.started)));
 }
