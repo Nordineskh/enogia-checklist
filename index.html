@@ -278,7 +278,7 @@ textarea{height:52px;resize:none;font-size:12px}
 .as-item button+button{margin-left:4px}
 .as-empty{font-size:12px;color:#7fe3d8;padding:6px 0}
 .tv-exit{display:none}
-body.tv-mode #scAtelier{position:fixed;inset:0;z-index:3000;background:#06303f;padding:10px !important;display:flex !important;flex-direction:column}
+body.tv-mode #scAtelier.active{position:fixed;inset:0;z-index:3000;background:#06303f;padding:10px !important;display:flex !important;flex-direction:column}
 body.tv-mode #atelierFrame{flex:1;height:auto;min-height:0}
 body.tv-mode .andon-strip{order:2;margin:10px 0 0}
 body.tv-mode .as-kpis{font-size:15px}body.tv-mode .as-kpis b{font-size:22px}
@@ -367,7 +367,7 @@ body.tv-mode .tv-exit:hover{opacity:1}
 .pt-duo{display:block;font-size:14px;color:#d7c4ff;margin-top:-2px}
 .pl-empty{font-size:12px;color:var(--text3);padding:14px;text-align:center}
 @media (max-width:900px){ .pl-body{flex-direction:column;align-items:stretch} .pl-back{width:100%;max-height:300px} .pl-grid-wrap{width:100%} }
-body.tv-mode #scPlanTv{position:fixed;inset:0;z-index:3000;background:#04222d;display:block !important;overflow:hidden}
+body.tv-mode #scPlanTv.active{position:fixed;inset:0;z-index:3000;background:#04222d;display:block !important;overflow:hidden}
 #planTvBody{height:100vh;display:flex;flex-direction:column;padding:16px;gap:12px;color:#fff}
 .pt-top{display:flex;align-items:center;gap:20px}.pt-brand{font-family:var(--font-title);font-size:30px;letter-spacing:2px}
 .pt-kpis{display:flex;gap:28px;flex:1;justify-content:center}.pt-kpis div{text-align:center}.pt-kpis b{display:block;font-size:40px;line-height:1;color:#7fe3d8}.pt-kpis b.bad{color:#ff6b62}.pt-kpis span{font-size:13px;color:#a9cad4}
@@ -5817,7 +5817,8 @@ function i40Machines(){
     if(p<100){ let si=(s.steps||[]).findIndex(st=>(st.items||[]).some(it=>!it.opDone)); if(si<0) si=steps.length-1; const sd=steps[si]||{};
       if(isPost(sd)){ const ss=s.steps[si]||{items:[]}; const started=sd.id==='livr'||(ss.items||[]).some(it=>it.opDone||(it.actionTimers&&it.actionTimers.item&&it.actionTimers.item.started));
         step=si+1; zone=started?'z4':'z3'; level=started?12:11; stepName=started?sd.name:'Banc d’essai'; }
-      else { step=si+1; stepName=sd.name||''; const half=Math.ceil(montN/2); zone=step<=half?'z1':'z2'; const st10=Math.round(step*10/montN); level=zone==='z1'?Math.max(3,st10):Math.max(6,Math.min(10,st10)); } }
+      else { step=si+1; stepName=sd.name||''; zone=step<=5?'z1':'z2';   // règle atelier : étapes 1-5 montage mécanique, à partir de l'étape 6 montage électrique
+        level=zone==='z1'?Math.max(3,step):Math.min(10,6+Math.round((step-6)*4/Math.max(1,montN-6))); } }
     else if(newFlow){ return; }
     else { const f=flowOf(s); if(f==='shipped') return; zone=f==='cond'?'z4':'z3'; level=f==='cond'?12:11; stepName=f==='cond'?'Conditionnement':'Banc d’essai'; }
     const li=p<100?lateInfo(s,std):{late:false};
