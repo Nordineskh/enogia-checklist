@@ -642,6 +642,12 @@ body.tv-mode #scPlanTv .tv-exit{top:auto;bottom:14px;left:auto;right:14px;transf
 .nva-row b{text-align:right}.nva-row small{color:var(--text3)}
 .nva-bar{height:9px;border-radius:5px;background:#ffffff12;overflow:hidden}.nva-bar i{display:block;height:100%;background:#9b7bff;border-radius:5px}
 @media (max-width:640px){ .nva-row{grid-template-columns:1fr 60px 26px} .nva-bar{grid-column:1/4;grid-row:2} .rw-live button{flex:1} }
+.ve-all{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.ve-btn{width:100%;padding:12px;border-radius:8px;border:1px solid #2aa99e;background:#2aa99e22;color:#7fe3d8;font-weight:700;font-size:14px;font-family:var(--font);cursor:pointer}
+.ve-btn:not([disabled]):hover{background:#2aa99e44}
+.ve-btn[disabled]{opacity:.45;cursor:default}
+.ve-all small{font-size:11.5px;color:var(--text3);text-align:center}
+.ve-all.done{padding:10px 12px;border-radius:8px;background:#2aa99e1f;border:1px solid #2aa99e66;color:#7fe3d8;font-weight:700;font-size:13px;text-align:center}
 /* Tableau de bord */
 .db-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:4px 0 14px;position:sticky;top:0;z-index:15;background:var(--bg)}
 .db-tabs button{flex-shrink:0;background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap}
@@ -3716,6 +3722,7 @@ function renderStep(){
     ${renderStepRequests(currentStep)}
     ${typeof renderAndonBar==='function'?renderAndonBar(currentStep):''}
     ${typeof renderReworkBar==='function'?renderReworkBar(currentStep):''}
+    ${typeof renderVeAll==='function'?renderVeAll(currentStep):''}
     ${step.memoImg&&window[step.memoImg]?`<details class="step-memo"><summary>📐 Mémo technicien — ${step.memoTitle||'Plan'}<span class="sm-hint">Toucher pour afficher</span></summary><img src="${window[step.memoImg]}" alt="${step.memoTitle||'Plan'}" onclick="viewPhoto(this.src)"></details>`:''}`;
 
   // Checklist items
@@ -6717,6 +6724,38 @@ function sheetPushAll(){
   if(!confirm('Remplacer la colonne QTY de la feuille par les quantités de l’appli pour toutes les références connues ?')) return;
   const list=stockList.filter(a=>a.ref&&a.qty!=null); for(let i=0;i<list.length;i+=40) sheetPush({articles:list.slice(i,i+40).map(sheetRow)});
   document.getElementById('sheetMsg').style.color='#7fe3d8'; document.getElementById('sheetMsg').textContent=`✓ ${list.length} quantité(s) envoyée(s) vers la feuille.`;
+}
+
+
+// ===================== VÉRIFICATEUR : tout vérifier d'un coup =====================
+function veState(si){
+  const st=session.steps[si], defs=ACTIVE_STEPS[si].items;
+  const ready=[], notOp=[], nc=[], done=[];
+  (st.items||[]).forEach((it,ii)=>{ const lab=(defs[ii]||{}).label||it.id;
+    if(it.veDone) done.push(lab); else if(!it.opDone) notOp.push(lab); else if(it.ncReason&&it.ncReason!=='ok') nc.push(lab); else ready.push(ii); });
+  return {ready,notOp,nc,done,total:(st.items||[]).length};
+}
+function renderVeAll(si){
+  if(!session) return ''; const v=veState(si);
+  if(v.done.length===v.total) return `<div class="ve-all done">✅ Étape soldée : ${v.total} sous-étape${v.total>1?'s':''} vérifiée${v.total>1?'s':''} (VE)</div>`;
+  return `<div class="ve-all"><button class="ve-btn" ${v.ready.length?'':'disabled'} onclick="veValidateAll(${si})">🔍 Tout vérifier (VE)${v.ready.length?` — ${v.ready.length} sous-étape${v.ready.length>1?'s':''} prête${v.ready.length>1?'s':''}`:''}</button>
+    <small>${v.done.length}/${v.total} vérifiée${v.done.length>1?'s':''}${v.notOp.length?` · ${v.notOp.length} en attente de l’OP`:''}${v.nc.length?` · ${v.nc.length} avec NC (à traiter une par une)`:''}</small></div>`;
+}
+function veValidateAll(si){
+  const v=veState(si); if(!v.ready.length) return;
+  const sst=session.steps[si]; let name=(sst.stepVe||'').trim();
+  if(!name){ name=(prompt('Nom du vérificateur (VE) :',session.ve||'')||'').trim(); if(!name) return; sst.stepVe=name; }
+  const defs=ACTIVE_STEPS[si].items;
+  const msg=`Valider la vérification VE de ${v.ready.length} sous-étape${v.ready.length>1?'s':''} au nom de ${name} ?\n\n`+v.ready.map(ii=>'✓ '+((defs[ii]||{}).label||'')).join('\n')
+    +(v.notOp.length?`\n\nNon incluses (OP pas encore validée) :\n`+v.notOp.map(l=>'• '+l).join('\n'):'')+(v.nc.length?`\n\nNon incluses (statut NC à traiter) :\n`+v.nc.map(l=>'• '+l).join('\n'):'');
+  if(!confirm(msg)) return;
+  const d=new Date();
+  v.ready.forEach(ii=>{ const it=sst.items[ii]; if(!it.firstPassResult) it.firstPassResult='pass'; if(!it.ncReason) it.ncReason='ok';
+    it.veDone=true; it.veDate=d.toLocaleDateString('fr-FR'); it.veAt=d.toISOString(); if(!it.veName) it.veName=name; });
+  saveState(); renderStep();
+  const after=veState(si);
+  if(after.done.length===after.total){ toast(`✅ Étape ${si+1} soldée : tout est vérifié`,'ok'); const n=document.getElementById('btnNext'); if(n){ n.classList.add('pulse'); setTimeout(()=>n.classList.remove('pulse'),4000); } }
+  else toast(`✓ ${v.ready.length} sous-étape${v.ready.length>1?'s':''} vérifiée${v.ready.length>1?'s':''} — reste ${after.total-after.done.length}`,'ok');
 }
 
 // ---------- KPI Industrie 4.0 (tableau de bord) ----------
