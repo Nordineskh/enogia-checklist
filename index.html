@@ -654,11 +654,23 @@ body.tv-mode #scPlanTv .tv-exit{top:auto;bottom:14px;left:auto;right:14px;transf
 .sn-frame{position:absolute;left:8%;right:8%;top:37%;bottom:37%;border:3px solid #f2c230;border-radius:8px;box-shadow:0 0 0 9999px #0008}
 .sn-frame span{position:absolute;top:-26px;left:0;right:0;text-align:center;font-size:12px;font-weight:700;color:#f2c230;text-shadow:0 1px 3px #000}
 .sn-res{min-height:40px;display:flex;flex-direction:column;gap:8px}.sn-res small{font-size:12px;color:var(--text2)}
-.sn-val{font-size:22px !important;font-weight:700;letter-spacing:1px;text-align:center;padding:10px !important}
+.sn-val{font-size:clamp(14px,2.6vw,21px) !important;font-weight:700;letter-spacing:1px;text-align:center;padding:10px !important}
 .sn-chips{display:flex;flex-wrap:wrap;gap:6px}.sn-chips button{background:#00364a;border:1px solid var(--border);color:var(--text);border-radius:20px;padding:7px 12px;font-size:13px;font-family:monospace;cursor:pointer}
 .sn-ok{width:100%;min-height:46px;font-size:15px}
 .sn-file{display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
 button.btn-scan{font-size:16px;min-width:38px}
+.sn-box h3 .sn-mode{font-size:11px;font-weight:400;color:#7fe3d8;margin-left:6px;font-family:var(--font)}
+.sn-cam canvas{width:100%;height:100%;object-fit:cover;display:block}
+.sn-tools{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:6px}
+.sn-seg{display:flex;background:#00364a;border:1px solid var(--border);border-radius:8px;padding:3px}
+.sn-seg button{background:none;border:none;color:var(--text2);padding:7px 12px;border-radius:6px;font-weight:600;font-size:12.5px;cursor:pointer;font-family:var(--font)}
+.sn-seg button.on{background:var(--accent2);color:#fff}
+.sn-zoom{display:flex;align-items:center;gap:6px;flex:1;max-width:220px}.sn-zoom input{flex:1}
+.sn-tip{font-size:11px;color:var(--text3);margin-bottom:6px}
+.sn-chip{display:inline-flex;border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.sn-chip button{background:#00364a;border:none;color:var(--text);padding:7px 10px;font-size:12.5px;font-family:monospace;cursor:pointer}
+.sn-chip button.plus{border-left:1px solid var(--border);color:#7fe3d8;font-family:var(--font);font-weight:700}
+.sn-sim{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.sn-sim button{background:#7a5bd622;border:1px solid #9b7bff66;color:#d7c4ff;border-radius:20px;padding:6px 10px;font-size:12px;font-family:monospace;cursor:pointer}
 /* Tableau de bord */
 .db-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:4px 0 14px;position:sticky;top:0;z-index:15;background:var(--bg)}
 .db-tabs button{flex-shrink:0;background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap}
@@ -6544,6 +6556,7 @@ function sheetPush(payload){
 }
 const SHEET_SCRIPT=`// ENOGIA — synchronisation du stock avec la feuille existante (onglet « STOCK »)
 // À coller dans Extensions > Apps Script de la feuille Google Sheets (pas un fichier .xlsx)
+// Lecture renforcée des N° de série (OCR Google) : dans l’éditeur, Services (+) > « Drive API » > Ajouter
 const SECRET = 'CHANGEZ-MOI';          // même code secret que dans l’appli
 const ONGLET = 'STOCK';                // nom de l’onglet du stock
 const AJOUTER_NOUVELLES = true;        // une pièce créée dans l’appli et absente de la feuille est ajoutée en bas
@@ -6590,6 +6603,7 @@ function doGet(e) {
 function doPost(e) {
   const d = JSON.parse(e.postData.contents);
   if (d.secret !== SECRET) return out_({ ok: false, error: 'code secret incorrect' });
+  if (d.action === 'ocr') return ocr_(d);
   const lock = LockService.getScriptLock(); lock.waitLock(20000);
   try {
     const c = cadre_(), rows = lignes_(c), pos = {};
@@ -6615,6 +6629,22 @@ function doPost(e) {
     return out_({ ok: true });
   } catch (err) { return out_({ ok: false, error: String(err.message || err) }); }
   finally { lock.releaseLock(); }
+}
+
+// OCR Google : l’image est convertie en Google Doc (reconnaissance de texte) puis supprimée aussitôt
+function ocr_(d) {
+  let id = null;
+  try {
+    const blob = Utilities.newBlob(Utilities.base64Decode(d.image), 'image/jpeg', 'ocr_sn.jpg');
+    if (Drive.Files.create) {            // Drive API v3
+      id = Drive.Files.create({ name: 'ocr_sn_tmp', mimeType: 'application/vnd.google-apps.document' }, blob, { ocrLanguage: 'en' }).id;
+    } else {                              // Drive API v2
+      id = Drive.Files.insert({ title: 'ocr_sn_tmp', mimeType: 'image/jpeg' }, blob, { ocr: true, ocrLanguage: 'en' }).id;
+    }
+    const text = DocumentApp.openById(id).getBody().getText();
+    return out_({ ok: true, text });
+  } catch (err) { return out_({ ok: false, error: String(err.message || err) }); }
+  finally { if (id) try { DriveApp.getFileById(id).setTrashed(true); } catch (e) {} }
 }
 `;
 function openSheetCfg(){
@@ -6709,86 +6739,137 @@ function veValidateAll(si){
   else toast(`✓ ${v.ready.length} sous-étape${v.ready.length>1?'s':''} vérifiée${v.ready.length>1?'s':''} — reste ${after.total-after.done.length}`,'ok');
 }
 
-// ===================== N° DE SÉRIE PAR PHOTO : caméra directe + OCR rapide =====================
-// Moteur OCR chargé une seule fois et préparé à l'avance (avant : rechargé à chaque photo = lent)
+// ===================== N° DE SÉRIE : lecture renforcée =====================
+// 1) Google OCR (via le script Apps Script de la feuille stock) : textes longs, gravés, en arc, reflets
+// 2) Sinon OCR local multi-passes (normal / inversé / ligne / bloc / épars)
+// 3) Correction intelligente d'après les N° déjà saisis pour ce composant (O/0, I/1, S/5, B/8…)
 let ocrWorker=null, ocrReady=null;
 function ocrWarm(){
   if(ocrReady||typeof Tesseract==='undefined') return ocrReady;
   ocrReady=(async()=>{ const w=await Tesseract.createWorker('eng',1);
-    await w.setParameters({tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-/._',preserve_interword_spaces:'1'});
+    await w.setParameters({tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-/._#',preserve_interword_spaces:'1'});
     ocrWorker=w; return w; })().catch(e=>{ console.warn('OCR',e); ocrReady=null; });
   return ocrReady;
 }
-// Prépare l'image : recadrage, niveaux de gris, contraste automatique, mise à l'échelle
-function ocrPrep(src,sx,sy,sw,sh){
-  const scale=Math.min(3,Math.max(1,1100/sw)), c=document.createElement('canvas'); c.width=Math.round(sw*scale); c.height=Math.round(sh*scale);
+function ocrCanvas(src,sx,sy,sw,sh,opt={}){
+  const target=opt.w||1400, scale=Math.min(3,target/sw), c=document.createElement('canvas'); c.width=Math.round(sw*scale); c.height=Math.round(sh*scale);
   const g=c.getContext('2d'); g.imageSmoothingQuality='high'; g.drawImage(src,sx,sy,sw,sh,0,0,c.width,c.height);
-  const d=g.getImageData(0,0,c.width,c.height), p=d.data; let mn=255,mx=0;
-  for(let i=0;i<p.length;i+=4){ const v=.299*p[i]+.587*p[i+1]+.114*p[i+2]; p[i]=v; if(v<mn) mn=v; if(v>mx) mx=v; }
-  const k=255/Math.max(1,mx-mn); for(let i=0;i<p.length;i+=4){ const v=Math.max(0,Math.min(255,(p[i]-mn)*k)); p[i]=p[i+1]=p[i+2]=v; }
+  if(opt.raw) return c;
+  const d=g.getImageData(0,0,c.width,c.height), p=d.data, W=c.width, H=c.height, gray=new Float32Array(W*H);
+  for(let i=0,j=0;i<p.length;i+=4,j++) gray[j]=.299*p[i]+.587*p[i+1]+.114*p[i+2];
+  // contraste local (atténue reflets et dégradés de lumière) : écart à la moyenne locale
+  const R=Math.max(8,Math.round(W/60)), ii=new Float64Array((W+1)*(H+1));
+  for(let y=0;y<H;y++){ let rs=0; for(let x=0;x<W;x++){ rs+=gray[y*W+x]; ii[(y+1)*(W+1)+x+1]=ii[y*(W+1)+x+1]+rs; } }
+  const out=new Float32Array(W*H); let mn=1e9,mx=-1e9;
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const x0=Math.max(0,x-R),y0=Math.max(0,y-R),x1=Math.min(W,x+R+1),y1=Math.min(H,y+R+1);
+    const s=ii[y1*(W+1)+x1]-ii[y0*(W+1)+x1]-ii[y1*(W+1)+x0]+ii[y0*(W+1)+x0], m=s/((x1-x0)*(y1-y0)); const v=gray[y*W+x]-m; out[y*W+x]=v; if(v<mn) mn=v; if(v>mx) mx=v; }
+  const k=255/Math.max(1,mx-mn);
+  for(let j=0,i=0;j<out.length;j++,i+=4){ let v=(out[j]-mn)*k; if(opt.invert) v=255-v; v=v>128?255:(v<70?0:v); p[i]=p[i+1]=p[i+2]=v; }
   g.putImageData(d,0,0); return c;
 }
-// Extrait les candidats « numéro de série » du texte lu, les plus probables d'abord
-function snCandidates(text){
-  const out=[], seen=new Set(), raw=String(text||'').toUpperCase();
-  const kw=raw.match(/(?:S\/?N|SERIAL(?:\s*N[O0])?|N[O0°]\s*S[EÉ]RIE|NR|N[O0])[\s:.#-]*([A-Z0-9][A-Z0-9\-\/._]{3,})/);
-  if(kw){ out.push(kw[1]); seen.add(kw[1]); }
-  raw.split(/\s+/).map(x=>x.replace(/^[^A-Z0-9]+|[^A-Z0-9]+$/g,'')).filter(Boolean).forEach(tok=>{ if(seen.has(tok)) return; seen.add(tok);
-    if(tok.length<4||tok.length>24||!/\d/.test(tok)) return; if(/^(SN|S\/N|SERIAL|TYPE|MODEL)$/.test(tok)) return; out.push(tok); });
-  return out.sort((a,b)=>{ const sc=t=>(kw&&t===kw[1]?100:0)+(/[A-Z]/.test(t)&&/\d/.test(t)?10:0)+Math.min(t.length,14); return sc(b)-sc(a); }).slice(0,6);
+// --- historique des N° saisis pour ce composant : gabarit lettres/chiffres + suggestions ---
+function snHistory(compKey){ const set=new Set(); (typeof liveSessions!=='undefined'&&liveSessions.length?liveSessions:sessions).forEach(s=>(s.steps||[]).forEach(st=>{ const v=st.snData&&st.snData[compKey]; if(v&&String(v).trim().length>3) set.add(String(v).trim().toUpperCase()); })); return [...set]; }
+const L2D={O:'0',Q:'0',D:'0',I:'1',L:'1',T:'1',Z:'2',S:'5',B:'8',G:'6'}, D2L={'0':'O','1':'I','2':'Z','5':'S','8':'B','6':'G'};
+function snFixWithHistory(c,hist){
+  const pool=[...new Set([...hist,...hist.flatMap(h=>h.split(' '))])];
+  const same=pool.filter(h=>h.length===c.length); if(!same.length) return c;
+  const ref=same[0]; let out='';
+  for(let i=0;i<c.length;i++){ const ch=c[i], r=ref[i];
+    if(/\d/.test(r)&&L2D[ch]) out+=L2D[ch]; else if(/[A-Z]/.test(r)&&D2L[ch]) out+=D2L[ch]; else if(/[-_\/.# ]/.test(r)&&/[^A-Z0-9]/.test(ch)) out+=r; else out+=ch; }
+  return out;
 }
+function lev(a,b){ const m=a.length,n=b.length; if(!m) return n; if(!n) return m; let p=[...Array(n+1).keys()]; for(let i=1;i<=m;i++){ const c=[i]; for(let j=1;j<=n;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); p=c; } return p[n]; }
+function snCandidates(text,hist=[]){
+  const raw=String(text||'').toUpperCase().replace(/[‐–—]/g,'-'), score={};
+  const add=(t,s)=>{ t=t.replace(/\s+/g,' ').replace(/^[^A-Z0-9]+|[^A-Z0-9]+$/g,''); if(t.length<4||t.length>64||!/\d/.test(t)) return; score[t]=(score[t]||0)+s; };
+  const kw=raw.match(/(?:S\/?N|SERIAL(?:\s*N[O0])?|N[O0°]\s*S[EÉ]RIE)[\s:.#-]*([A-Z0-9][A-Z0-9\-\/._# ]{3,})/); if(kw) add(kw[1].trim(),100);
+  raw.split(/\n+/).forEach(line=>{ const l=line.replace(/[^A-Z0-9\-\/._# ]/g,' ').trim(); if(l.length>=6) add(l,20+Math.min(l.length,30)/3); });
+  raw.split(/[\s\n]+/).forEach(tok=>{ const t=tok.replace(/[^A-Z0-9\-\/._#]/g,''); if(/^(SN|S\/N|SERIAL|TYPE|MODEL)$/.test(t)) return; add(t,(/[A-Z]/.test(t)&&/\d/.test(t)?12:4)+Math.min(t.length,16)/2+((t.match(/[-_]/g)||[]).length*3)); });
+  let list=Object.entries(score).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+  if(hist.length){ list=list.map(c=>snFixWithHistory(c,hist)); list.sort((a,b)=>Math.min(...hist.map(h=>lev(a,h)))-Math.min(...hist.map(h=>lev(b,h)))||0); }
+  return [...new Set(list)].slice(0,8);
+}
+// --- capture ---
 let snScanState=null;
+const snFrames={line:{w:.86,h:.22,lbl:'Ligne'},zone:{w:.9,h:.62,lbl:'Zone large'}};
 async function snScan(compKey){
-  ocrWarm();
+  ocrWarm(); const cloud=!!(typeof sheetCfg!=='undefined'&&sheetCfg.url);
   const ov=document.createElement('div'); ov.className='req-overlay sn-ov'; ov.id='snOv';
-  ov.innerHTML=`<div class="req-box sn-box" onclick="event.stopPropagation()"><h3>📸 N° de série</h3>
-    <div class="sn-cam"><video id="snVid" playsinline muted></video><div class="sn-frame"><span>Placez le numéro dans le cadre</span></div></div>
-    <div class="sn-res" id="snRes"><small id="snMsg">Préparation de la lecture…</small></div>
+  ov.innerHTML=`<div class="req-box sn-box" onclick="event.stopPropagation()"><h3>📸 N° de série <small class="sn-mode">${cloud?'lecture renforcée Google':'lecture locale'}</small></h3>
+    <div class="sn-cam"><video id="snVid" playsinline muted></video><canvas id="snFreeze" style="display:none"></canvas><div class="sn-frame" id="snFrame"><span>Placez le numéro dans le cadre</span></div></div>
+    <div class="sn-tools"><div class="sn-seg"><button data-f="line" onclick="snSetFrame('line')">▭ Ligne</button><button data-f="zone" onclick="snSetFrame('zone')">▢ Zone large</button></div>
+      <label class="sn-zoom" id="snZoomW" style="display:none">🔍<input type="range" id="snZoom" min="1" max="1" step="0.1" value="1" oninput="snApplyZoom(this.value)"></label></div>
+    <div class="sn-tip">Texte long, gravé ou en arc : choisissez « Zone large » et englobez tout le texte. Reflets : inclinez légèrement la tablette.</div>
+    <div class="sn-res" id="snRes"><small id="snMsg">Préparation…</small></div>
     <div class="req-actions"><button class="btn btn-outline" onclick="snClose()">Annuler</button><label class="btn btn-outline sn-file">🖼️ Photo<input type="file" accept="image/*" capture="environment" style="display:none" onchange="snFromFile(this)"></label><button class="btn btn-primary" id="snShot" onclick="snCapture()">📸 Lire le numéro</button></div></div>`;
   document.body.appendChild(ov);
-  snScanState={compKey,stream:null,det:null,loop:0};
-  ocrReady&&ocrReady.then(()=>{ const m=document.getElementById('snMsg'); if(m&&!snScanState.text) m.textContent='Prêt : cadrez le numéro puis « Lire le numéro ».'; });
+  snScanState={compKey,stream:null,det:null,loop:0,frame:cloud?'zone':'line',hist:snHistory(compKey),cloud};
+  snSetFrame(snScanState.frame);
+  document.getElementById('snMsg').textContent=cloud?'Prêt : cadrez puis « Lire le numéro ».':'Préparation de la lecture…';
+  ocrReady&&ocrReady.then(()=>{ const m=document.getElementById('snMsg'); if(m&&!snScanState.shown&&!cloud) m.textContent='Prêt : cadrez le numéro puis « Lire le numéro ».'; });
   try{
-    const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}}});
+    const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:2560},height:{ideal:1440}}});
     snScanState.stream=st; const v=document.getElementById('snVid'); v.srcObject=st; await v.play();
-    try{ const tr=st.getVideoTracks()[0], cap=tr.getCapabilities?tr.getCapabilities():{}; if(cap.focusMode&&cap.focusMode.includes('continuous')) tr.applyConstraints({advanced:[{focusMode:'continuous'}]}); }catch(e){}
-    // codes-barres / QR / Data Matrix des plaques signalétiques : lecture instantanée si l'appareil le permet
+    try{ const tr=st.getVideoTracks()[0], cap=tr.getCapabilities?tr.getCapabilities():{};
+      if(cap.focusMode&&cap.focusMode.includes('continuous')) tr.applyConstraints({advanced:[{focusMode:'continuous'}]});
+      if(cap.zoom&&cap.zoom.max>1){ const z=document.getElementById('snZoom'); z.min=cap.zoom.min||1; z.max=Math.min(cap.zoom.max,5); z.step=cap.zoom.step||.1; z.value=cap.zoom.min||1; document.getElementById('snZoomW').style.display=''; snScanState.track=tr; } }catch(e){}
     if('BarcodeDetector' in window){ try{ snScanState.det=new BarcodeDetector({formats:['code_128','code_39','qr_code','data_matrix','ean_13']});
-      const tick=async()=>{ if(!snScanState||!document.getElementById('snOv')) return; try{ const r=await snScanState.det.detect(v); if(r.length&&r[0].rawValue){ snShow([r[0].rawValue.trim()],'Code-barres lu'); return; } }catch(e){} snScanState.loop=setTimeout(tick,350); }; tick(); }catch(e){} }
+      const tick=async()=>{ if(!snScanState||!document.getElementById('snOv')||snScanState.shown) return; try{ const r=await snScanState.det.detect(v); if(r.length&&r[0].rawValue){ snShow([r[0].rawValue.trim()],'Code-barres lu'); return; } }catch(e){} snScanState.loop=setTimeout(tick,350); }; tick(); }catch(e){} }
   }catch(e){ document.getElementById('snMsg').textContent='Caméra indisponible : utilisez « 🖼️ Photo ».'; document.querySelector('.sn-cam').style.display='none'; }
 }
+function snSetFrame(f){ if(!snScanState) return; snScanState.frame=f; const F=snFrames[f], el=document.getElementById('snFrame');
+  el.style.left=el.style.right=((1-F.w)/2*100)+'%'; el.style.top=el.style.bottom=((1-F.h)/2*100)+'%';
+  document.querySelectorAll('.sn-seg button').forEach(b=>b.classList.toggle('on',b.dataset.f===f)); }
+function snApplyZoom(z){ try{ snScanState.track.applyConstraints({advanced:[{zoom:+z}]}); }catch(e){} }
 function snClose(){ if(snScanState){ clearTimeout(snScanState.loop); try{ snScanState.stream&&snScanState.stream.getTracks().forEach(t=>t.stop()); }catch(e){} } snScanState=null; const o=document.getElementById('snOv'); if(o) o.remove(); }
-async function snRead(canvas,psm){
-  const m=document.getElementById('snMsg'); if(m) m.textContent='Lecture en cours…';
-  const w=await ocrWarm(); if(!w){ if(m) m.textContent='Lecture impossible (moteur OCR non chargé). Saisissez le numéro à la main.'; return; }
-  await w.setParameters({tessedit_pageseg_mode:psm});
-  const {data}=await w.recognize(canvas); const c=snCandidates(data.text);
-  if(c.length) snShow(c,'Numéro lu'); else if(m) m.textContent='Aucun numéro reconnu : rapprochez-vous, évitez les reflets, puis réessayez.';
+function snMsg(t){ const m=document.getElementById('snMsg'); if(m) m.textContent=t; else { const r=document.getElementById('snRes'); if(r) r.innerHTML=`<small id="snMsg">${t}</small>`; } }
+async function snCloudOCR(canvas){
+  const b64=canvas.toDataURL('image/jpeg',.88).split(',')[1];
+  const r=await fetch(sheetCfg.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({secret:sheetCfg.secret||'',action:'ocr',image:b64})});
+  const j=await r.json(); if(!j.ok) throw new Error(j.error||'OCR Google indisponible'); return j.text||'';
+}
+async function snLocalOCR(region,frameType){
+  const w=await ocrWarm(); if(!w) throw new Error('moteur local non chargé');
+  const passes=[{inv:false,psm:frameType==='line'?'7':'6'},{inv:true,psm:frameType==='line'?'7':'6'},{inv:false,psm:'11'}];
+  let all=''; for(let i=0;i<passes.length;i++){ snMsg(`Lecture locale… ${i+1}/${passes.length}`); const P=passes[i];
+    await w.setParameters({tessedit_pageseg_mode:P.psm}); const {data}=await w.recognize(ocrCanvas(region,0,0,region.width,region.height,{invert:P.inv})); all+='\n'+data.text;
+    if(i===0&&snCandidates(data.text).length&&data.confidence>78) break; }
+  return all;
+}
+async function snRead(region,frameType){
+  const st=snScanState; if(!st) return; let text='', src='';
+  if(st.cloud){ try{ snMsg('Lecture renforcée Google…'); text=await snCloudOCR(ocrCanvas(region,0,0,region.width,region.height,{raw:true,w:1800})); src='Google'; }catch(e){ console.warn(e); snMsg('Lecture Google indisponible, lecture locale…'); } }
+  if(!snCandidates(text).length){ try{ text+='\n'+await snLocalOCR(region,frameType); src=src||'local'; }catch(e){ snMsg('Lecture impossible : saisissez le numéro à la main.'); return; } }
+  const c=snCandidates(text,st.hist);
+  if(c.length) snShow(c,`Numéro lu (${src})`); else snMsg('Aucun numéro reconnu : rapprochez-vous ou passez en « Zone large », évitez les reflets, puis réessayez.');
 }
 async function snCapture(){
-  const v=document.getElementById('snVid'); if(!v||!v.videoWidth) return;
-  const W=v.videoWidth,H=v.videoHeight, bw=W*.84, bh=H*.26;      // même zone que le cadre affiché
+  const v=document.getElementById('snVid'); if(!v||!v.videoWidth||!snScanState) return;
+  const F=snFrames[snScanState.frame], W=v.videoWidth,H=v.videoHeight, bw=W*F.w, bh=H*F.h;
+  const region=document.createElement('canvas'); region.width=Math.round(bw); region.height=Math.round(bh); region.getContext('2d').drawImage(v,(W-bw)/2,(H-bh)/2,bw,bh,0,0,region.width,region.height);
+  const fz=document.getElementById('snFreeze'); fz.width=W; fz.height=H; fz.getContext('2d').drawImage(v,0,0); fz.style.display='block'; v.style.display='none';
   document.getElementById('snShot').disabled=true;
-  try{ await snRead(ocrPrep(v,(W-bw)/2,(H-bh)/2,bw,bh),'7'); } finally{ const b=document.getElementById('snShot'); if(b) b.disabled=false; }
+  try{ await snRead(region,snScanState.frame); } finally{ const b=document.getElementById('snShot'); if(b) b.disabled=false; if(v&&!snScanState?.shown){ v.style.display=''; fz.style.display='none'; } }
 }
 function snFromFile(input){
   const f=input.files&&input.files[0]; if(!f) return; const img=new Image(), url=URL.createObjectURL(f);
-  img.onload=async()=>{ URL.revokeObjectURL(url); const k=Math.min(1,1600/Math.max(img.width,img.height)); const c=document.createElement('canvas'); c.width=img.width*k; c.height=img.height*k; c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-    await snRead(ocrPrep(c,0,0,c.width,c.height),'6'); };
+  img.onload=async()=>{ URL.revokeObjectURL(url); const k=Math.min(1,2200/Math.max(img.width,img.height)); const c=document.createElement('canvas'); c.width=img.width*k; c.height=img.height*k; c.getContext('2d').drawImage(img,0,0,c.width,c.height); await snRead(c,'zone'); };
   img.src=url;
 }
 function snShow(list,title){
-  if(!snScanState) return; snScanState.text=true; clearTimeout(snScanState.loop);
-  document.getElementById('snRes').innerHTML=`<small>${title} — touchez le bon numéro, ou corrigez-le :</small>
+  if(!snScanState) return; snScanState.shown=true; clearTimeout(snScanState.loop);
+  const sim=snScanState.hist.filter(h=>list.some(c=>lev(c,h)<=Math.max(2,Math.round(h.length*.15)))&&!list.includes(h)).slice(0,3);
+  document.getElementById('snRes').innerHTML=`<small>${title} — touchez un morceau pour le choisir, ＋ pour l’ajouter à la suite :</small>
     <input id="snVal" class="sn-val" value="${_esc(list[0])}" autocomplete="off" autocapitalize="characters" spellcheck="false">
-    ${list.length>1?`<div class="sn-chips">${list.map(x=>`<button onclick="document.getElementById('snVal').value='${_esc(x).replace(/'/g,"\\'")}'">${_esc(x)}</button>`).join('')}</div>`:''}
-    <button class="btn btn-primary sn-ok" onclick="snAccept()">✓ Enregistrer ce numéro</button>`;
+    <div class="sn-chips">${list.map(x=>`<span class="sn-chip"><button onclick="document.getElementById('snVal').value='${_esc(x).replace(/'/g,"\\'")}'">${_esc(x)}</button><button class="plus" title="Ajouter à la suite" onclick="const i=document.getElementById('snVal');i.value=(i.value+' ${_esc(x).replace(/'/g,"\\'")}').trim()">＋</button></span>`).join('')}</div>
+    ${sim.length?`<div class="sn-sim"><small>Déjà vu sur d’autres machines :</small>${sim.map(x=>`<button onclick="document.getElementById('snVal').value='${_esc(x).replace(/'/g,"\\'")}'">${_esc(x)}</button>`).join('')}</div>`:''}
+    <div style="display:flex;gap:6px"><button class="btn btn-outline" style="flex:0 0 auto" onclick="snRetry()">↻ Reprendre</button><button class="btn btn-primary sn-ok" onclick="snAccept()">✓ Enregistrer ce numéro</button></div>`;
 }
+function snRetry(){ if(!snScanState) return; snScanState.shown=false; const v=document.getElementById('snVid'), fz=document.getElementById('snFreeze'); if(v){ v.style.display=''; } if(fz) fz.style.display='none'; document.getElementById('snRes').innerHTML='<small id="snMsg">Cadrez puis « Lire le numéro ».</small>'; }
 function snAccept(){
-  const v=(document.getElementById('snVal').value||'').trim().toUpperCase(); if(!v||!snScanState) return; const k=snScanState.compKey;
+  const v=(document.getElementById('snVal').value||'').trim().toUpperCase().replace(/\s+/g,' '); if(!v||!snScanState) return; const k=snScanState.compKey;
   saveSN(k,v); const inp=document.querySelector(`.sn-input[data-comp="${k}"]`); if(inp) inp.value=v; snClose(); toast('✓ N° de série enregistré : '+v,'ok');
 }
-// Compatibilité avec l'ancien bouton photo
 function scanSerialNumber(compKey,input){ snScan(compKey).then(()=>snFromFile(input)); }
 
 // ---------- KPI Industrie 4.0 (tableau de bord) ----------
