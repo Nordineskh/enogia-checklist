@@ -732,6 +732,10 @@ button.btn-scan{font-size:16px;min-width:38px}
 .stk-table tr.unl td{opacity:.7}
 .cl-list{display:flex;flex-direction:column;gap:4px;max-height:50vh;overflow:auto;margin-top:8px}
 .cl-list button{text-align:left;background:#00364a;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-size:13px;cursor:pointer;font-family:var(--font)}.cl-list small{display:block;font-size:11px;color:var(--text3)}
+.lk{display:inline-block;font-size:10.5px;font-weight:700;border-radius:20px;padding:2px 8px;margin-left:4px;background:#ffffff12;color:var(--text3);white-space:nowrap}
+.lk.ok{background:#2aa99e26;color:#7fe3d8}.lk.warn{background:#f2c23026;color:#ffd27a}.lk.bad{background:#ff3b3026;color:#ff8a82}
+.bom-sum{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}.bom-sum .lk{margin:0;font-size:11.5px;padding:4px 10px}
+.stk-table tr.chk td{background:#f2c2300c}
 /* Tableau de bord */
 .db-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:4px 0 14px;position:sticky;top:0;z-index:15;background:var(--bg)}
 .db-tabs button{flex-shrink:0;background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap}
@@ -7011,14 +7015,43 @@ function caisseStart(){ if(caisseLoaded||!window._fsOnSnapshot) return; caisseLo
   window._fsOnSnapshot(window._fsDoc(window._db,'planConfig','caisses'),d=>{ caisseCfg=d.exists()?d.data():{}; if(document.getElementById('scCaisses').classList.contains('active')) renderCaisses(); },()=>{}); }
 async function caisseSaveCfg(){ try{ await window._fsSetDoc(window._fsDoc(window._db,'planConfig','caisses'),caisseCfg); }catch(e){ console.warn(e); } }
 const gcfg=()=>{ caisseCfg[caisseGamme]=caisseCfg[caisseGamme]||{n:10,links:{}}; if(!caisseCfg[caisseGamme].links) caisseCfg[caisseGamme].links={}; return caisseCfg[caisseGamme]; };
-function bomMatch(line,idx){
-  const L=gcfg().links; if(L[idx]==='none') return null; if(L[idx]) return stockList.find(a=>a.id===L[idx])||null;
-  const rf=nz(line[5]); if(rf.length>=4){ const a=stockList.find(a=>nz(a.refFournisseur)===rf); if(a) return a; }
-  const k=bomKey(line[2]); if(k){ const c=stockList.filter(a=>bomKey(a.designation)===k); if(c.length) return c.find(a=>/INOX/i.test(a.designation))||c[0]; }
-  const dn=nz(line[2]); const a=stockList.find(a=>nz(a.designation)===dn); if(a) return a;
-  if(line[3]){ const r=nz(line[3]); const b=stockList.find(a=>nz(a.ref)===r||nz(a.refFournisseur)===r); if(b) return b; }
-  return null;
+// ---- Rapprochement par NOM d'article (tolérant : accents, majuscules, ordre des mots, Té/Te, Ø, dimensions) ----
+const STOPW=new Set(['DE','LA','LE','LES','DU','DES','A','AU','AVEC','SANS','ET','EN','L','D','POUR','SUR','SERIE','TYPE']);
+const GRADE=/^(304L?|316L?|8\.?8|A2|A4|A270|A470|INOX|STD)$/;
+const SYN={MALE:'M',FEMELLE:'F',TEE:'TE',REDUIT:'RED',REDUITE:'RED',REDUCTION:'RED',ECROUS:'ECROU',VANNES:'VANNE',JOINTS:'JOINT',ROND:'RONDELLE',HEXAGONALE:'H',TETE:'H'};
+function nameTok(s){
+  const D=String(s||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/Ø/g,' D').replace(/(\d)\s*[X×]\s*(\d)/g,'$1X$2').replace(/(\d),(\d)/g,'$1.$2');
+  const toks=D.split(/[^A-Z0-9./]+/).filter(Boolean).flatMap(t=>{ const m=t.match(/^([A-Z]{1,3})(\d.*)$/); return m&&!GRADE.test(t)?[m[1],m[2]]:[t]; }).map(t=>SYN[t]||t).filter(t=>!STOPW.has(t));
+  const dims=new Set(), words=new Set(), grades=new Set();
+  toks.forEach(t=>{ if(GRADE.test(t)) grades.add(t.replace('.','')); else if(/\d/.test(t)) dims.add(t.replace(/^D(?=\d)/,'D')); else if(t.length>=2||/^[MFH]$/.test(t)) words.add(t); });
+  return {dims,words,grades};
 }
+const jac=(a,b)=>{ if(!a.size&&!b.size) return 1; let i=0; a.forEach(x=>{ if(b.has(x)) i++; }); return i/(a.size+b.size-i); };
+function nameScore(A,B){
+  if(A.dims.size||B.dims.size){ let miss=0; A.dims.forEach(x=>{ if(!B.dims.has(x)) miss++; }); if(miss) return 0; }   // les dimensions doivent correspondre
+  let common=0; A.words.forEach(x=>{ if(B.words.has(x)&&x.length>=3) common++; }); if(A.words.size&&!common) return 0;   // au moins un vrai mot en commun (Vanne, Joint, Mamelon…)
+  const w=jac(A.words,B.words), d=jac(A.dims,B.dims), g=A.grades.size&&B.grades.size?jac(A.grades,B.grades):1;
+  return (A.dims.size?.55*d+.4*w:.95*w)+.05*g;
+}
+let _bmCache={key:null,list:null,map:{}};
+function bomMatchInfo(line,idx){
+  const cfgL=gcfg().links, key=caisseGamme+'|'+JSON.stringify(cfgL);
+  if(_bmCache.list!==stockList||_bmCache.key!==key){ _bmCache={key,list:stockList,map:{},tok:stockList.map(a=>({a,t:nameTok(a.designation)}))}; }
+  if(_bmCache.map[idx]) return _bmCache.map[idx];
+  let r={art:null,how:'none',score:0};
+  const L=cfgL[idx];
+  if(L==='none') r={art:null,how:'ignored',score:0};
+  else if(L){ const a=stockList.find(x=>x.id===L||('ref:'+nz(x.ref))===L); r={art:a||null,how:a?'manual':'none',score:a?1:0}; }
+  else {
+    const rf=nz(line[5]); const byRef=rf.length>=4?stockList.find(a=>nz(a.refFournisseur)===rf):null;
+    if(byRef) r={art:byRef,how:'ref',score:1};
+    else { const T=nameTok(line[2]); let best=null, bs=0, second=0;
+      _bmCache.tok.forEach(({a,t})=>{ const s=nameScore(T,t); if(s>bs){ second=bs; bs=s; best=a; } else if(s>second) second=s; });
+      if(best&&bs>=.55) r={art:best,how:bs>=.85&&bs-second>.05?'name':'name?',score:bs}; }
+  }
+  return (_bmCache.map[idx]=r);
+}
+function bomMatch(line,idx){ return bomMatchInfo(line,idx).art; }
 function showCaisses(){ exitTv(); showScreen('scCaisses'); i40Start(); caisseStart(); caisseListen(); renderCaisses(); }
 function setCaisseN(v){ const c=gcfg(); c.n=Math.max(1,Math.min(50,Math.round(+v||1))); renderCaisses(); clearTimeout(window._cnT); window._cnT=setTimeout(caisseSaveCfg,600); }
 function renderCaisses(){
@@ -7054,11 +7087,16 @@ function renderCaisses(){
       ${byF[f].map(o=>`<tr><td class="c-ref">${_esc(o.A.art.ref||'')}</td><td>${_esc(o.A.art.designation)}${o.A.art.commande?' <small style="color:#9fdcff">déjà commandé</small>':''}</td><td>${_esc(o.A.art.refFournisseur||'')}</td><td class="num">${o.A.need}</td><td class="num">${o.need}</td><td class="num c-qty">${o.stock}</td><td class="num" style="color:#ff8a82;font-weight:700">${o.short}</td><td class="num c-ord"><b>${o.qty}</b>${o.qty>o.short?`<small>MOQ ${o.A.art.moq}</small>`:''}</td></tr>`).join('')}</tbody></table></div></div>`).join('')
       :`<p class="db-ok">✓ Le stock couvre les ${R.N} caisses : rien à commander.</p>`;
   } else {
-    h+=`<div class="db-card"><div style="overflow-x:auto"><table class="stk-table ord"><thead><tr><th>Sous-ensemble</th><th>Désignation</th><th>Fournisseur / réf.</th><th class="num">Qté</th><th>Article du stock</th><th class="num">Stock</th><th class="num">Couvre</th><th></th></tr></thead><tbody>
-      ${R.lines.map(l=>{ const A=l.art?R.arts[l.art.id]:null, cov=A?Math.floor(Math.max(0,l.art.qty||0)/A.need):null;
-        return `<tr class="${l.art?'':'unl'}"><td>${_esc(l.type)}<small>${_esc(l.cat)}</small></td><td>${_esc(l.des)}<small>${_esc(l.ref)}</small></td><td>${_esc(l.four)}<small>${_esc(l.refF)}</small></td><td class="num">${l.qty}</td>
-          <td>${l.art?`<b class="c-ref">${_esc(l.art.ref)}</b> ${_esc(l.art.designation)}`:'<span style="color:var(--text3)">non relié</span>'}</td><td class="num c-qty">${l.art?(l.art.qty??'?'):''}</td>
-          <td class="num" style="color:${cov==null?'var(--text3)':cov>=R.N?'var(--green)':'#ff8a82'};font-weight:700">${cov==null?'':cov+' c.'}</td><td><button class="btn btn-outline btn-sm" onclick="caisseLink(${l.i})">${l.art?'Changer':'🔗 Relier'}</button></td></tr>`; }).join('')}</tbody></table></div></div>`;
+    const MI=R.lines.map(l=>bomMatchInfo(CAISSE_BOM[caisseGamme].lines[l.i],l.i)), cnt=k=>MI.filter(m=>m.how===k).length;
+    h+=`<div class="bom-sum"><span class="lk ok">${cnt('ref')} par réf. fournisseur</span><span class="lk ok">${cnt('name')} par nom identique</span><span class="lk ok">${cnt('manual')} confirmées</span><span class="lk warn">${cnt('name?')} nom proche à confirmer</span><span class="lk bad">${cnt('none')} sans correspondance</span><span class="lk">${cnt('ignored')} non suivies</span>
+      <label class="tc-all" style="margin-left:auto"><input type="checkbox" ${window._bomOnlyCheck?'checked':''} onchange="window._bomOnlyCheck=this.checked;renderCaisses()"> Seulement à vérifier</label>
+      ${cnt('name?')?`<button class="btn btn-outline btn-sm" onclick="caisseConfirmAll()">✓ Confirmer toutes les propositions</button>`:''}</div>
+    <div class="db-card"><div style="overflow-x:auto"><table class="stk-table ord"><thead><tr><th>Sous-ensemble</th><th>Désignation</th><th>Fournisseur / réf.</th><th class="num">Qté</th><th>Article du stock</th><th class="num">Stock</th><th class="num">Couvre</th><th></th></tr></thead><tbody>
+      ${R.lines.filter(l=>!window._bomOnlyCheck||['name?','none'].includes(bomMatchInfo(CAISSE_BOM[caisseGamme].lines[l.i],l.i).how)).map(l=>{ const A=l.art?R.arts[l.art.id]:null, cov=A?Math.floor(Math.max(0,l.art.qty||0)/A.need):null, mi=bomMatchInfo(CAISSE_BOM[caisseGamme].lines[l.i],l.i);
+        const badge={ref:'<span class="lk ok">réf. fournisseur</span>',name:'<span class="lk ok">même nom</span>',manual:'<span class="lk ok">confirmé</span>','name?':`<span class="lk warn">nom proche ${Math.round(mi.score*100)} %</span>`,ignored:'<span class="lk">non suivi</span>',none:''}[mi.how];
+        return `<tr class="${l.art?'':'unl'} ${mi.how==='name?'?'chk':''}"><td>${_esc(l.type)}<small>${_esc(l.cat)}</small></td><td>${_esc(l.des)}<small>${_esc(l.ref)}</small></td><td>${_esc(l.four)}<small>${_esc(l.refF)}</small></td><td class="num">${l.qty}</td>
+          <td>${l.art?`<b class="c-ref">${_esc(l.art.ref)}</b> ${_esc(l.art.designation)} ${badge}`:`<span style="color:var(--text3)">${mi.how==='ignored'?'non suivi':'non relié'}</span>`}</td><td class="num c-qty">${l.art?(l.art.qty??'?'):''}</td>
+          <td class="num" style="color:${cov==null?'var(--text3)':cov>=R.N?'var(--green)':'#ff8a82'};font-weight:700">${cov==null?'':cov+' c.'}</td><td style="white-space:nowrap">${mi.how==='name?'?`<button class="btn btn-primary btn-sm" onclick="caisseSetLink(${l.i},'${l.art.id}')">✓ Confirmer</button> `:''}<button class="btn btn-outline btn-sm" onclick="caisseLink(${l.i})">${l.art?'Changer':'🔗 Relier'}</button></td></tr>`; }).join('')}</tbody></table></div></div>`;
   }
   el.innerHTML=h;
 }
@@ -7152,9 +7190,11 @@ function caisseLink(i){
     <div class="req-actions"><button class="btn btn-outline" onclick="caisseSetLink(${i},'none')">Ne pas suivre cette ligne</button><button class="btn btn-outline" onclick="caisseSetLink(${i},null)">Lien automatique</button></div></div>`;
   ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov); caisseLinkList(i);
 }
+function caisseConfirmAll(){ const B=CAISSE_BOM[caisseGamme].lines, L=B.map((l,i)=>[i,bomMatchInfo(l,i)]).filter(([i,m])=>m.how==='name?'); if(!L.length||!confirm(`Confirmer les ${L.length} correspondances proposées par nom proche ? Vérifiez-les d’abord dans la liste.`)) return;
+  const c=gcfg(); L.forEach(([i,m])=>{ c.links[i]=m.art.ref?'ref:'+nz(m.art.ref):m.art.id; }); caisseSaveCfg(); renderCaisses(); toast(`✓ ${L.length} correspondance(s) confirmée(s)`,'ok'); }
 function caisseLinkList(i){ const q=nz(document.getElementById('clQ').value); const L=stockList.filter(a=>!q||nz(a.ref+' '+a.designation+' '+a.refFournisseur+' '+a.fournisseur).includes(q)).slice(0,25);
   document.getElementById('clList').innerHTML=L.map(a=>`<button onclick="caisseSetLink(${i},'${a.id}')"><b>${_esc(a.ref)}</b> ${_esc(a.designation)}<small>${_esc(a.fournisseur||'')} ${_esc(a.refFournisseur||'')} · stock ${a.qty??'?'}</small></button>`).join('')||'<p class="pl-empty">Aucun article trouvé.</p>'; }
-function caisseSetLink(i,id){ const c=gcfg(); if(id) c.links[i]=id; else delete c.links[i]; const o=document.getElementById('clOv'); if(o) o.remove(); caisseSaveCfg(); renderCaisses(); toast('🔗 Lien enregistré','ok'); }
+function caisseSetLink(i,id){ const c=gcfg(); if(id&&id!=='none'){ const a=stockList.find(x=>x.id===id); c.links[i]=a&&a.ref?'ref:'+nz(a.ref):id; } else if(id==='none') c.links[i]='none'; else delete c.links[i]; const o=document.getElementById('clOv'); if(o) o.remove(); caisseSaveCfg(); renderCaisses(); toast('🔗 Lien enregistré','ok'); }
 function caisseOrderLines(f){ return caisseCompute().order.filter(o=>(o.A.art.fournisseur||'Sans fournisseur')===f); }
 function caisseCopy(f){ const L=caisseOrderLines(f), N=gcfg().n; const txt=`Commande ${f} — salve de ${N} × ${MODELS[caisseGamme].name} — ${new Date().toLocaleDateString('fr-FR')}\n`+L.map(o=>`${o.A.art.refFournisseur||o.A.art.ref}\t${o.A.art.designation}\tQté : ${o.qty}`).join('\n');
   navigator.clipboard.writeText(txt).then(()=>toast(`📋 Commande ${f} copiée (${L.length} lignes)`,'ok')).catch(()=>alert(txt)); }
