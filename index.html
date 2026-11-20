@@ -686,6 +686,34 @@ button.btn-scan{font-size:16px;min-width:38px}
 .mq-item button{background:#2aa99e;border:none;color:#fff;border-radius:7px;padding:8px 12px;font-weight:700;cursor:pointer;font-family:var(--font)}
 .mq-add{align-self:flex-start;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;padding:2px 0;font-family:var(--font);text-decoration:underline}
 .mq-dt{background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:4px 6px;font-size:12px}
+.caisse-bar{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
+.caisse-bar label{display:flex;flex-direction:column;gap:4px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text3)}
+.caisse-bar select{background:#00364a;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 10px;font-size:14px;min-width:220px}
+.caisse-bar small{text-transform:none;letter-spacing:0}
+.cn-step{display:flex;align-items:center;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#00364a}
+.cn-step button{background:none;border:none;color:var(--text);font-size:20px;width:42px;height:40px;cursor:pointer}
+.cn-step input{width:60px;text-align:center;background:transparent;border:none;color:#fff;font-size:18px;font-weight:700}
+.caisse-go{white-space:nowrap}
+.crates{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:6px 0 10px}
+.crate{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 8px 12px;cursor:pointer;color:var(--text);font-family:var(--font);animation:crateIn .55s cubic-bezier(.2,1.4,.4,1) both}
+.crate:hover{transform:translateY(-2px);border-color:var(--accent2)}
+.crate.ok{border-color:#2aa99e88}.crate.warn{border-color:#f2c23088}.crate.bad{border-color:#ff6b6288}
+.crate-svg{width:100%;max-width:130px;height:auto;overflow:visible}
+.crate .lid{transform-origin:6px 35px;transition:transform .5s}
+.crate.warn .lid,.crate.bad .lid{transform:rotate(-24deg) translate(-2px,-4px)}
+.crate.ok .parts{opacity:0}
+.crate.bad .crate-svg{animation:crateShake 2.6s ease-in-out infinite}
+.crate-k{font-weight:700;font-size:14px}.crate-st{font-size:12px;color:var(--text2)}.crate.ok .crate-st{color:#7fe3d8;font-weight:700}.crate.bad .crate-st b{color:#ff8a82}.crate.warn .crate-st b{color:#ffd27a}
+.crate-pc{position:absolute;top:8px;right:10px;font-size:11px;color:var(--text3)}
+.crate.ok::after{content:'✓';position:absolute;top:6px;left:9px;width:22px;height:22px;border-radius:50%;background:#2aa99e;color:#fff;font-size:13px;display:grid;place-items:center;font-weight:700}
+@keyframes crateIn{from{opacity:0;transform:translateY(-26px) scale(.9)}}
+@keyframes crateShake{0%,86%,100%{transform:rotate(0)}89%{transform:rotate(-2deg)}93%{transform:rotate(2deg)}96%{transform:rotate(-1deg)}}
+.caisse-note{font-size:12px;color:var(--text3)}
+.cz-grp{margin:8px 0}.cz-grp>b{font-size:13px;color:#9fdcff}
+.cz-l{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid #ffffff10;font-size:13px}.cz-l small{display:block;font-size:11px;color:var(--text3)}.cz-l em{font-style:normal;color:#ff8a82;font-weight:700;white-space:nowrap}
+.stk-table tr.unl td{opacity:.7}
+.cl-list{display:flex;flex-direction:column;gap:4px;max-height:50vh;overflow:auto;margin-top:8px}
+.cl-list button{text-align:left;background:#00364a;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-size:13px;cursor:pointer;font-family:var(--font)}.cl-list small{display:block;font-size:11px;color:var(--text3)}
 /* Tableau de bord */
 .db-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:4px 0 14px;position:sticky;top:0;z-index:15;background:var(--bg)}
 .db-tabs button{flex-shrink:0;background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap}
@@ -823,6 +851,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
     <button class="menu-item" onclick="closeAppMenu();showPlanning()"><span class="menu-item-icon">📋</span> Planning de production</button>
     <button class="menu-item" onclick="closeAppMenu();showAtelier(false)"><span class="menu-item-icon">🏭</span> Atelier 3D en direct</button>
     <button class="menu-item" onclick="closeAppMenu();showStock()"><span class="menu-item-icon">🗄️</span> Stock</button>
+    <button class="menu-item" onclick="closeAppMenu();showCaisses()"><span class="menu-item-icon">📦</span> Caisses atelier</button>
     <button class="menu-item" onclick="closeAppMenu();showVSM()"><span class="menu-item-icon">🗺️</span> Value Stream Map</button>
     <div class="menu-sec">Écrans atelier</div>
     <button class="menu-item" onclick="closeAppMenu();showPlanTv()"><span class="menu-item-icon">📺</span> Planning (TV)</button>
@@ -5307,9 +5336,18 @@ function updateStockLabel(){
   </div>
   <div class="stk-kpis" id="stockKpis"></div>
   <div class="stk-bar"><input id="stockSearch" type="search" placeholder="🔎 Référence, désignation, emplacement, fournisseur…" oninput="stockFilter=this.value;stockLimit=120;renderStock()" autocomplete="off">
-    <div class="stk-views"><button data-v="list" onclick="setStockView('list')">☰ Liste</button><button data-v="order" onclick="setStockView('order')">🛒 À commander</button><button data-v="kanban" onclick="setStockView('kanban')">▦ Kanban</button></div></div>
+    <div class="stk-views"><button data-v="list" onclick="setStockView('list')">☰ Liste</button><button data-v="order" onclick="setStockView('order')">🛒 À commander</button><button data-v="kanban" onclick="setStockView('kanban')">▦ Kanban</button></div><button class="btn btn-primary btn-sm caisse-go" onclick="showCaisses()">📦 Caisses atelier</button></div>
   <div class="stk-cats" id="stockCats"></div>
   <div id="stockBoard"></div>
+</div>
+<div class="screen" id="scCaisses" style="max-width:1280px">
+  <div class="stk-head">
+    <div><div class="project-title" style="font-size:26px">Caisses atelier</div><div style="font-size:12px;color:var(--text3)">Préparation des caisses de montage, comparée au stock en temps réel</div></div>
+    <div class="stk-tools"><button class="btn btn-outline btn-sm" onclick="showStock()">← Stock</button></div>
+  </div>
+  <div class="caisse-bar"><label>Gamme<select id="caisseGamme" onchange="caisseGamme=this.value;renderCaisses()"></select></label>
+    <label>Salve à préparer<div class="cn-step"><button onclick="setCaisseN((+document.getElementById('caisseN').value||1)-1)">−</button><input id="caisseN" type="number" min="1" max="50" value="10" onchange="setCaisseN(this.value)"><button onclick="setCaisseN((+document.getElementById('caisseN').value||1)+1)">＋</button></div><small>machines</small></label></div>
+  <div id="caisseBody"></div>
 </div>
 <div class="screen" id="scVSM" style="padding:0;max-width:100%;margin:0">
 <div style="display:flex;height:calc(100vh - 97px)">
@@ -6943,6 +6981,114 @@ function renderManqSection(){
   return h;
 }
 function manqEdit(id,field,val){ const m=manqList.find(x=>x.id===id); if(!m||!val) return; manqWrite({...m,[field]:new Date(val).toISOString()}); }
+
+
+// ===================== CAISSES ATELIER : préparation de caisses ↔ stock, salve de machines =====================
+// Nomenclature « Caisse atelier » Pi085-045-NA001 indice F (ENO 180 LTV3) : [sous-ensemble, catégorie, désignation, réf. Enogia, fournisseur, réf. fournisseur, qté]
+const CAISSE_BOM={eno180ltv3:{nom:'Pi085-045-NA001 · indice F',lines:[["Autres","Qualité","Plaque CE","0205009097001","ISAGRAV","DEVIS 2019/6",1],["Autres","Qualité","Autocollant Enogia","0205009097002","Pixelplus","",1],["Châssis","Pièce sur plan","Châssis 180LTV3","16090855110403000","","",1],["Châssis","Pièce sur plan","Chassis turbine","16090855110403000","","",2],["Châssis","Pièce sur plan","Tôle pliée","16090855110403000","","",1],["Châssis","Pièce sur plan","Protection pompe cooling","16090855110403000","","",1],["Châssis","Pièce sur plan","Equerre reservoir","16090855110403000","","",1],["Châssis","Pièce sur plan","Cale echangeur","16090855110403000","","",4],["Châssis","Pièce sur plan","Equerre support","16090855110403000","","",3],["Châssis","Pièce sur plan","Equerre lub","16090855110403000","","",1],["Châssis","Pièce sur plan","Protection chock","16090855110403000","","",1],["Châssis","Pièce sur plan","Plaque teflon","16090855110403000","","",4],["Châssis","Visserie","Vis H M4x20 Inox 304L","0205009940002 14","","",14],["Châssis","Visserie","Rondelle plate M4 Inox 304L","0205009941005 4","","",28],["Châssis","Visserie","Ecrou nylstop H M4 Inox 316L","0205009942002 3","","",14],["Boucle chaude","Joint","Joint spiralé de bride DN150 à portée de joint avec anneaux intérieur / extérieur - Acier protégé","0205009915001 11","Béné-inox","957381-150",1],["Boucle chaude","Actionneur","Vanne DN150 electrique","0205009955004","","",2],["Boucle chaude","Visserie","Vis H M20x140 Inox 304L","0205009940002 145","","",16],["Boucle chaude","Visserie","Rondelle plate M20 Inox 304L","0205009941005 20","","",48],["Boucle chaude","Visserie","Ecrou nylstop H M20 Inox 316","0205009942002 14","","",24],["Boucle chaude","Visserie","Vis H M20x90 Inox 304L","0205009940002 140","","",8],["Boucle chaude","Instrumentation","PT1000-L150 1/2BSPP 2-wire, PT1000, 2m non-detachable teflon cable, 1/2BSPP, 5mm diameter","0205009930002 1","AUBERT INSTRUMENT","PT1000-L150 1/2BSPP",2],["Boucle froide","Instrumentation","PT1000-L150 1/2BSPP 2-wire, PT1000, 2m non-detachable teflon cable, 1/2BSPP, 5mm diameter","0205009930002 1","AUBERT INSTRUMENT","PT1000-L150 1/2BSPP",2],["Boucle froide","Quincaillerie","Vanne MF 1/2G","0205009923003","Richardson","21610 1",2],["Boucle froide","Quincaillerie","Purgeur d'air M 15x21","0205009924005","Richardson","17827 7",2],["ORC","Instrumentation","Pilote NF 40 bar detaP","020500993006","Lefroid","401520",1],["ORC","Instrumentation","Bobine 20W 24 CC Borne 18F6857","020500993007","Lefroid","401436",1],["ORC","Réfrigérant","Couvercle FIA80","0205009914002 4","Lefroid","400094",1],["ORC","Réfrigérant","Tamis FIA80 150µ","0205009914003 4","Lefroid","402224",1],["ORC","Joint","Joint DN125 spiralé de bride à portée de joint avec anneaux intérieur / extérieur","0205009915001 10","Béné-inox","957381-125",2],["ORC","Joint","Joint spiralé de bride DN150 à portée de joint avec anneaux intérieur / extérieur - Acier protégé","0205009915001 11","Béné-inox","957381-150",8],["ORC","Joint","Joint DN100 spiralé de bride à portée de joint avec anneaux intérieur / extérieur","0205009915001 9","Béné-inox","957381-100",3],["ORC","Joint","Joint DN80 spiralé de bride à portée de joint avec anneaux intérieur / extérieur","0205009915001 8","Béné-inox","957381-80",3],["ORC","Joint","Joint spiralé de bride DN50 à portée de joint avec anneaux intérieur / extérieur - Acier protégé","0205009915001 6","Béné-inox","957381-50",2],["ORC","Réfrigérant","Coupelle cuivre 3/8","0205009915002","Lefroid","222391",4],["ORC","Réfrigérant","Vanne MM 1/4NPT-3/8SAE","0205009913001","Lefroid","580706",4],["ORC","Réfrigérant","Bouchon F 3/8SAE","0205009916006","Lefroid","222331",4],["ORC","Instrumentation","Psi -1_15bar P499ACH-402C","0205009930003 1","Lefroid","3406118",2],["ORC","Réfrigérant","Capillaire FF 1/4SAE","0205009916007","Lefroid","3497051",2],["ORC","Réfrigérant","Vanne MM 1/4SAE","0205009913002","Lefroid","580719",2],["ORC","Réfrigérant","DM 1/4NPT 1/4SAE","0205009916003","Lefroid","222291",2],["ORC","Instrumentation","PT1000-L70NPT 2-wire, PT1000, 2m non-detachable teflon cable, 1/4 NPT, 3mm diameter","0205009930001 4","AUBERT INSTRUMENT","PT1000-L70NPT",4],["ORC","Turbine","Turbine 100kW","16091000500403000","","",2],["Lub","Réfrigérant","Double mâle 1/2NPT 5/8SAE","0205009916014","Lefroid","222295",6],["Lub","Réfrigérant","Vanne MM 1/4SAE","0205009913002","Lefroid","580719",2],["Lub","Réfrigérant","Vanne 2 pièces femelle / femelle NPT-PN63-Passage intégral-Poignée cadenassable-Inox 316L","0205009913003","Béné-inox","458145-15",1],["Lub","Réfrigérant","Vanne boisseau MM 3/8SAE","0205009913004","Refrigera","BV20A038S2000",1],["Lub","Réfrigérant","Filtre à huile HCYF P6 MM 3/8SAE","0205009914004","Lefroid","3374226",1],["Lub","Réfrigérant","Double mâle 1/2NPT 3/8SAE","0205009916004","Lefroid","3294537",2],["Lub","Réfrigérant","Capillaire FF 1/4SAE","0205009916007","Lefroid","3497051",1],["Lub","Réfrigérant","Raccord FF 1/4 SAE","0205009916008","Lefroid","580780",1],["Lub","Réfrigérant","Te MMM SAE 3/8 1/4 3/8","0205009912002","Lefroid","3294506",2],["Lub","Quincaillerie","Collier support de tuyauterie série légère sans protection Ø68","0205009956003","Béné-inox","472113-48",1],["Lub","Visserie","Vis H M8x12 Inox 304L","0205009940002 46","","",1],["Lub","Visserie","Vis H M6x16 Inox 304L","0205009940002 32","","",4],["Lub","Visserie","Vis H M4x16 Inox 304L","0205009940002 13","","",4],["Lub","Visserie","Rondelle plate M4 Inox 304L","0205009941005 4","","",4],["Lub","Visserie","Rondelle plate M6 Inox 304L","0205009941005 6","","",4],["Lub","Visserie","Rondelle plate M8 Inox 304L","0205009941005 8","","",1],["Lub","Visserie","Ecrou nylstop H M4 Inox 316L","0205009942002 3","","",4],["Lub","Instrumentation","Psi -1_15bar P499ACH-402C","0205009930003 1","Lefroid","3406118",1],["Lub","Pièce sur plan","Flexible 1","1609085510101","IFT","FLEXIBLE WF8S50000 - 2 FSAE 3/8\" DROIT/COUDE LONG 0.245M +/-3mm",1],["Lub","Pièce sur plan","Flexible 2","1609085510102","IFT","FLEXIBLE WF8S50000 - 2 FSAE 3/8\" DROIT/DROIT LONG 0.235M +/-3mm",1],["Lub","Pièce sur plan","Flexible 3","1609085510103","IFT","FLEXIBLE WF8S50000 - 2 FSAE 3/8\" DROIT/DROIT LONG 1.020M +/-3mm",1],["Lub","Pièce sur plan","Flexible 4","1609085510104","IFT","FLEXIBLE WF8S50000 - 2 FSAE 3/8\" DROIT/DROIT LONG 0.235M +/-3mm",1],["Lub","Pièce sur plan","Flexible 5","1609085510105","IFT","FLEXIBLE WF8S50000 - 2 FSAE 3/8\" DROIT/DROIT LONG 0.235M +/-3mm",1],["Lub","Pièce sur plan","Flexible 6","1609085510106","IFT","FLEXIBLE WF8S50000 - 2 FSAE 3/8\" DROIT/DROIT LONG 2.400M +/-3mm",1],["Lub","Réfrigérant","Bouchon laiton moleté 1/4SAE","0205009916011","Lefroid","580024",1],["Lub","Actionneur","Pompe de lub 1/4NPT","0205009911003","","",1],["Lub","Réfrigérant","Double male 1/4NPT-3/8SAE","0205009916013","Lefroid","222292",6],["Lub","Pièce sur plan","Flexible 7","1609085510107","IFT","FLEXIBLE WF8S30000 - 2 FSAE 3/8\" COUDE/DROIT LONG 0.850M +/-3mm",4],["Lub","Pièce sur plan","Flexible 8","1609085510108","IFT","FLEXIBLE WF8S30000 - 2 FSAE 5/8\" COUDE/DROIT LONG 0.850M +/-3mm",4],["Lub","Quincaillerie","Beduan 4 way 6 port","1609085510015","Amazon.com","",1],["Lub","Quincaillerie","Bouchon male 1/2NPT","0209009916015","Béné-inox","653175-15",1],["Cooling","Quincaillerie","Tube multicouche Ø26 L=5m","1609085512001","Richardson","019000 0",1],["Cooling","Quincaillerie","Tube multicouche Ø20 L=5m","1609085512005","Richardson","0189L 9",1],["Cooling","Quincaillerie","Tube PVC transparent Ø20 L=5m","0205009924006","Richardson","20505 4",1],["Cooling","Quincaillerie","Pot de décantation PID05","0205009924001","Richardson","1799c7",1],["Cooling","Quincaillerie","Vase d'expansion 5L","0205009924002","Richardson","57066 3",1],["Cooling","Actionneur","AEROREFROIDISSEUR 1'M","1609085512003","Eurodifroid","AERO60AHQH 230V-1-50HZ",1],["Cooling","Filtre","Filtre tamis FF 26x34","0205009924009","Richardson","8665A 7",1],["Cooling","Actionneur","ALPHA Solar 15-75 130 1x230V 9H","0205009925002","Grundfos","98989298",1],["Cooling","Instrumentation","PT1000-L150 1/2BSPP 2-wire, PT1000, 2m non-detachable teflon cable, 1/2BSPP, 5mm diameter","0205009930002 1","AUBERT INSTRUMENT","PT1000-L150 1/2BSPP",2],["Cooling","Quincaillerie","Purgeur d'air M 15x21","0205009924005","Richardson","17827 7",1],["Cooling","Quincaillerie","Vanne MM 15x21","0205009923001","Richardson","30755 3",1],["Cooling","Quincaillerie","Vanne MM 20x27","0205009923002","Richardson","30756 1",1],["Cooling","Quincaillerie","Collier support de tuyauterie 2 vis, avec protection isophonique EPDM - Acier zingué Ø168","0205009956004","Béné-inox","872172-163172",2],["Cooling","Quincaillerie","Mamelon MM 15x21 12x17","0205009926003","Richardson","34259 2",1],["Cooling","Quincaillerie","Bouchon F 20x27","0205009926010","Richardson","63681 1",1],["Cooling","Quincaillerie","Bouchon F 15x21","0205009926009","Richardson","63680 3",1],["Cooling","Quincaillerie","Mamelon MM 26x34","0205009926012","Richardson","05626 5",3],["Cooling","Joint","Joint torique ID 12.8 x CS 3.2","0205009928001 1","","",4],["Cooling","Joint","Joint fibre 15x21","0205009928002 2","Richardson","",1],["Cooling","Joint","Joint fibre 20x27","0205009928002 3","Richardson","",1],["Cooling","Joint","Joint fibre 26x34","0205009928002 4","Richardson","",8],["Cooling","Quincaillerie","Ecrou tournant F15x21 20F","0205009920001","Richardson","6331H 0",4],["Cooling","Quincaillerie","Coude ecrou tournant F20x27 20F","0205009921001","Richardson","6344N 4",7],["Cooling","Quincaillerie","Ecrou tournant F26x34 26F","0205009920003","Richardson","6333T 7",8],["Cooling","Quincaillerie","Te Reduit FFF Ø26 Ø20","0205009922003","Richardson","6346T 2",3],["Cooling","Quincaillerie","Coude FF Ø26","0205009926013","Richardson","6342F 1",10],["Cooling","Quincaillerie","Te Reduit FFF Ø20 Ø26 Ø20","0205009922003","Richardson","6346W 5",2],["Cooling","Quincaillerie","Ecrou tournant F20x27 20F","0205009920002","Richardson","63312 3",2],["Cooling","Visserie","Vis H M10x16 STD 8.8 Inox 304L","0205009940002 62","","",2],["Cooling","Visserie","Rondelle plate M10 Inox 304L","0205009941005 10","","",2],["Non classé","Visserie","Vis H M8x40 STD 8.8 Inox 304L","0205009940002 52","","",2],["Châssis","Visserie","Rondelle plate M8 Inox 304L","0205009941005 8","","",4],["Non classé","Visserie","Ecrou nylstop H M8 STD 8.8 Inox 316L","0205009942002 7","","",2],["Cooling","Pièce sur plan","Equerre ventilateur 1","16090855110403000","","",1],["Cooling","Pièce sur plan","Equerre ventilateur 2","16090855110403000","","",1],["Cooling","Instrumentation","Flow switch MM 20x27","0205009924004","Aliexpress","USM-FS43TA",2],["Elec","Elec","Trafotek","1609085513001","","",2],["Elec","Elec","Antenne 4G","0205009930004","WAGO","758-974/000-001",1],["Elec","Elec","Verine","0205009930005","RS","XVC4B3",1],["Elec","Pièce sur plan","Plat 40x4 Fixation armoire","0205009096002","","",2],["Elec","Visserie","Vis H M6x20 Inox 304L","0205009940002 33","","",8],["Elec","Visserie","Rondelle plate M6 Inox 304L","0205009941005 6","","",16],["Elec","Visserie","Ecrou nylstop H M6 Inox 316L","0205009942002 5","","",8],["Elec","Visserie","Ecrou nylstop H M16 Inox 316L","0205009942002 12","","",8],["Elec","Visserie","Rondelle plate M16 Inox 304L","0205009941005 16","","",16],["Elec","Visserie","Vis H M16x50 Inox 304L","0205009940002 116","","",8],["Elec","Visserie","Vis H M10x60 Inox 304L","0205009940002 71","","",6],["Elec","Visserie","Rondelle plate M10 Inox 304L","0205009941005 10","","",12],["Elec","Visserie","Ecrou nylstop H M10 Inox 316L","0205009942002","","",6]]}};
+let caisseCfg={}, caisseGamme='eno180ltv3', caisseTab='crates', caisseLoaded=false;
+const nz=s=>String(s||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9]/g,'');
+function bomKey(des){ const D=String(des||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); const kind=(D.match(/\b(VIS|RONDELLE|ECROU)\b/)||[])[1]; const m=D.match(/\bM\s?(\d+)(?:\s*X\s*(\d+))?/); return kind&&m?kind+'|M'+m[1]+(m[2]&&kind==='VIS'?'X'+m[2]:''):null; }
+function caisseStart(){ if(caisseLoaded||!window._fsOnSnapshot) return; caisseLoaded=true;
+  window._fsOnSnapshot(window._fsDoc(window._db,'planConfig','caisses'),d=>{ caisseCfg=d.exists()?d.data():{}; if(document.getElementById('scCaisses').classList.contains('active')) renderCaisses(); },()=>{}); }
+async function caisseSaveCfg(){ try{ await window._fsSetDoc(window._fsDoc(window._db,'planConfig','caisses'),caisseCfg); }catch(e){ console.warn(e); } }
+const gcfg=()=>{ caisseCfg[caisseGamme]=caisseCfg[caisseGamme]||{n:10,links:{}}; if(!caisseCfg[caisseGamme].links) caisseCfg[caisseGamme].links={}; return caisseCfg[caisseGamme]; };
+function bomMatch(line,idx){
+  const L=gcfg().links; if(L[idx]==='none') return null; if(L[idx]) return stockList.find(a=>a.id===L[idx])||null;
+  const rf=nz(line[5]); if(rf.length>=4){ const a=stockList.find(a=>nz(a.refFournisseur)===rf); if(a) return a; }
+  const k=bomKey(line[2]); if(k){ const c=stockList.filter(a=>bomKey(a.designation)===k); if(c.length) return c.find(a=>/INOX/i.test(a.designation))||c[0]; }
+  const dn=nz(line[2]); const a=stockList.find(a=>nz(a.designation)===dn); if(a) return a;
+  if(line[3]){ const r=nz(line[3]); const b=stockList.find(a=>nz(a.ref)===r||nz(a.refFournisseur)===r); if(b) return b; }
+  return null;
+}
+// Calcul de la salve : le stock est réservé caisse après caisse (caisse 1 servie en premier)
+function caisseCompute(){
+  const B=CAISSE_BOM[caisseGamme]; if(!B) return null; const N=Math.max(1,Math.min(50,+gcfg().n||10));
+  const lines=B.lines.map((l,i)=>({i,type:l[0],cat:l[1],des:l[2],ref:l[3],four:l[4],refF:l[5],qty:l[6],art:bomMatch(l,i)}));
+  const arts={}; lines.forEach(l=>{ if(!l.art) return; const a=arts[l.art.id]=arts[l.art.id]||{art:l.art,need:0,lines:[]}; a.need+=l.qty; a.lines.push(l); });
+  const crates=[]; for(let k=1;k<=N;k++){ const miss=[]; let okLines=0;
+    Object.values(arts).forEach(A=>{ const stock=Math.max(0,A.art.qty||0); let m=Math.max(0,Math.min(A.need,A.need*k-stock));
+      A.lines.forEach(l=>{ const lm=Math.min(l.qty,m); m-=lm; if(lm>0) miss.push({l,q:lm,art:A.art}); else okLines++; }); });
+    const unl=lines.filter(l=>!l.art).length, tracked=lines.length-unl; crates.push({k,miss,okLines,tracked,unl,pct:tracked?Math.round(okLines/tracked*100):0}); }
+  const order=Object.values(arts).map(A=>{ const stock=Math.max(0,A.art.qty||0), need=A.need*N, short=Math.max(0,need-stock); return {A,stock,need,short,qty:short?Math.max(short,A.art.moq||0):0}; }).filter(o=>o.short>0);
+  return {N,lines,arts,crates,order,unlinked:lines.filter(l=>!l.art)};
+}
+function showCaisses(){ exitTv(); showScreen('scCaisses'); i40Start(); caisseStart(); renderCaisses(); }
+function setCaisseN(v){ const c=gcfg(); c.n=Math.max(1,Math.min(50,Math.round(+v||1))); renderCaisses(); clearTimeout(window._cnT); window._cnT=setTimeout(caisseSaveCfg,600); }
+function renderCaisses(){
+  const el=document.getElementById('caisseBody'); if(!el) return;
+  const gsel=Object.keys(MODELS).filter(k=>MODELS[k].getSteps().length);
+  document.getElementById('caisseGamme').innerHTML=gsel.map(k=>`<option value="${k}" ${k===caisseGamme?'selected':''}>${_esc(MODELS[k].name)}${CAISSE_BOM[k]?'':' (nomenclature à importer)'}</option>`).join('');
+  if(!CAISSE_BOM[caisseGamme]){ el.innerHTML=`<div class="db-card"><p class="db-ok" style="color:var(--text2)">La nomenclature « Caisse atelier » de ${_esc(MODELS[caisseGamme].name)} n’est pas encore chargée. Envoyez-moi le fichier de nomenclature de cette gamme pour l’ajouter.</p></div>`; return; }
+  if(!stockList.length){ el.innerHTML='<div class="db-card"><p class="db-ok" style="color:var(--text2)">Le stock est vide : importez d’abord votre feuille Google Sheets (Stock → 📗 Sheets).</p></div>'; return; }
+  const R=caisseCompute(), full=R.crates.filter(c=>!c.miss.length).length, firstBad=R.crates.find(c=>c.miss.length);
+  document.getElementById('caisseN').value=R.N;
+  const tot=R.order.reduce((a,o)=>a+o.qty,0);
+  let h=`<div class="db-tiles">
+    <div class="db-tile" style="border-top-color:${full===R.N?'var(--green)':'#ff9f1a'}"><span>📦 Caisses complètes</span><b style="color:${full===R.N?'var(--green)':'#ffc46b'}">${full} / ${R.N}</b><small>${full===R.N?'toute la salve est productible':firstBad?`la caisse ${firstBad.k} est la première incomplète`:''}</small></div>
+    <div class="db-tile" style="border-top-color:#ff3b30"><span>🛒 Références à commander</span><b style="color:#ff8a82">${R.order.length}</b><small>${tot} pièce${tot>1?'s':''} pour ${R.N} machine${R.N>1?'s':''}</small></div>
+    <div class="db-tile" style="border-top-color:var(--accent2)"><span>📋 Nomenclature</span><b>${R.lines.length}</b><small>${R.lines.reduce((a,l)=>a+l.qty,0)} pièces par caisse</small></div>
+    <div class="db-tile" style="border-top-color:${R.unlinked.length?'#7a8b92':'var(--green)'}"><span>🔗 Non reliées au stock</span><b style="color:${R.unlinked.length?'var(--text2)':'var(--green)'}">${R.unlinked.length}</b><small>${R.unlinked.length?'à relier pour un calcul complet':'tout est relié'}</small></div></div>
+  <div class="db-tabs" style="position:static">${[['crates','📦 Caisses'],['order','🛒 À commander pour la salve'],['bom','📋 Nomenclature & liens stock']].map(([k,l])=>`<button class="${caisseTab===k?'on':''}" onclick="caisseTab='${k}';renderCaisses()">${l}${k==='order'&&R.order.length?` <span class="db-n">${R.order.length}</span>`:''}${k==='bom'&&R.unlinked.length?` <span class="db-n" style="background:#7a8b92">${R.unlinked.length}</span>`:''}</button>`).join('')}</div>`;
+  if(caisseTab==='crates'){
+    h+=`<div class="crates">${R.crates.map((c,i)=>{ const st=c.miss.length?(c.pct>=90?'warn':'bad'):'ok';
+      return `<button class="crate ${st}" style="animation-delay:${i*70}ms" onclick="openCaisse(${c.k})">
+        <svg viewBox="0 0 120 100" class="crate-svg" aria-hidden="true">
+          <g class="parts">${[18,38,58,78].slice(0,Math.max(1,Math.round(c.pct/25))).map((x,j)=>`<rect x="${x+4}" y="${34-(j%2)*6}" width="18" height="16" rx="2" fill="${['#1b84cf','#f2c230','#2aa99e','#ff9f1a'][j]}"/>`).join('')}</g>
+          <path d="M10 40 L110 40 L104 94 L16 94 Z" fill="#b8854a"/><path d="M10 40 L110 40 L108 52 L12 52 Z" fill="#a0723c"/>
+          ${[62,76].map(y=>`<rect x="13" y="${y}" width="94" height="3" fill="#8a5f30" opacity=".6"/>`).join('')}
+          <rect x="14" y="88" width="92" height="6" rx="1" fill="#7a5228"/>
+          <g class="lid"><rect x="6" y="30" width="108" height="10" rx="2" fill="#c9965a"/><rect x="6" y="30" width="108" height="3" fill="#ddb07a"/></g>
+          <rect class="fill-bg" x="22" y="60" width="76" height="8" rx="4" fill="#00000040"/><rect x="22" y="60" width="${76*c.pct/100}" height="8" rx="4" fill="${st==='ok'?'#2ee07a':st==='warn'?'#f2c230':'#ff6b62'}"/>
+        </svg>
+        <span class="crate-k">Caisse ${c.k}</span>
+        <span class="crate-st">${c.miss.length?`<b>${c.miss.length}</b> manquant${c.miss.length>1?'s':''}`:'✓ Complète'}</span>
+        <span class="crate-pc">${c.pct} %</span></button>`; }).join('')}</div>
+      <p class="caisse-note">Le stock est réservé caisse après caisse : la caisse 1 est servie en premier. Touchez une caisse pour voir ses manquants.${R.unlinked.length?` ${R.unlinked.length} ligne(s) non reliée(s) au stock ne sont pas comptées : voir l’onglet Nomenclature.`:''}</p>`;
+  } else if(caisseTab==='order'){
+    const byF={}; R.order.forEach(o=>{ const f=o.A.art.fournisseur||'Sans fournisseur'; (byF[f]=byF[f]||[]).push(o); });
+    const fk=Object.keys(byF).sort((a,b)=>byF[b].length-byF[a].length);
+    h+=fk.length?`<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn btn-outline btn-sm" onclick="caisseCsv()">📥 Exporter la commande (CSV)</button></div>`+fk.map(f=>`<div class="ord-grp"><div class="ord-h"><b>${_esc(f)}</b><span>${byF[f].length} réf.</span><button class="btn btn-outline btn-sm" onclick="caisseCopy('${_esc(f).replace(/'/g,"\\'")}')">📋 Copier</button><button class="btn btn-primary btn-sm" onclick="caisseMark('${_esc(f).replace(/'/g,"\\'")}')">✓ Marquer commandé</button></div>
+      <div style="overflow-x:auto"><table class="stk-table ord"><thead><tr><th>Réf. ENOGIA</th><th>Désignation</th><th>Réf. fournisseur</th><th class="num">Par caisse</th><th class="num">Besoin salve</th><th class="num">Stock</th><th class="num">Manque</th><th class="num">À commander</th></tr></thead><tbody>
+      ${byF[f].map(o=>`<tr><td class="c-ref">${_esc(o.A.art.ref||'')}</td><td>${_esc(o.A.art.designation)}${o.A.art.commande?' <small style="color:#9fdcff">déjà commandé</small>':''}</td><td>${_esc(o.A.art.refFournisseur||'')}</td><td class="num">${o.A.need}</td><td class="num">${o.need}</td><td class="num c-qty">${o.stock}</td><td class="num" style="color:#ff8a82;font-weight:700">${o.short}</td><td class="num c-ord"><b>${o.qty}</b>${o.qty>o.short?`<small>MOQ ${o.A.art.moq}</small>`:''}</td></tr>`).join('')}</tbody></table></div></div>`).join('')
+      :`<p class="db-ok">✓ Le stock couvre les ${R.N} caisses : rien à commander.</p>`;
+  } else {
+    h+=`<div class="db-card"><div style="overflow-x:auto"><table class="stk-table ord"><thead><tr><th>Sous-ensemble</th><th>Désignation</th><th>Fournisseur / réf.</th><th class="num">Qté</th><th>Article du stock</th><th class="num">Stock</th><th class="num">Couvre</th><th></th></tr></thead><tbody>
+      ${R.lines.map(l=>{ const A=l.art?R.arts[l.art.id]:null, cov=A?Math.floor(Math.max(0,l.art.qty||0)/A.need):null;
+        return `<tr class="${l.art?'':'unl'}"><td>${_esc(l.type)}<small>${_esc(l.cat)}</small></td><td>${_esc(l.des)}<small>${_esc(l.ref)}</small></td><td>${_esc(l.four)}<small>${_esc(l.refF)}</small></td><td class="num">${l.qty}</td>
+          <td>${l.art?`<b class="c-ref">${_esc(l.art.ref)}</b> ${_esc(l.art.designation)}`:'<span style="color:var(--text3)">non relié</span>'}</td><td class="num c-qty">${l.art?(l.art.qty??'?'):''}</td>
+          <td class="num" style="color:${cov==null?'var(--text3)':cov>=R.N?'var(--green)':'#ff8a82'};font-weight:700">${cov==null?'':cov+' c.'}</td><td><button class="btn btn-outline btn-sm" onclick="caisseLink(${l.i})">${l.art?'Changer':'🔗 Relier'}</button></td></tr>`; }).join('')}</tbody></table></div></div>`;
+  }
+  el.innerHTML=h;
+}
+function openCaisse(k){
+  const R=caisseCompute(), c=R.crates[k-1]; if(!c) return;
+  const byT={}; c.miss.forEach(m=>{ (byT[m.l.type]=byT[m.l.type]||[]).push(m); });
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='caisseOv';
+  ov.innerHTML=`<div class="req-box" style="max-width:640px" onclick="event.stopPropagation()"><h3>📦 Caisse ${k} · ${_esc(MODELS[caisseGamme].name)}</h3>
+    <div class="req-sub">${c.miss.length?`${c.miss.length} ligne${c.miss.length>1?'s':''} manquante${c.miss.length>1?'s':''} sur ${c.tracked} suivies`:`Complète : les ${c.tracked} lignes suivies sont couvertes par le stock`}${c.unl?` · ${c.unl} non reliée(s) au stock`:''}</div>
+    ${c.miss.length?Object.entries(byT).map(([t,L])=>`<div class="cz-grp"><b>${_esc(t)}</b>${L.map(m=>`<div class="cz-l"><span>${_esc(m.l.des)}<small>${_esc(m.art.ref||'')} · stock ${m.art.qty??0} · ${_esc(m.art.fournisseur||'')}</small></span><em>manque ${m.q} / ${m.l.qty}</em></div>`).join('')}</div>`).join(''):'<p class="db-ok">✓ Rien ne manque pour cette caisse.</p>'}
+    <div class="req-actions"><button class="btn btn-primary" onclick="document.getElementById('caisseOv').remove()">Fermer</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov);
+}
+function caisseLink(i){
+  const l=CAISSE_BOM[caisseGamme].lines[i];
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='clOv';
+  ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()"><h3>🔗 Relier au stock</h3><div class="req-sub">${_esc(l[2])} · ${_esc(l[4])} ${_esc(l[5])}</div>
+    <input id="clQ" placeholder="Rechercher : référence, désignation, réf. fournisseur…" autocomplete="off" value="${_esc((bomKey(l[2])||'').split('|')[1]||l[5]||'')}" oninput="caisseLinkList(${i})">
+    <div id="clList" class="cl-list"></div>
+    <div class="req-actions"><button class="btn btn-outline" onclick="caisseSetLink(${i},'none')">Ne pas suivre cette ligne</button><button class="btn btn-outline" onclick="caisseSetLink(${i},null)">Lien automatique</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov); caisseLinkList(i);
+}
+function caisseLinkList(i){ const q=nz(document.getElementById('clQ').value); const L=stockList.filter(a=>!q||nz(a.ref+' '+a.designation+' '+a.refFournisseur+' '+a.fournisseur).includes(q)).slice(0,25);
+  document.getElementById('clList').innerHTML=L.map(a=>`<button onclick="caisseSetLink(${i},'${a.id}')"><b>${_esc(a.ref)}</b> ${_esc(a.designation)}<small>${_esc(a.fournisseur||'')} ${_esc(a.refFournisseur||'')} · stock ${a.qty??'?'}</small></button>`).join('')||'<p class="pl-empty">Aucun article trouvé.</p>'; }
+function caisseSetLink(i,id){ const c=gcfg(); if(id) c.links[i]=id; else delete c.links[i]; const o=document.getElementById('clOv'); if(o) o.remove(); caisseSaveCfg(); renderCaisses(); toast('🔗 Lien enregistré','ok'); }
+function caisseOrderLines(f){ return caisseCompute().order.filter(o=>(o.A.art.fournisseur||'Sans fournisseur')===f); }
+function caisseCopy(f){ const L=caisseOrderLines(f), N=gcfg().n; const txt=`Commande ${f} — salve de ${N} × ${MODELS[caisseGamme].name} — ${new Date().toLocaleDateString('fr-FR')}\n`+L.map(o=>`${o.A.art.refFournisseur||o.A.art.ref}\t${o.A.art.designation}\tQté : ${o.qty}`).join('\n');
+  navigator.clipboard.writeText(txt).then(()=>toast(`📋 Commande ${f} copiée (${L.length} lignes)`,'ok')).catch(()=>alert(txt)); }
+function caisseMark(f){ const L=caisseOrderLines(f); if(!L.length||!confirm(`Marquer ${L.length} article(s) ${f} comme commandés ?`)) return; L.forEach(o=>stockSave({...o.A.art,commande:true,forceOrder:false,commandeAt:new Date().toISOString()})); toast('✓ Articles passés en « Commandé »','ok'); }
+function caisseCsv(){ const R=caisseCompute(); const rows=[['Fournisseur','Réf ENOGIA','Désignation','Réf fournisseur','Par caisse','Besoin salve','Stock','Manque','À commander']].concat(R.order.map(o=>[o.A.art.fournisseur||'',o.A.art.ref||'',o.A.art.designation,o.A.art.refFournisseur||'',o.A.need,o.need,o.stock,o.short,o.qty]));
+  const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n'); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download=`commande_salve_${R.N}x_${caisseGamme}.csv`; a.click(); }
 
 // ---------- KPI Industrie 4.0 (tableau de bord) ----------
 function renderI40Section(monthSessions){
