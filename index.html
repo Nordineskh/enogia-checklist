@@ -695,19 +695,37 @@ button.btn-scan{font-size:16px;min-width:38px}
 .cn-step input{width:60px;text-align:center;background:transparent;border:none;color:#fff;font-size:18px;font-weight:700}
 .caisse-go{white-space:nowrap}
 .crates{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:6px 0 10px}
-.crate{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 8px 12px;cursor:pointer;color:var(--text);font-family:var(--font);animation:crateIn .55s cubic-bezier(.2,1.4,.4,1) both}
-.crate:hover{transform:translateY(-2px);border-color:var(--accent2)}
-.crate.ok{border-color:#2aa99e88}.crate.warn{border-color:#f2c23088}.crate.bad{border-color:#ff6b6288}
-.crate-svg{width:100%;max-width:130px;height:auto;overflow:visible}
-.crate .lid{transform-origin:6px 35px;transition:transform .5s}
-.crate.warn .lid,.crate.bad .lid{transform:rotate(-24deg) translate(-2px,-4px)}
-.crate.ok .parts{opacity:0}
-.crate.bad .crate-svg{animation:crateShake 2.6s ease-in-out infinite}
-.crate-k{font-weight:700;font-size:14px}.crate-st{font-size:12px;color:var(--text2)}.crate.ok .crate-st{color:#7fe3d8;font-weight:700}.crate.bad .crate-st b{color:#ff8a82}.crate.warn .crate-st b{color:#ffd27a}
-.crate-pc{position:absolute;top:8px;right:10px;font-size:11px;color:var(--text3)}
-.crate.ok::after{content:'✓';position:absolute;top:6px;left:9px;width:22px;height:22px;border-radius:50%;background:#2aa99e;color:#fff;font-size:13px;display:grid;place-items:center;font-weight:700}
-@keyframes crateIn{from{opacity:0;transform:translateY(-26px) scale(.9)}}
+.crate{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;background:linear-gradient(180deg,#0b4a5f,#063646);border:1px solid var(--border);border-radius:14px;padding:12px 10px 12px;cursor:pointer;color:var(--text);font-family:var(--font);animation:crateIn .6s cubic-bezier(.2,1.4,.4,1) both;transition:transform .2s,box-shadow .2s}
+.crate:hover{transform:translateY(-3px);box-shadow:0 10px 24px #0006}
+.crate.ok{border-color:#2ee07a99;background:linear-gradient(180deg,#0d5a52,#063f3c)}.crate.warn{border-color:#f2c23088}.crate.bad{border-color:#ff6b6288}
+.crate-svg{width:100%;max-width:150px;height:auto;overflow:visible}
+.crate .lid{transform-origin:52px 42px;animation:lidPeek 3.2s ease-in-out infinite}
+.crate.bad .crate-svg{animation:crateShake 2.8s ease-in-out infinite}
+.crate-k{font-size:15px;margin-top:-4px}.crate-k b{letter-spacing:1px;color:#fff}
+.crate-st{font-size:12px;color:var(--text2)}.crate.ok .crate-st{color:#7fe3d8;font-weight:700}.crate.bad .crate-st b{color:#ff8a82}.crate.warn .crate-st b{color:#ffd27a}.crate.avail .crate-st{color:#9fdcff}
+.crate-bars{display:flex;flex-direction:column;gap:3px;width:86%;margin-top:4px}
+.crate-bars i{display:block;height:5px;border-radius:3px;background:#ffffff14;overflow:hidden}.crate-bars s{display:block;height:100%;background:#2ee07a;border-radius:3px;text-decoration:none}
+.crate-bars i.dispo s{background:#2aa99e}.crate-bars i.dispo.bad s{background:#ff6b62}.crate-bars i.dispo.warn s{background:#f2c230}
+.crate-leg{display:flex;justify-content:space-between;width:86%;font-size:9.5px;color:var(--text3)}.crate-leg em{font-style:normal}
+@keyframes crateIn{from{opacity:0;transform:translateY(-30px) scale(.9)}}
 @keyframes crateShake{0%,86%,100%{transform:rotate(0)}89%{transform:rotate(-2deg)}93%{transform:rotate(2deg)}96%{transform:rotate(-1deg)}}
+@keyframes lidPeek{0%,100%{transform:rotate(0)}50%{transform:rotate(-4deg)}}
+.cz-box{max-width:720px;display:flex;flex-direction:column;max-height:92vh}
+.cz-head{display:flex;gap:12px;align-items:center}.cz-mini{width:96px;flex-shrink:0}.cz-mini svg{width:100%}
+.cz-pj{display:flex !important;align-items:center;gap:8px;margin:6px 0 2px !important}.cz-pj input{width:150px !important;font-size:16px !important;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.cz-rings{display:flex;gap:8px}.cz-rings>div{text-align:center}.cz-rings small{display:block;font-size:10px;color:var(--text3)}.ring{width:56px;height:56px}
+.cz-bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:10px 0 6px}.cz-bar .sn-seg b{opacity:.7;margin-left:3px}
+.cz-lines{overflow:auto;flex:1;min-height:120px;border:1px solid var(--border);border-radius:10px}
+.cz-g{border-top:1px solid var(--border)}.cz-g:first-child{border-top:none}
+.cz-gh{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#00364a;position:sticky;top:0;z-index:1}.cz-gh b{color:#9fdcff;font-size:13px}
+.cz-gh button{background:none;border:1px solid #2aa99e;color:#7fe3d8;border-radius:6px;padding:4px 8px;font-size:11.5px;cursor:pointer;font-family:var(--font)}
+.cz-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-top:1px solid #ffffff0d}
+.cz-row.on{background:#2ee07a10}.cz-row.on .cz-txt b{color:var(--text3);text-decoration:line-through}
+.cz-ck{width:34px;height:34px;flex-shrink:0;border-radius:8px;border:2px solid var(--border);background:#00364a;color:#fff;font-size:18px;font-weight:700;cursor:pointer}
+.cz-row.on .cz-ck{background:#2ee07a;border-color:#2ee07a;color:#043}
+.cz-txt{flex:1;min-width:0;font-size:13px}.cz-txt small{display:block;font-size:11px;color:var(--text3);margin-top:1px}
+.cz-q{text-align:right;white-space:nowrap;font-size:13px}.cz-q em{display:block;font-style:normal;color:#ff8a82;font-size:11px;font-weight:700}
+.cz-row.miss:not(.on){background:#ff3b300d}
 .caisse-note{font-size:12px;color:var(--text3)}
 .cz-grp{margin:8px 0}.cz-grp>b{font-size:13px;color:#9fdcff}
 .cz-l{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid #ffffff10;font-size:13px}.cz-l small{display:block;font-size:11px;color:var(--text3)}.cz-l em{font-style:normal;color:#ff8a82;font-weight:700;white-space:nowrap}
@@ -7001,19 +7019,7 @@ function bomMatch(line,idx){
   if(line[3]){ const r=nz(line[3]); const b=stockList.find(a=>nz(a.ref)===r||nz(a.refFournisseur)===r); if(b) return b; }
   return null;
 }
-// Calcul de la salve : le stock est réservé caisse après caisse (caisse 1 servie en premier)
-function caisseCompute(){
-  const B=CAISSE_BOM[caisseGamme]; if(!B) return null; const N=Math.max(1,Math.min(50,+gcfg().n||10));
-  const lines=B.lines.map((l,i)=>({i,type:l[0],cat:l[1],des:l[2],ref:l[3],four:l[4],refF:l[5],qty:l[6],art:bomMatch(l,i)}));
-  const arts={}; lines.forEach(l=>{ if(!l.art) return; const a=arts[l.art.id]=arts[l.art.id]||{art:l.art,need:0,lines:[]}; a.need+=l.qty; a.lines.push(l); });
-  const crates=[]; for(let k=1;k<=N;k++){ const miss=[]; let okLines=0;
-    Object.values(arts).forEach(A=>{ const stock=Math.max(0,A.art.qty||0); let m=Math.max(0,Math.min(A.need,A.need*k-stock));
-      A.lines.forEach(l=>{ const lm=Math.min(l.qty,m); m-=lm; if(lm>0) miss.push({l,q:lm,art:A.art}); else okLines++; }); });
-    const unl=lines.filter(l=>!l.art).length, tracked=lines.length-unl; crates.push({k,miss,okLines,tracked,unl,pct:tracked?Math.round(okLines/tracked*100):0}); }
-  const order=Object.values(arts).map(A=>{ const stock=Math.max(0,A.art.qty||0), need=A.need*N, short=Math.max(0,need-stock); return {A,stock,need,short,qty:short?Math.max(short,A.art.moq||0):0}; }).filter(o=>o.short>0);
-  return {N,lines,arts,crates,order,unlinked:lines.filter(l=>!l.art)};
-}
-function showCaisses(){ exitTv(); showScreen('scCaisses'); i40Start(); caisseStart(); renderCaisses(); }
+function showCaisses(){ exitTv(); showScreen('scCaisses'); i40Start(); caisseStart(); caisseListen(); renderCaisses(); }
 function setCaisseN(v){ const c=gcfg(); c.n=Math.max(1,Math.min(50,Math.round(+v||1))); renderCaisses(); clearTimeout(window._cnT); window._cnT=setTimeout(caisseSaveCfg,600); }
 function renderCaisses(){
   const el=document.getElementById('caisseBody'); if(!el) return;
@@ -7025,26 +7031,21 @@ function renderCaisses(){
   document.getElementById('caisseN').value=R.N;
   const tot=R.order.reduce((a,o)=>a+o.qty,0);
   let h=`<div class="db-tiles">
-    <div class="db-tile" style="border-top-color:${full===R.N?'var(--green)':'#ff9f1a'}"><span>📦 Caisses complètes</span><b style="color:${full===R.N?'var(--green)':'#ffc46b'}">${full} / ${R.N}</b><small>${full===R.N?'toute la salve est productible':firstBad?`la caisse ${firstBad.k} est la première incomplète`:''}</small></div>
+    <div class="db-tile" style="border-top-color:#2ee07a"><span>✅ Caisses remplies</span><b style="color:#7fe3d8">${R.crates.filter(c=>c.ready).length} / ${R.N}</b><small>${R.crates.filter(c=>c.filled&&!c.ready).length} en cours de remplissage</small></div>
+    <div class="db-tile" style="border-top-color:${full===R.N?'var(--green)':'#ff9f1a'}"><span>📦 Caisses sans manquant</span><b style="color:${full===R.N?'var(--green)':'#ffc46b'}">${full} / ${R.N}</b><small>${full===R.N?'toute la salve est productible':firstBad?`la caisse ${firstBad.k} est la première incomplète`:''}</small></div>
     <div class="db-tile" style="border-top-color:#ff3b30"><span>🛒 Références à commander</span><b style="color:#ff8a82">${R.order.length}</b><small>${tot} pièce${tot>1?'s':''} pour ${R.N} machine${R.N>1?'s':''}</small></div>
     <div class="db-tile" style="border-top-color:var(--accent2)"><span>📋 Nomenclature</span><b>${R.lines.length}</b><small>${R.lines.reduce((a,l)=>a+l.qty,0)} pièces par caisse</small></div>
     <div class="db-tile" style="border-top-color:${R.unlinked.length?'#7a8b92':'var(--green)'}"><span>🔗 Non reliées au stock</span><b style="color:${R.unlinked.length?'var(--text2)':'var(--green)'}">${R.unlinked.length}</b><small>${R.unlinked.length?'à relier pour un calcul complet':'tout est relié'}</small></div></div>
   <div class="db-tabs" style="position:static">${[['crates','📦 Caisses'],['order','🛒 À commander pour la salve'],['bom','📋 Nomenclature & liens stock']].map(([k,l])=>`<button class="${caisseTab===k?'on':''}" onclick="caisseTab='${k}';renderCaisses()">${l}${k==='order'&&R.order.length?` <span class="db-n">${R.order.length}</span>`:''}${k==='bom'&&R.unlinked.length?` <span class="db-n" style="background:#7a8b92">${R.unlinked.length}</span>`:''}</button>`).join('')}</div>`;
   if(caisseTab==='crates'){
-    h+=`<div class="crates">${R.crates.map((c,i)=>{ const st=c.miss.length?(c.pct>=90?'warn':'bad'):'ok';
-      return `<button class="crate ${st}" style="animation-delay:${i*70}ms" onclick="openCaisse(${c.k})">
-        <svg viewBox="0 0 120 100" class="crate-svg" aria-hidden="true">
-          <g class="parts">${[18,38,58,78].slice(0,Math.max(1,Math.round(c.pct/25))).map((x,j)=>`<rect x="${x+4}" y="${34-(j%2)*6}" width="18" height="16" rx="2" fill="${['#1b84cf','#f2c230','#2aa99e','#ff9f1a'][j]}"/>`).join('')}</g>
-          <path d="M10 40 L110 40 L104 94 L16 94 Z" fill="#b8854a"/><path d="M10 40 L110 40 L108 52 L12 52 Z" fill="#a0723c"/>
-          ${[62,76].map(y=>`<rect x="13" y="${y}" width="94" height="3" fill="#8a5f30" opacity=".6"/>`).join('')}
-          <rect x="14" y="88" width="92" height="6" rx="1" fill="#7a5228"/>
-          <g class="lid"><rect x="6" y="30" width="108" height="10" rx="2" fill="#c9965a"/><rect x="6" y="30" width="108" height="3" fill="#ddb07a"/></g>
-          <rect class="fill-bg" x="22" y="60" width="76" height="8" rx="4" fill="#00000040"/><rect x="22" y="60" width="${76*c.pct/100}" height="8" rx="4" fill="${st==='ok'?'#2ee07a':st==='warn'?'#f2c230':'#ff6b62'}"/>
-        </svg>
-        <span class="crate-k">Caisse ${c.k}</span>
-        <span class="crate-st">${c.miss.length?`<b>${c.miss.length}</b> manquant${c.miss.length>1?'s':''}`:'✓ Complète'}</span>
-        <span class="crate-pc">${c.pct} %</span></button>`; }).join('')}</div>
-      <p class="caisse-note">Le stock est réservé caisse après caisse : la caisse 1 est servie en premier. Touchez une caisse pour voir ses manquants.${R.unlinked.length?` ${R.unlinked.length} ligne(s) non reliée(s) au stock ne sont pas comptées : voir l’onglet Nomenclature.`:''}</p>`;
+    h+=`<div class="crates">${R.crates.map((c,i)=>{ const st=c.ready?'ok':c.miss.length?(c.pct>=90?'warn':'bad'):'avail';
+      return `<button class="crate ${st}" style="animation-delay:${i*60}ms" onclick="openCaisse(${c.k})">
+        ${crateSvg(c,st)}
+        <span class="crate-k">${c.pj?`<b>${_esc(c.pj)}</b>`:`Caisse ${c.k}`}</span>
+        <span class="crate-st">${c.ready?'✓ Prête':c.miss.length?`<b>${c.miss.length}</b> manquant${c.miss.length>1?'s':''}`:'Stock OK'}</span>
+        <span class="crate-bars"><i title="Remplie"><s style="width:${c.fillPct}%"></s></i><i title="Disponibilité stock" class="dispo ${st}"><s style="width:${c.pct}%"></s></i></span>
+        <span class="crate-leg"><em>Remplie ${c.fillPct}%</em><em>Dispo ${c.pct}%</em></span></button>`; }).join('')}</div>
+      <p class="caisse-note">Touchez une caisse pour lui affecter un N° de PJ et cocher les lignes au fur et à mesure du remplissage (les pièces cochées sortent du stock). Le stock restant est réservé caisse après caisse, la caisse 1 en premier.${R.unlinked.length?` ${R.unlinked.length} ligne(s) non reliée(s) au stock ne sont pas comptées : voir l’onglet Nomenclature.`:''}</p>`;
   } else if(caisseTab==='order'){
     const byF={}; R.order.forEach(o=>{ const f=o.A.art.fournisseur||'Sans fournisseur'; (byF[f]=byF[f]||[]).push(o); });
     const fk=Object.keys(byF).sort((a,b)=>byF[b].length-byF[a].length);
@@ -7061,16 +7062,87 @@ function renderCaisses(){
   }
   el.innerHTML=h;
 }
-function openCaisse(k){
-  const R=caisseCompute(), c=R.crates[k-1]; if(!c) return;
-  const byT={}; c.miss.forEach(m=>{ (byT[m.l.type]=byT[m.l.type]||[]).push(m); });
-  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='caisseOv';
-  ov.innerHTML=`<div class="req-box" style="max-width:640px" onclick="event.stopPropagation()"><h3>📦 Caisse ${k} · ${_esc(MODELS[caisseGamme].name)}</h3>
-    <div class="req-sub">${c.miss.length?`${c.miss.length} ligne${c.miss.length>1?'s':''} manquante${c.miss.length>1?'s':''} sur ${c.tracked} suivies`:`Complète : les ${c.tracked} lignes suivies sont couvertes par le stock`}${c.unl?` · ${c.unl} non reliée(s) au stock`:''}</div>
-    ${c.miss.length?Object.entries(byT).map(([t,L])=>`<div class="cz-grp"><b>${_esc(t)}</b>${L.map(m=>`<div class="cz-l"><span>${_esc(m.l.des)}<small>${_esc(m.art.ref||'')} · stock ${m.art.qty??0} · ${_esc(m.art.fournisseur||'')}</small></span><em>manque ${m.q} / ${m.l.qty}</em></div>`).join('')}</div>`).join(''):'<p class="db-ok">✓ Rien ne manque pour cette caisse.</p>'}
-    <div class="req-actions"><button class="btn btn-primary" onclick="document.getElementById('caisseOv').remove()">Fermer</button></div></div>`;
-  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov);
+// ---- Caisses physiques : N° de PJ et lignes remplies (cochées par le technicien) ----
+let caisseData={};
+const caisseId=k=>caisseGamme+'_'+k;
+const cdat=k=>caisseData[caisseId(k)]||{id:caisseId(k),gamme:caisseGamme,k,pj:'',checked:{}};
+async function caisseWrite(d){ caisseData[d.id]=d; try{ await window._fsSetDoc(window._fsDoc(window._db,'caisses',d.id),d); }catch(e){ console.warn('caisse',e); } }
+function caisseListen(){ if(window._caisseL||!window._fsOnSnapshot) return; window._caisseL=true;
+  window._fsOnSnapshot(window._fsCollection(window._db,'caisses'),s=>{ caisseData={}; s.docs.forEach(d=>caisseData[d.id]=d.data()); if(document.getElementById('scCaisses').classList.contains('active')) renderCaisses(); if(document.getElementById('czOv')&&window._czK) renderCaisseDetail(); },()=>{}); }
+// Le stock (déjà diminué des lignes mises en caisse) est réservé caisse après caisse aux lignes encore à remplir
+function caisseCompute(){
+  const B=CAISSE_BOM[caisseGamme]; if(!B) return null; const N=Math.max(1,Math.min(50,+gcfg().n||10));
+  const lines=B.lines.map((l,i)=>({i,type:l[0],cat:l[1],des:l[2],ref:l[3],four:l[4],refF:l[5],qty:l[6],art:bomMatch(l,i)}));
+  const arts={}; lines.forEach(l=>{ if(l.art){ const a=arts[l.art.id]=arts[l.art.id]||{art:l.art,need:0,lines:[]}; a.need+=l.qty; a.lines.push(l); } });
+  const avail={}; Object.values(arts).forEach(A=>avail[A.art.id]=Math.max(0,A.art.qty||0));
+  const crates=[], short={};
+  for(let k=1;k<=N;k++){ const d=cdat(k), chk=d.checked||{}; const miss=[]; let dispo=0, filled=0;
+    lines.forEach(l=>{ if(chk[l.i]) filled++; });
+    Object.values(arts).forEach(A=>{ A.lines.forEach(l=>{ if(chk[l.i]){ dispo++; return; } const take=Math.min(l.qty,avail[A.art.id]); avail[A.art.id]-=take; if(take<l.qty){ miss.push({l,q:l.qty-take,art:A.art}); short[A.art.id]=(short[A.art.id]||0)+(l.qty-take); } else dispo++; }); });
+    const unl=lines.filter(l=>!l.art).length, tracked=lines.length-unl;
+    crates.push({k,pj:d.pj||'',miss,dispo,tracked,unl,filled,total:lines.length,pct:tracked?Math.round(dispo/tracked*100):0,fillPct:Math.round(filled/lines.length*100),ready:filled===lines.length}); }
+  const order=Object.values(arts).filter(A=>short[A.art.id]>0).map(A=>{ const s=short[A.art.id]; return {A,stock:Math.max(0,A.art.qty||0),need:s+Math.max(0,A.art.qty||0),short:s,qty:Math.max(s,A.art.moq||0)}; });
+  return {N,lines,arts,crates,order,unlinked:lines.filter(l=>!l.art)};
 }
+// ---- dessin d'une caisse (vue isométrique) ----
+function crateSvg(c,st){
+  const open=!c.ready, lbl=_esc(c.pj||('N° '+c.k)), fillN=Math.round(c.fillPct/100*7);
+  const parts=[['#1b84cf',58,44,14,10],['#f2c230',76,40,10,14],['#2aa99e',92,45,16,9],['#ff9f1a',66,36,8,12],['#c9d3d8',104,38,12,12],['#1b84cf',84,34,10,8],['#e05555',112,44,10,9]].slice(0,fillN);
+  return `<svg viewBox="0 0 170 140" class="crate-svg" aria-hidden="true">
+    <ellipse cx="82" cy="128" rx="66" ry="7" fill="#0006"/>
+    ${open?`<polygon points="22,58 52,42 142,42 112,58" fill="#2a1a0c"/>${parts.map(p=>`<rect x="${p[1]}" y="${p[2]}" width="${p[3]}" height="${p[4]}" rx="2" fill="${p[0]}" stroke="#0004"/>`).join('')}`:''}
+    <polygon points="112,58 142,42 142,104 112,120" fill="#8f6034"/>
+    ${[62,82].map(y=>`<polyline points="112,${y+6} 142,${y-10}" stroke="#6e4823" stroke-width="2"/>`).join('')}
+    <polygon points="22,58 112,58 112,120 22,120" fill="#bf8a4f"/>
+    ${[78,98].map(y=>`<line x1="22" y1="${y}" x2="112" y2="${y}" stroke="#94622f" stroke-width="2"/>`).join('')}
+    <line x1="22" y1="58" x2="112" y2="120" stroke="#a87642" stroke-width="5" opacity=".55"/>
+    ${[[22,58],[104,58],[22,112],[104,112]].map(([x,y])=>`<rect x="${x}" y="${y}" width="8" height="8" fill="#5b6770"/>`).join('')}
+    <rect x="34" y="80" width="66" height="22" rx="2" fill="#f4e6cf" opacity=".92"/>
+    <text x="67" y="96" text-anchor="middle" font-family="Abel, Roboto, Arial" font-weight="700" font-size="${lbl.length>8?11:14}" fill="#3b2614" letter-spacing="1">${lbl}</text>
+    ${open?`<g class="lid"><polygon points="52,42 142,42 136,6 46,6" fill="#c99556"/><line x1="49" y1="24" x2="139" y2="24" stroke="#a87642" stroke-width="2"/><polygon points="52,42 142,42 142,46 52,46" fill="#7b5128"/></g>`
+      :`<polygon points="22,58 52,42 142,42 112,58" fill="#d4a165"/><line x1="37" y1="50" x2="127" y2="50" stroke="#b07c43" stroke-width="2"/><polygon points="22,58 112,58 112,62 22,62" fill="#9a6a37"/>`}
+    ${c.ready?`<g transform="translate(118,96) rotate(-12)"><rect x="-30" y="-10" width="60" height="20" rx="3" fill="#2aa99e"/><text x="0" y="5" text-anchor="middle" font-family="Roboto,Arial" font-weight="700" font-size="11" fill="#fff">PRÊTE</text></g>`:''}
+  </svg>`;
+}
+function ring(p,col){ const r=15,c=2*Math.PI*r; return `<svg viewBox="0 0 40 40" class="ring"><circle cx="20" cy="20" r="${r}" fill="none" stroke="#ffffff1a" stroke-width="5"/><circle cx="20" cy="20" r="${r}" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${c*p/100} ${c}" transform="rotate(-90 20 20)"/><text x="20" y="24" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">${p}%</text></svg>`; }
+// ---- détail d'une caisse : N° de PJ + check des lignes remplies ----
+let czFilter='todo', czSort='type';
+function openCaisse(k){ window._czK=k; czFilter='todo';
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='czOv'; ov.innerHTML='<div class="req-box cz-box" onclick="event.stopPropagation()" id="czBox"></div>';
+  ov.addEventListener('click',()=>{ ov.remove(); window._czK=null; }); document.body.appendChild(ov); renderCaisseDetail(); }
+function renderCaisseDetail(){
+  const k=window._czK, box=document.getElementById('czBox'); if(!box||!k) return; const R=caisseCompute(), c=R.crates[k-1], d=cdat(k), chk=d.checked||{};
+  const missMap={}; c.miss.forEach(m=>missMap[m.l.i]=m.q);
+  let L=R.lines.filter(l=>czFilter==='all'||(czFilter==='todo'&&!chk[l.i])||(czFilter==='miss'&&missMap[l.i])||(czFilter==='done'&&chk[l.i]));
+  const sess=d.pj?(typeof liveSessions!=='undefined'&&liveSessions.length?liveSessions:sessions).find(s=>nz(s.projet)===nz(d.pj)):null;
+  const groups={}; if(czSort==='empl'){ L=L.slice().sort((a,b)=>String(a.art&&a.art.emplacement||'zz').localeCompare(String(b.art&&b.art.emplacement||'zz'),'fr',{numeric:true})); groups['Tournée de préparation (par emplacement)']=L; } else L.forEach(l=>{ (groups[l.type]=groups[l.type]||[]).push(l); });
+  const sy=box.querySelector('.cz-lines')?box.querySelector('.cz-lines').scrollTop:0;
+  box.innerHTML=`<div class="cz-head"><div class="cz-mini">${crateSvg(c)}</div><div style="flex:1;min-width:0">
+      <h3 style="margin:0">Caisse ${k} · ${_esc(MODELS[caisseGamme].name)}</h3>
+      <label class="cz-pj">N° PJ <input id="czPj" value="${_esc(d.pj||'')}" placeholder="ex. PJ440" autocomplete="off" onchange="caisseSetPj(${k},this.value)"></label>
+      ${sess?`<small style="color:#7fe3d8">● Machine ${_esc(sess.projet)} ${calcProgress(sess).pct}% en montage</small>`:''}</div>
+      <div class="cz-rings"><div>${ring(c.fillPct,'#2ee07a')}<small>remplie</small></div><div>${ring(c.pct,c.miss.length?'#ff9f1a':'#2aa99e')}<small>dispo stock</small></div></div></div>
+    <div class="cz-bar"><div class="sn-seg">${[['todo','À remplir',c.total-c.filled],['miss','Manquants',c.miss.length],['done','Remplies',c.filled],['all','Tout',c.total]].map(([f,lab,n])=>`<button class="${czFilter===f?'on':''}" onclick="czFilter='${f}';renderCaisseDetail()">${lab} <b>${n}</b></button>`).join('')}</div>
+      <button class="btn btn-outline btn-sm" onclick="czSort=czSort==='type'?'empl':'type';renderCaisseDetail()">${czSort==='type'?'↕ Trier par emplacement':'↕ Par sous-ensemble'}</button></div>
+    <div class="cz-lines">${Object.entries(groups).map(([g,G])=>`<div class="cz-g"><div class="cz-gh"><b>${_esc(g)}</b>${czSort==='type'&&G.some(l=>!chk[l.i]&&!missMap[l.i])?`<button onclick="caisseCheckGroup(${k},'${_esc(g).replace(/'/g,"\\'")}')">✓ Tout remplir</button>`:''}</div>
+      ${G.map(l=>{ const on=!!chk[l.i], m=missMap[l.i]; return `<div class="cz-row ${on?'on':''} ${m?'miss':''}"><button class="cz-ck" onclick="caisseToggle(${k},${l.i})" aria-label="Ligne remplie">${on?'✓':''}</button>
+        <div class="cz-txt"><b>${_esc(l.des)}</b><small>${l.art?`${_esc(l.art.ref)}${l.art.emplacement?' · 📍 '+_esc(l.art.emplacement):''} · stock ${l.art.qty??'?'}`:'<i>non relié au stock</i>'}${on&&chk[l.i]&&chk[l.i].by?` · rempli par ${_esc(chk[l.i].by)}`:''}</small></div>
+        <div class="cz-q"><b>× ${l.qty}</b>${m&&!on?`<em>manque ${m}</em>`:''}</div></div>`; }).join('')}</div>`).join('')||'<p class="db-ok">✓ Rien dans ce filtre.</p>'}</div>
+    <div class="req-actions"><button class="btn btn-primary" onclick="document.getElementById('czOv').remove();window._czK=null">Fermer</button></div>`;
+  const ln=box.querySelector('.cz-lines'); if(ln) ln.scrollTop=sy;
+}
+function caisseSetPj(k,v){ const d={...cdat(k)}; d.pj=String(v||'').trim().toUpperCase().replace(/\s+/g,''); caisseWrite(d); renderCaisses(); toast(d.pj?`Caisse ${k} affectée à ${d.pj}`:'Affectation retirée','ok'); }
+// Cocher = la pièce est mise dans la caisse : elle sort du stock (et de la feuille Google), décocher la remet en stock
+function caisseToggle(k,i){
+  const d={...cdat(k),checked:{...(cdat(k).checked||{})}}, l=CAISSE_BOM[caisseGamme].lines[i], art=bomMatch(l,i), who=(window._currentUser&&window._currentUser.email||'').split('@')[0];
+  if(d.checked[i]){ delete d.checked[i]; if(art) applyStockMove(art.id,'in',l[6],(d.pj||'Caisse '+k)+' (retiré de la caisse)'); }
+  else { if(art&&(art.qty||0)<l[6]&&!confirm(`Le stock indique ${art.qty||0} pour ${l[6]} nécessaires. Cocher quand même (stock à corriger) ?`)) return;
+    d.checked[i]={at:new Date().toISOString(),by:who}; if(art) applyStockMove(art.id,'out',l[6],d.pj||('Caisse '+k)); }
+  caisseWrite(d); renderCaisseDetail(); renderCaisses();
+}
+function caisseCheckGroup(k,g){ const R=caisseCompute(), c=R.crates[k-1], missI=new Set(c.miss.map(m=>m.l.i)), d=cdat(k);
+  const L=R.lines.filter(l=>l.type===g&&!(d.checked||{})[l.i]&&!missI.has(l.i)); if(!L.length||!confirm(`Marquer ${L.length} ligne(s) « ${g} » comme remplies ? Les pièces sortiront du stock.`)) return;
+  L.forEach(l=>caisseToggle(k,l.i)); toast(`✓ ${L.length} ligne(s) remplie(s)`,'ok'); }
 function caisseLink(i){
   const l=CAISSE_BOM[caisseGamme].lines[i];
   const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='clOv';
