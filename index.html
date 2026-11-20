@@ -671,6 +671,21 @@ button.btn-scan{font-size:16px;min-width:38px}
 .sn-chip button{background:#00364a;border:none;color:var(--text);padding:7px 10px;font-size:12.5px;font-family:monospace;cursor:pointer}
 .sn-chip button.plus{border-left:1px solid var(--border);color:#7fe3d8;font-family:var(--font);font-weight:700}
 .sn-sim{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.sn-sim button{background:#7a5bd622;border:1px solid #9b7bff66;color:#d7c4ff;border-radius:20px;padding:6px 10px;font-size:12px;font-family:monospace;cursor:pointer}
+.comp-list{display:flex;flex-direction:column;gap:8px}
+.comp-row{display:flex;align-items:center;gap:10px;padding:7px 8px 7px 12px;background:#002e3e;border-radius:8px;border:1px solid var(--border);flex-wrap:wrap}
+.comp-row.ok{border-color:#2aa99e88}.comp-row.missing{border-color:#ff9f1a88;background:#ff9f1a10}
+.comp-name{font-size:13.5px;color:var(--text);flex:1;min-width:140px}
+.comp-btns{display:flex;gap:6px}
+.comp-btns button{padding:8px 12px;border-radius:7px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--font);background:transparent;border:1px solid var(--border);color:var(--text2);min-height:38px}
+.comp-btns .ok.on{background:#2aa99e;border-color:#2aa99e;color:#fff}
+.comp-btns .ko.on{background:#ff9f1a;border-color:#ff9f1a;color:#1a0d00}
+.mq-bar{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.mq-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;background:#ff9f1a1a;border:1px solid #ff9f1a88;color:#ffe2b8;font-size:13px}
+.mq-item.blk{background:#ff3b301f;border-color:#ff3b30;color:#ffd0cc}
+.mq-item>div{flex:1;min-width:0}.mq-item small{display:block;font-size:11.5px;opacity:.9;margin-top:2px}
+.mq-item button{background:#2aa99e;border:none;color:#fff;border-radius:7px;padding:8px 12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.mq-add{align-self:flex-start;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;padding:2px 0;font-family:var(--font);text-decoration:underline}
+.mq-dt{background:#00364a;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:4px 6px;font-size:12px}
 /* Tableau de bord */
 .db-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:4px 0 14px;position:sticky;top:0;z-index:15;background:var(--bg)}
 .db-tabs button{flex-shrink:0;background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap}
@@ -837,27 +852,11 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
       <div><label>Date fin souhaitée</label><input type="date" id="inPlannedEnd"></div>
     </div>
     <div style="background:#00364a;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px">
-      <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px">📦 Disponibilité des composants</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:7px 10px;background:#002e3e;border-radius:6px;border:1px solid var(--border)">
-          <input type="checkbox" id="inStockTurbines" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer" onchange="updateStockLabel()">
-          <span style="font-size:13px;color:var(--text)">⚙️ Turbines disponibles</span>
-          <span id="inStockTurbinesLabel" style="font-size:11px;color:var(--text3);margin-left:auto">Non confirmé</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:7px 10px;background:#002e3e;border-radius:6px;border:1px solid var(--border)">
-          <input type="checkbox" id="inStockPompes" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer" onchange="updateStockLabel()">
-          <span style="font-size:13px;color:var(--text)">🔄 Pompes disponibles</span>
-          <span id="inStockPompesLabel" style="font-size:11px;color:var(--text3);margin-left:auto">Non confirmé</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:7px 10px;background:#002e3e;border-radius:6px;border:1px solid var(--border)">
-          <input type="checkbox" id="inStockVolutes" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer" onchange="updateStockLabel()">
-          <span style="font-size:13px;color:var(--text)">🌀 Volutes disponibles</span>
-          <span id="inStockVolutesLabel" style="font-size:11px;color:var(--text3);margin-left:auto">Non confirmé</span>
-        </label>
-      </div>
+      <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px">📦 Disponibilité des composants <span style="font-size:11px;font-weight:400;color:var(--text3)">— indiquez pour chacun s’il est présent ou manquant</span></div>
+      <div class="comp-list" id="compList"></div>
       <div id="inStockGlobalMsg" style="margin-top:8px;font-size:11px;color:var(--text3);text-align:right">En attente de confirmation</div>
     </div>
-    <button class="btn btn-primary btn-full" id="btnStartSession" onclick="startSession()" disabled title="Cochez la disponibilité de tous les composants pour démarrer">▶ Démarrer le montage</button>
+    <button class="btn btn-primary btn-full" id="btnStartSession" onclick="startSession()" disabled title="Indiquez pour chaque composant s’il est disponible ou manquant">▶ Démarrer le montage</button>
   </div>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
     <div class="section-title" style="margin:0;flex:none"><span style="white-space:nowrap">Suivi des montages</span></div>
@@ -3473,11 +3472,11 @@ function selectModel(modelId){
 function startSession(){
   const plannedStart = document.getElementById('inPlannedStart').value || null;
   const plannedEnd = document.getElementById('inPlannedEnd').value || null;
-  const stockTurbines = document.getElementById('inStockTurbines').checked;
-  const stockPompes   = document.getElementById('inStockPompes').checked;
-  const stockVolutes  = document.getElementById('inStockVolutes').checked;
-  const stockOk = stockTurbines && stockPompes && stockVolutes;
-  if(!stockOk){ return; } // sécurité : impossible de démarrer tant que tous les composants ne sont pas confirmés disponibles
+  if(!START_COMPS.every(([k])=>compState[k])) return; // chaque composant doit être déclaré disponible ou manquant
+  const missingAtStart=START_COMPS.filter(([k])=>compState[k]==='missing').map(x=>x[2]);
+  if(missingAtStart.length&&!confirm(`Démarrer le montage avec ${missingAtStart.length>1?'ces composants manquants':'ce composant manquant'} : ${missingAtStart.join(', ')} ?\n\nUn « manque pièce » sera enregistré pour le suivi stock.`)) return;
+  const stockTurbines=compState.turbines==='ok', stockPompes=compState.pompes==='ok', stockVolutes=compState.volutes==='ok', stockArmoire=compState.armoire==='ok';
+  const stockOk=!missingAtStart.length;
   const ofRef = 'OF-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-5);
   session={
     id:Date.now(),
@@ -3485,7 +3484,7 @@ function startSession(){
     ofRef,
     plannedStart,
     plannedEnd,
-    stockOk, stockTurbines, stockPompes, stockVolutes,
+    stockOk, stockTurbines, stockPompes, stockVolutes, stockArmoire, missingAtStart,
     projet:document.getElementById('inProjet').value.trim()||'–',
     serie:document.getElementById('inSerie').value.trim()||'–',
     op:'', ve:'',
@@ -3505,6 +3504,9 @@ function startSession(){
     }))
   };
   sessions.unshift(session);
+  if(missingAtStart.length&&session.steps&&session.steps[0]){ const rq=session.steps[0].requests=session.steps[0].requests||[]; const who=(window._currentUser&&window._currentUser.email)||'';
+    missingAtStart.forEach((n,i)=>rq.push({id:'r'+Date.now().toString(36)+i,kind:'stock',cause:'rupture',ref:n,qty:'1',itemId:'',desc:'Manquant à l’ouverture de l’OF',by:'',date:new Date().toISOString(),status:'open',user:who})); }
+  compState={}; setTimeout(updateStockLabel,0);
   saveState(); // async, fire-and-forget
   currentStep=0;stepModels={};stepTimerLog={};actionTimers={};activeActionTimer=null;
   showScreen('scChecklist');
@@ -3746,6 +3748,7 @@ function renderStep(){
     ${typeof renderAndonBar==='function'?renderAndonBar(currentStep):''}
     ${typeof renderReworkBar==='function'?renderReworkBar(currentStep):''}
     ${typeof renderVeAll==='function'?renderVeAll(currentStep):''}
+    ${typeof renderManqBar==='function'?renderManqBar():''}
     ${step.memoImg&&window[step.memoImg]?`<details class="step-memo"><summary>📐 Mémo technicien — ${step.memoTitle||'Plan'}<span class="sm-hint">Toucher pour afficher</span></summary><img src="${window[step.memoImg]}" alt="${step.memoTitle||'Plan'}" onclick="viewPhoto(this.src)"></details>`:''}`;
 
   // Checklist items
@@ -4465,7 +4468,7 @@ async function renderDashboard(){
 
   // === KPI FIABILITE STOCK ===
   // + manques déclarés en cours de montage (cause « Manque en stock »)
-  const hasRupture = s=>sessionRequests(s).some(r=>r.kind==='stock'&&r.cause==='rupture');
+  const hasRupture = s=>sessionRequests(s).some(r=>r.kind==='stock'&&r.cause==='rupture')||(typeof manqList!=='undefined'&&manqList.some(m=>String(m.sessionId)===String(s.id)));
   const sessionsWithStock = monthSessions.filter(s=>s.stockOk!==undefined||hasRupture(s));
   const stockOkCount = sessionsWithStock.filter(s=>s.stockOk!==false&&!hasRupture(s)).length;
   const kpiStock = sessionsWithStock.length ? Math.round(stockOkCount/sessionsWithStock.length*100) : null;
@@ -4510,6 +4513,7 @@ async function renderDashboard(){
       if(live<10*3600&&new Date(tm.started)>=tk) return;
       const lab=((stp[si]||{items:[]}).items[ii]||{}).label||it.id;
       todo.push({lvl:'o',ic:'⏱',txt:`Chrono resté en marche · <b>${_esc(s.serie||s.projet||'')}</b> — ${_esc((stp[si]||{}).name||'')} › ${_esc(lab)}`,meta:`<span class="tc-orange">en cours depuis ${hm(live)}</span>`,act:adm?`openTimeCorr('${s.id}',['s${si}','u${si}_${it.id}'])`:`openSessionById('${s.id}',${si})`,btn:adm?'Corriger':'Ouvrir'}); })); }); }
+  if(typeof manqList!=='undefined') manqList.filter(m=>!m.receivedAt).forEach(m=>{ const c=manqCalc(m); todo.push({lvl:c.block>0?'r':'o',ic:'⏳',txt:`<b>${_esc(m.pj||'')}</b> — ${_esc(m.comp)} manquant depuis ${fmtWd(c.wait)} ouvrés${c.block>0?` · <b style="color:#ff8a82">bloque depuis ${fmtWd(c.block)}</b>`:''}`,meta:c.need&&c.need.stepName?c.need.stepName:'',act:`openSessionById('${m.sessionId}')`,btn:'Ouvrir'}); });
   const rupt=stockAlerts.filter(a=>stockStatus(a)==='rupture');
   if(rupt.length) todo.push({lvl:'r',ic:'📦',txt:`${rupt.length} article${rupt.length>1?'s':''} en rupture : ${rupt.slice(0,3).map(a=>_esc(a.designation)).join(', ')}${rupt.length>3?'…':''}`,meta:'',act:'showStock()',btn:'Stock'});
   const lowS=stockAlerts.length-rupt.length; if(lowS>0) todo.push({lvl:'o',ic:'🛒',txt:`${lowS} article${lowS>1?'s':''} sous le seuil, à commander`,meta:'',act:'showStock()',btn:'Stock'});
@@ -4549,7 +4553,7 @@ async function renderDashboard(){
   html+=pane('flux',`<div class="db-tiles">${sup('📅 Planification',kpiPlanif==null?'—':kpiPlanif+' %','démarrées + livrées dans les temps',pctCol(kpiPlanif,80,60))}${sup('⏱️ Livrées à temps',kpiRetard==null?'—':kpiRetard+' %',`${onTimeCount}/${sessionsWithDeadline.length} machines`,pctCol(kpiRetard,80,60))}</div>`+(typeof renderI40Section==='function'?renderI40Section(monthSessions):''));
   // Stock
   html+=pane('stock',`<div class="db-tiles">${sup('📦 Fiabilité stock',kpiStock==null?'—':kpiStock+' %',`${stockOkCount}/${sessionsWithStock.length} machines sans manque`,pctCol(kpiStock,80,60))}${sup('🛒 À commander',stockAlerts.length,`${rupt.length} en rupture`,stockAlerts.length?'#f0a500':'var(--green)')}</div>
-    <div class="db-card"><h3>Articles à recommander</h3>${stockAlerts.length?`<div class="db-todo">${stockAlerts.sort((a,b)=>(stockStatus(a)==='rupture'?0:1)-(stockStatus(b)==='rupture'?0:1)).map(a=>`<div class="db-td ${stockStatus(a)==='rupture'?'r':'o'}"><span class="ic">${stockStatus(a)==='rupture'?'🔴':'🟠'}</span><div><b>${_esc(a.designation)}</b><small>${_esc(a.ref)}${a.emplacement?' · '+_esc(a.emplacement):''} · stock ${a.qty??'?'} / seuil ${a.seuil||0}</small></div><button class="btn btn-outline btn-sm" onclick="showStock();setTimeout(()=>openBin('${a.id}','in'),300)">Réception</button></div>`).join('')}</div>`:'<p class="db-ok">✓ Tous les articles sont au-dessus de leur seuil.</p>'}<div style="margin-top:10px"><button class="btn btn-primary btn-sm" onclick="showStock()">Ouvrir le stock</button></div></div>`);
+    <div class="db-card"><h3>Articles à recommander</h3>${stockAlerts.length?`<div class="db-todo">${stockAlerts.sort((a,b)=>(stockStatus(a)==='rupture'?0:1)-(stockStatus(b)==='rupture'?0:1)).map(a=>`<div class="db-td ${stockStatus(a)==='rupture'?'r':'o'}"><span class="ic">${stockStatus(a)==='rupture'?'🔴':'🟠'}</span><div><b>${_esc(a.designation)}</b><small>${_esc(a.ref)}${a.emplacement?' · '+_esc(a.emplacement):''} · stock ${a.qty??'?'} / seuil ${a.seuil||0}</small></div><button class="btn btn-outline btn-sm" onclick="showStock();setTimeout(()=>openBin('${a.id}','in'),300)">Réception</button></div>`).join('')}</div>`:'<p class="db-ok">✓ Tous les articles sont au-dessus de leur seuil.</p>'}<div style="margin-top:10px"><button class="btn btn-primary btn-sm" onclick="showStock()">Ouvrir le stock</button></div></div>`+(typeof renderManqSection==='function'?renderManqSection():''));
   el.innerHTML = html;
 }
 let dashTab='syn';
@@ -4671,6 +4675,9 @@ function renderGantt(sessions, isAdmin){
       html += `<div style="position:absolute;left:${l}%;width:${w}%;top:8px;height:16px;background:${color};border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:9px;color:#fff;font-weight:700;overflow:hidden;white-space:nowrap;z-index:2">
         ${s.completed?'✓':isLate?'⚠':'▶'} ${realDays}
       </div>`;
+      if(typeof manqList!=='undefined') manqList.filter(m=>String(m.sessionId)===String(s.id)).forEach(m=>{ const c=manqCalc(m); if(!(c.block>0)||!c.need||!c.need.at) return;
+        const a=pos(new Date(c.need.at)), b=pos(m.receivedAt?new Date(m.receivedAt):new Date());
+        html += `<div title="${_esc(m.comp)} manquant : machine bloquée ${fmtWd(c.block)} ouvrés" style="position:absolute;left:${a}%;width:${Math.max(.6,b-a)}%;top:6px;height:20px;border:2px solid #ff9f1a;border-radius:4px;background:repeating-linear-gradient(135deg,#ff9f1a99 0 5px,transparent 5px 10px);z-index:3"></div>`; });
     }
 
     html += '</div></div>';
@@ -5255,41 +5262,21 @@ function condReset() {
 }
 
 // Stock checkboxes labels
+// Composants à confirmer à l'ouverture de l'OF : disponible ✓ ou manquant ✗ (les deux permettent de démarrer)
+const START_COMPS=[['turbines','⚙️','Turbines'],['pompes','🔄','Pompes'],['volutes','🌀','Volutes'],['armoire','🗄️','Armoire électrique']];
+let compState={};
+function setComp(k,v){ compState[k]=compState[k]===v?null:v; updateStockLabel(); }
 function updateStockLabel(){
-  const items = [
-    {cbId:'inStockTurbines', lblId:'inStockTurbinesLabel'},
-    {cbId:'inStockPompes',   lblId:'inStockPompesLabel'},
-    {cbId:'inStockVolutes',  lblId:'inStockVolutesLabel'},
-  ];
-  let allOk = true;
-  items.forEach(({cbId, lblId})=>{
-    const cb  = document.getElementById(cbId);
-    const lbl = document.getElementById(lblId);
-    if(!cb || !lbl) return;
-    if(cb.checked){
-      lbl.textContent = '✅ Confirmé';
-      lbl.style.color = 'var(--green)';
-    } else {
-      lbl.textContent = 'Non confirmé';
-      lbl.style.color = 'var(--text3)';
-      allOk = false;
-    }
-  });
-  const msg = document.getElementById('inStockGlobalMsg');
-  if(msg){
-    if(allOk){
-      msg.textContent = '✅ Tous les composants confirmés — montage autorisé';
-      msg.style.color = 'var(--green)';
-    } else {
-      msg.textContent = 'En attente de confirmation de tous les composants';
-      msg.style.color = 'var(--text3)';
-    }
-  }
-  const btn = document.getElementById('btnStartSession');
-  if(btn){
-    btn.disabled = !allOk;
-    btn.title = allOk ? '' : 'Cochez la disponibilité de tous les composants pour démarrer';
-  }
+  const el=document.getElementById('compList'); if(!el) return;
+  el.innerHTML=START_COMPS.map(([k,ic,l])=>{ const s=compState[k];
+    return `<div class="comp-row ${s||''}"><span class="comp-name">${ic} ${l}</span>
+      <div class="comp-btns"><button type="button" class="ok ${s==='ok'?'on':''}" onclick="setComp('${k}','ok')">✓ Disponible</button><button type="button" class="ko ${s==='missing'?'on':''}" onclick="setComp('${k}','missing')">✗ Manquant</button></div></div>`; }).join('');
+  const answered=START_COMPS.every(([k])=>compState[k]), missing=START_COMPS.filter(([k])=>compState[k]==='missing').map(x=>x[2]);
+  const msg=document.getElementById('inStockGlobalMsg');
+  if(msg){ if(!answered){ msg.textContent=`Indiquez l’état de chaque composant (${START_COMPS.filter(([k])=>compState[k]).length}/${START_COMPS.length})`; msg.style.color='var(--text3)'; }
+    else if(missing.length){ msg.textContent=`⚠ Démarrage possible avec manquant(s) : ${missing.join(', ')} — un « manque pièce » sera enregistré`; msg.style.color='#ffc46b'; }
+    else { msg.textContent='✅ Tous les composants disponibles — montage autorisé'; msg.style.color='var(--green)'; } }
+  const btn=document.getElementById('btnStartSession'); if(btn){ btn.disabled=!answered; btn.title=answered?'':'Indiquez pour chaque composant s’il est disponible ou manquant'; }
 }
 </script>
 
@@ -5740,7 +5727,7 @@ const fmtMin=m=>m>=60?`${Math.floor(m/60)} h ${String(m%60).padStart(2,'0')}`:`$
 function i40Start(){
   if(i40Started||!window._fsOnSnapshot||!window._db) return; i40Started=true;
   const F=fs();
-  F.snap(F.col(F.db,'sessions'),s=>{ liveSessions=s.docs.map(d=>d.data()); i40Refresh(); },e=>console.warn('sessions live',e));
+  F.snap(F.col(F.db,'sessions'),s=>{ liveSessions=s.docs.map(d=>d.data()); i40Refresh(); if(typeof manqSeed==='function') manqSeed(); },e=>console.warn('sessions live',e));
   F.snap(F.col(F.db,'andon'),s=>{ andonList=s.docs.map(d=>({id:d.id,...d.data()})); i40Refresh(); if(typeof renderStep==='function'&&session&&document.getElementById('scChecklist').classList.contains('active')) refreshAndonBar(); },e=>console.warn('andon live',e));
   F.snap(F.col(F.db,'stock'),s=>{ stockList=s.docs.map(d=>({id:d.id,...d.data()})); i40Refresh(); openStockFromUrl(); if(document.getElementById('scStock').classList.contains('active')) renderStock(); refreshStockDatalist(); },e=>console.warn('stock live',e));
   F.snap(F.col(F.db,'machineFlow'),s=>{ flowMap={}; s.docs.forEach(d=>flowMap[d.id]=d.data()); i40Refresh(); },e=>console.warn('flow live',e));
@@ -6872,6 +6859,91 @@ function snAccept(){
 }
 function scanSerialNumber(compKey,input){ snScan(compKey).then(()=>snFromFile(input)); }
 
+
+// ===================== MANQUANTS COMPOSANTS : suivi daté et impact sur les délais =====================
+// Composant → étape où il devient indispensable (repérée par son nom, valable pour toutes les gammes)
+const MANQ_NEED=[['Turbines',/^turbine/i,'Étape Turbine A'],['Volutes',/^cycle orc$/i,'Étape Cycle ORC'],['Pompes',/^cycle orc$/i,'Étape Cycle ORC'],['Armoire électrique',/assemblage [ée]lectrique/i,'Étape Assemblage électrique']];
+// Manquants à reprendre dans le suivi (déclarés avant la mise en place de l'outil)
+const MANQ_SEED=[{id:'seed_PJ426_armoire',pj:'PJ426',comp:'Armoire électrique',declaredAt:new Date(2026,10,17,14,0).toISOString(),note:'Repris : manquant depuis mardi 17/11 14 h'}];
+let manqList=[], manqSeeded=false, manqLoaded=false;
+document.addEventListener('firebaseReady',()=>setTimeout(()=>{ if(!window._fsOnSnapshot) return;
+  window._fsOnSnapshot(window._fsCollection(window._db,'manquants'),s=>{ manqList=s.docs.map(d=>({id:d.id,...d.data()})); manqLoaded=true; manqSeed(); if(typeof refreshManqBar==='function') refreshManqBar(); const d=document.getElementById('scDashboard'); if(d&&d.classList.contains('active')&&typeof renderDashboard==='function') renderDashboard(); },e=>console.warn('manquants',e)); },700));
+async function manqWrite(m){ const i=manqList.findIndex(x=>x.id===m.id); if(i>=0) manqList[i]=m; else manqList.push(m); try{ await window._fsSetDoc(window._fsDoc(window._db,'manquants',m.id),m); }catch(e){ console.warn('manquant',e); } }
+function manqSeed(){
+  if(manqSeeded||!manqLoaded) return; const all=(typeof liveSessions!=='undefined'&&liveSessions.length?liveSessions:sessions); if(!all.length) return; manqSeeded=true;
+  MANQ_SEED.forEach(sd=>{ if(manqList.some(m=>m.id===sd.id)) return; const s=all.find(x=>String(x.projet||'').replace(/\s/g,'').toUpperCase()===sd.pj); if(!s) { manqSeeded=false; return; }
+    manqWrite({id:sd.id,sessionId:s.id,pj:sd.pj,sn:s.serie||'',comp:sd.comp,declaredAt:sd.declaredAt,receivedAt:null,source:'reprise',note:sd.note,by:'Nordine'}); });
+}
+function manqFromStart(s){ (s.missingAtStart||[]).forEach((c,i)=>manqWrite({id:'mq'+Date.now().toString(36)+i,sessionId:s.id,pj:s.projet||'',sn:s.serie||'',comp:c,declaredAt:new Date().toISOString(),receivedAt:null,source:'ouverture',by:(window._currentUser&&window._currentUser.email||'').split('@')[0]})); }
+// Moment où la machine a réellement eu besoin du composant
+function manqNeed(m){
+  const s=(typeof findSess==='function'?findSess(m.sessionId):null); if(!s) return null;
+  const steps=(MODELS[s.modelId]||MODELS.eno180ltv3).getSteps(), rule=MANQ_NEED.find(r=>r[0]===m.comp); if(!rule) return null;
+  const si=steps.findIndex(st=>rule[1].test(st.name||'')); if(si<0) return null;
+  const at=it=>it.opAt||(it.actionTimers&&it.actionTimers.item&&it.actionTimers.item.started)||null;
+  let first=null; ((s.steps[si]||{}).items||[]).forEach(it=>{ const a=at(it); if(a&&(!first||a<first)) first=a; });
+  let prevDone=null, allPrev=true; for(let i=0;i<si;i++) ((s.steps[i]||{}).items||[]).forEach(it=>{ if(!it.opDone) allPrev=false; else { const a=it.opAt||null; if(a&&(!prevDone||a>prevDone)) prevDone=a; } });
+  const cand=[first, allPrev&&prevDone?prevDone:null].filter(Boolean).sort(); let need=cand[0]||null;
+  if(need&&need<m.declaredAt) need=m.declaredAt;
+  return {at:need,step:si+1,stepName:steps[si].name};
+}
+function manqCalc(m){
+  const end=m.receivedAt?new Date(m.receivedAt):new Date(), n=manqNeed(m);
+  const wait=workDaysBetween(new Date(m.declaredAt),end);
+  const block=n&&n.at&&new Date(n.at)<end?workDaysBetween(new Date(n.at),end):0;
+  return {wait,block,need:n,open:!m.receivedAt};
+}
+function manqImpactSession(s){ const dc=(typeof dashCache!=='undefined'&&dashCache[String(s.id)])||{}; if(!dc.plannedEnd) return null;
+  const pe=new Date(dc.plannedEnd+'T23:59:59'), end=s.completed?new Date(s.completed):new Date(); if(end<=pe) return 0;
+  const over=workDaysBetween(pe,end), block=manqList.filter(m=>String(m.sessionId)===String(s.id)).reduce((a,m)=>a+manqCalc(m).block,0); return Math.min(over,block); }
+// ---- bandeau dans la checklist ----
+function renderManqBar(){
+  if(!session) return ''; const L=manqList.filter(m=>String(m.sessionId)===String(session.id)&&!m.receivedAt);
+  return `<div class="mq-bar" id="mqBar">${L.map(m=>{ const c=manqCalc(m); return `<div class="mq-item ${c.block>0?'blk':''}"><span>⏳</span><div><b>${_esc(m.comp)} manquant${/e$/.test(m.comp)?'e':''}</b> depuis ${fmtWd(c.wait)} ouvrés
+      <small>${c.block>0?`🔴 bloque la machine depuis ${fmtWd(c.block)} (${_esc(c.need.stepName)})`:c.need&&c.need.at?'':`pas encore bloquant — nécessaire à l’${_esc((MANQ_NEED.find(r=>r[0]===m.comp)||[])[2]||'étape concernée').toLowerCase()}`}</small></div>
+      <button onclick="manqReceive('${m.id}')">✓ Reçu</button></div>`; }).join('')}
+    <button class="mq-add" onclick="manqDeclare()">＋ Déclarer un composant manquant</button></div>`;
+}
+function refreshManqBar(){ const el=document.getElementById('mqBar'); if(el&&session){ const d=document.createElement('div'); d.innerHTML=renderManqBar(); el.replaceWith(d.firstElementChild); } }
+function manqReceive(id){ const m=manqList.find(x=>x.id===id); if(!m) return; manqWrite({...m,receivedAt:new Date().toISOString(),receivedBy:(window._currentUser&&window._currentUser.email||'').split('@')[0]}); refreshManqBar(); toast(`✓ ${m.comp} reçu — suivi clôturé`,'ok'); }
+function manqDeclare(){
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='mqOv'; const now=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+  ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()"><h3>⏳ Composant manquant</h3><div class="req-sub">${_esc(session.projet||'')} · ${_esc(session.serie||'')}</div>
+    <label>Composant</label><div class="req-chips">${MANQ_NEED.map(r=>`<button class="req-chip" onclick="this.parentNode.querySelectorAll('.req-chip').forEach(b=>b.classList.toggle('on',b===this));window._mqComp='${r[0]}'">${r[0]}</button>`).join('')}</div>
+    <label>Manquant depuis</label><input type="datetime-local" id="mqSince" value="${now}">
+    <div class="req-err" id="mqErr"></div>
+    <div class="req-actions"><button class="btn btn-outline" onclick="document.getElementById('mqOv').remove()">Annuler</button><button class="btn btn-primary" onclick="manqDeclareSave()">Enregistrer</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); window._mqComp=null; document.body.appendChild(ov);
+}
+function manqDeclareSave(){ if(!window._mqComp){ document.getElementById('mqErr').textContent='Choisissez le composant.'; return; }
+  const v=document.getElementById('mqSince').value; const d=v?new Date(v):new Date();
+  manqWrite({id:'mq'+Date.now().toString(36),sessionId:session.id,pj:session.projet||'',sn:session.serie||'',comp:window._mqComp,declaredAt:d.toISOString(),receivedAt:null,source:'manuel',by:(window._currentUser&&window._currentUser.email||'').split('@')[0]});
+  document.getElementById('mqOv').remove(); refreshManqBar(); toast('⏳ Manquant enregistré','ok'); }
+// ---- tableau de bord ----
+function renderManqSection(){
+  const adm=typeof isTimeAdmin==='function'&&isTimeAdmin();
+  const rows=manqList.map(m=>({m,c:manqCalc(m),s:(typeof findSess==='function'?findSess(m.sessionId):null)})).sort((a,b)=>(a.c.open?0:1)-(b.c.open?0:1)||b.c.block-a.c.block);
+  const open=rows.filter(r=>r.c.open), blockTot=rows.reduce((a,r)=>a+r.c.block,0);
+  const sess=[...new Set(rows.map(r=>r.s).filter(Boolean))], impact=sess.reduce((a,s)=>a+(manqImpactSession(s)||0),0);
+  const byComp={}; rows.forEach(r=>{ byComp[r.m.comp]=(byComp[r.m.comp]||0)+r.c.block; }); const bc=Object.entries(byComp).sort((a,b)=>b[1]-a[1]), mx=bc.length?Math.max(bc[0][1],.01):1;
+  const dt=iso=>iso?new Date(iso).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'}):'—';
+  const loc=iso=>iso?new Date(new Date(iso).getTime()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16):'';
+  let h='<div class="dash-section-title">⏳ Composants manquants — impact sur les délais</div>';
+  h+=`<div class="db-tiles"><div class="db-tile" style="border-top-color:#ff9f1a"><span>⏳ En attente</span><b style="color:#ffc46b">${open.length}</b><small>composant${open.length>1?'s':''} non reçu${open.length>1?'s':''}</small></div>
+    <div class="db-tile" style="border-top-color:#ff3b30"><span>🔴 Jours bloquants</span><b style="color:#ff8a82">${fmtWd(blockTot)}</b><small>machine arrêtée faute de pièce</small></div>
+    <div class="db-tile" style="border-top-color:#9b7bff"><span>📅 Impact livraison</span><b style="color:#d7c4ff">${fmtWd(impact)}</b><small>du dépassement des dates de fin</small></div></div>`;
+  if(bc.length) h+=`<div class="db-card"><h3>Jours bloquants par composant</h3>${bc.map(([k,v])=>`<div class="nva-row"><span>${_esc(k)}</span><span class="nva-bar"><i style="width:${Math.round(v/mx*100)}%;background:#ff6b62"></i></span><b>${fmtWd(v)}</b><small></small></div>`).join('')}</div>`;
+  h+=`<div class="db-card"><h3>Suivi des manquants</h3>${rows.length?`<div style="overflow-x:auto"><table class="stk-table ord"><thead><tr><th>PJ</th><th>Composant</th><th>Manquant depuis</th><th>Besoin réel</th><th>Reçu</th><th class="num">Attente</th><th class="num">Bloquant</th><th></th></tr></thead><tbody>
+    ${rows.map(({m,c})=>`<tr><td class="c-ref">${_esc(m.pj||'')}</td><td>${_esc(m.comp)}${m.note?`<small>${_esc(m.note)}</small>`:''}</td>
+      <td>${adm?`<input type="datetime-local" class="mq-dt" value="${loc(m.declaredAt)}" onchange="manqEdit('${m.id}','declaredAt',this.value)">`:dt(m.declaredAt)}</td>
+      <td>${c.need&&c.need.at?dt(c.need.at)+`<small>${_esc(c.need.stepName)}</small>`:`<small>${c.need?'étape '+c.need.step+' pas encore atteinte':'—'}</small>`}</td>
+      <td>${m.receivedAt?(adm?`<input type="datetime-local" class="mq-dt" value="${loc(m.receivedAt)}" onchange="manqEdit('${m.id}','receivedAt',this.value)">`:dt(m.receivedAt)):'<b style="color:#ffc46b">en attente</b>'}</td>
+      <td class="num">${fmtWd(c.wait)}</td><td class="num" style="color:${c.block>0?'#ff8a82':'var(--text3)'};font-weight:700">${fmtWd(c.block)}</td>
+      <td>${c.open?`<button class="btn btn-outline btn-sm" onclick="manqReceive('${m.id}')">✓ Reçu</button>`:''}</td></tr>`).join('')}</tbody></table></div>`:'<p class="db-ok">Aucun composant manquant suivi.</p>'}</div>`;
+  return h;
+}
+function manqEdit(id,field,val){ const m=manqList.find(x=>x.id===id); if(!m||!val) return; manqWrite({...m,[field]:new Date(val).toISOString()}); }
+
 // ---------- KPI Industrie 4.0 (tableau de bord) ----------
 function renderI40Section(monthSessions){
   const ms=new Set(monthSessions.map(s=>String(s.id))); const A=andonList.filter(a=>ms.has(String(a.sessionId)));
@@ -6903,7 +6975,7 @@ function renderI40Section(monthSessions){
 }
 
 // Prélèvement du kit au démarrage d'une nouvelle checklist
-(function(){ const base=startSession; startSession=function(){ const before=session&&session.id; base.apply(this,arguments); if(session&&session.id!==before&&typeof i40OnSessionStart==='function') i40OnSessionStart(session); }; })();
+(function(){ const base=startSession; startSession=function(){ const before=session&&session.id; base.apply(this,arguments); if(session&&session.id!==before&&typeof i40OnSessionStart==='function') i40OnSessionStart(session); if(session&&session.id!==before&&typeof manqFromStart==='function') manqFromStart(session); }; })();
 
 </script>
 </body>
