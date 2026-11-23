@@ -830,6 +830,11 @@ button.btn-scan{font-size:16px;min-width:38px}
 .qa-pv .qa-pvb{max-width:95vw;max-height:92vh;display:flex;flex-direction:column;gap:8px;align-items:center}.qa-pvb img{max-width:95vw;max-height:80vh;border-radius:8px}.qa-pva{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.qa-pva small{color:#ccc}
 .qa-sig{display:block;width:100%;max-width:600px;height:auto;aspect-ratio:600/180;border-radius:8px;border:2px dashed var(--border);background:#fff;touch-action:none;margin-bottom:6px}
 .qa-sig-img{max-width:300px;background:#fff;border-radius:6px}
+.qa-gh{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin:14px 0 8px}.qa-gh span{background:#ffffff14;border-radius:10px;padding:1px 7px;margin-left:4px}
+.qa3d-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}.qa3d-cut{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--text3)}.qa3d-cut input{width:160px}
+.qa3d{width:100%;height:min(70vh,640px);border-radius:12px;overflow:hidden;border:1px solid var(--border);background:#f2f5f7;touch-action:none}
+.qa-link{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin:10px 0}#qaQr{background:#fff;padding:8px;border-radius:8px;line-height:0}.qa-lstate{font-size:12px;color:var(--text3)}
+body.qa-inspector #btnMenuHome,body.qa-inspector .hdr-right .badge:not(#userEmail){display:none}
 body.qa-inspector .menu-item:not(.qa-mi):not([onclick*="_signOut"]),body.qa-inspector .menu-sec{display:none}
 @media (max-width:700px){ .qa-prog{grid-template-columns:1fr 1fr} .qa-nom{grid-template-columns:1fr} }
 /* Tableau de bord */
@@ -1312,7 +1317,7 @@ window.CYCLE_LUB_OBJ_TEXT="o 101-Flexible1__Pi085-510-008-TeteDroiteFlexible_3_8
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
   import { getFirestore, collection, doc, setDoc, getDoc, getDocs, orderBy, query, deleteDoc, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBkRDYMUQkgJQcngQCarYbUIwtImHDS3B8",
@@ -1394,7 +1399,23 @@ window.CYCLE_LUB_OBJ_TEXT="o 101-Flexible1__Pi085-510-008-TeteDroiteFlexible_3_8
     location.replace(location.pathname);
   };
 
-  onAuthStateChanged(auth, (user) => {
+  // Lien contrôleur qualité : …/index.html?qa=JETON → connexion invitée limitée au module Qualité
+  const QA_TOKEN = new URLSearchParams(location.search).get('qa');
+  const qaFail = (msg) => { document.getElementById('scLogin').style.display='flex'; document.getElementById('appWrapper').style.display='none'; const el=document.getElementById('loginError'); el.textContent=msg; el.style.display='block'; };
+  if (QA_TOKEN) { signInAnonymously(auth).catch(e => qaFail('Guest access unavailable (enable Anonymous sign-in in Firebase). ' + (e.code||''))); }
+  onAuthStateChanged(auth, async (user) => {
+    if (user && user.isAnonymous) {
+      if (!QA_TOKEN) { await signOut(auth); return; }
+      let ok=false; try { const s=await getDoc(doc(db,'qaAccess','link')); ok = s.exists() && s.data().active && s.data().token===QA_TOKEN; } catch(e) {}
+      if (!ok) { qaFail('This inspection link is invalid or has been revoked. Please contact ENOGIA.'); return; }
+      window._qaGuest = true; window._currentUser = { uid:user.uid, email:'', displayName:'TÜV NORD inspector', isAnonymous:true };
+      document.body.classList.add('qa-inspector');
+      document.getElementById('scLogin').style.display = 'none';
+      document.getElementById('appWrapper').style.display = 'block';
+      document.getElementById('userEmail').textContent = 'Supplier acceptance';
+      window._firebaseReady = true; document.dispatchEvent(new Event('firebaseReady'));
+      return;
+    }
     if (user && ALLOWED_EMAILS.includes(user.email)) {
       window._currentUser = user;
       document.getElementById('scLogin').style.display = 'none';
@@ -7520,7 +7541,7 @@ function undoAutoPlan(){ const b=planTeam.lastAutoBatch; const L=planTasks.filte
 
 // ===================== QUALITÉ FOURNISSEUR (Supplier Acceptance – TÜV NORD) =====================
 const QA_INSPECTORS=[];   // adresses des contrôleurs TÜV NORD (accès limité au module Qualité)
-const isInspector=()=>QA_INSPECTORS.map(x=>x.toLowerCase()).includes(((window._currentUser&&window._currentUser.email)||'').toLowerCase());
+const isInspector=()=>!!window._qaGuest||QA_INSPECTORS.map(x=>x.toLowerCase()).includes(((window._currentUser&&window._currentUser.email)||'').toLowerCase());
 let qaLang='fr', qaList=[], qaPhotos=[], qaOpenId=null, qaTab='check', qaPage=3, qaZoom=1, qaStarted=false, qaPhUnsub=null;
 const L_=(en,fr)=>qaLang==='en'?en:fr;
 // Tolérances ISO 13920 classe A (constructions soudées) — norme indiquée sur le plan
@@ -7581,12 +7602,13 @@ function renderQualite(){
   document.getElementById('qaLangBtn').textContent=qaLang==='en'?'🇫🇷 FR':'🇬🇧 EN';
   if(qaOpenId&&qaCur()) return renderQaDossier(el);
   qaOpenId=null;
-  const L=qaList.slice().sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+  const L=qaList.slice().sort((a,b)=>(['accepted','reserves','rejected'].includes(a.status)?1:0)-(['accepted','reserves','rejected'].includes(b.status)?1:0)||String(a.inspectionDate||'9').localeCompare(String(b.inspectionDate||'9'))||String(b.createdAt).localeCompare(String(a.createdAt)));
+  const todo=L.filter(d=>!['accepted','reserves','rejected'].includes(d.status)), done=L.filter(d=>['accepted','reserves','rejected'].includes(d.status));
   el.innerHTML=`<div class="qa-top"><div><div class="project-title" style="font-size:26px">${L_('Supplier quality – Acceptance','Qualité fournisseur – Réception')}</div><div style="font-size:12px;color:var(--text3)">${L_('Frame & piping inspections at suppliers (TÜV NORD)','Contrôles châssis et tuyauterie chez les fournisseurs (TÜV NORD)')}</div></div>
-    ${insp?'':`<button class="btn btn-primary btn-sm" onclick="qaNew()">＋ ${L_('New inspection file','Nouveau dossier')}</button>`}</div>
-    ${L.length?`<div class="qa-list">${L.map(d=>{ const s=qaStats(d); return `<button class="qa-card" onclick="qaOpen('${d.id}')"><div class="qa-c1"><b>${_esc(d.pj||'—')}</b>${qaStLbl(d.status)}</div>
-      <div class="qa-c2">${_esc((MODELS[d.gamme]||{}).name||d.gamme)} · ${_esc(d.supplier||'')} ${d.po?'· PO '+_esc(d.po):''}</div>
-      <div class="qa-c3"><span>☑ ${s.done}/${s.items}</span><span>📐 ${s.dDone}/${s.dims||'—'}</span>${s.nok+s.dNok?`<span style="color:#ff8a82">✗ ${s.nok+s.dNok} NOK</span>`:''}<span>${d.inspectionDate?new Date(d.inspectionDate).toLocaleDateString(qaLang==='en'?'en-GB':'fr-FR'):''}</span></div></button>`; }).join('')}</div>`
+    ${insp?'':`<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="qaShareLink()">🔗 ${L_('Inspector link & QR','Lien & QR contrôleur')}</button><button class="btn btn-primary btn-sm" onclick="qaNew()">＋ ${L_('New inspection file','Nouveau dossier')}</button></div>`}</div>
+    ${L.length?[[todo,L_('Machines to inspect','Machines à contrôler')],[done,L_('Closed inspections','Inspections clôturées')]].filter(x=>x[0].length).map(([G,title])=>`<div class="qa-gh">${title} <span>${G.length}</span></div><div class="qa-list">${G.map(d=>{ const s=qaStats(d); return `<button class="qa-card" onclick="qaOpen('${d.id}')"><div class="qa-c1"><b>${_esc(d.pj||'—')}</b>${qaStLbl(d.status)}</div>
+      <div class="qa-c2">${_esc((MODELS[d.gamme]||{}).name||d.gamme)} · ${_esc(d.supplier||'')}${d.supplierSn?' · S/N '+_esc(d.supplierSn):''}</div>
+      <div class="qa-c3"><span>☑ ${s.done}/${s.items}</span><span>📐 ${s.dDone}/${s.dims||'—'}</span>${s.nok+s.dNok?`<span style="color:#ff8a82">✗ ${s.nok+s.dNok} NOK</span>`:''}<span>${d.inspectionDate?'📅 '+new Date(d.inspectionDate).toLocaleDateString(qaLang==='en'?'en-GB':'fr-FR'):''}</span></div></button>`; }).join('')}</div>`).join('')
       :`<div class="db-card"><p class="db-ok" style="color:var(--text2)">${L_('No inspection file yet.','Aucun dossier pour le moment.')}</p></div>`}`;
 }
 function qaNew(){
@@ -7595,7 +7617,7 @@ function qaNew(){
     <label>N° PJ</label><input id="qnPj" placeholder="PJ450" autocomplete="off">
     <label>${L_('Range','Gamme')}</label><select id="qnG">${Object.keys(QA_TEMPLATES).map(k=>`<option value="${k}">${_esc(MODELS[k].name)}</option>`).join('')}</select>
     <label>${L_('Supplier','Fournisseur')}</label><input id="qnSup" placeholder="${L_('Polish frame & piping supplier','Fournisseur châssis/tuyauterie (Pologne)')}" autocomplete="off">
-    <label>${L_('Purchase order','Bon de commande')}</label><input id="qnPo" autocomplete="off">
+    <label>${L_('Supplier serial number','N° de série fournisseur')}</label><input id="qnSn" placeholder="${L_('Frame / piping serial number','N° de série châssis / tuyauterie')}" autocomplete="off">
     <label>${L_('Planned inspection date','Date d’inspection prévue')}</label><input id="qnDate" type="date">
     <label>${L_('Inspector (TÜV NORD)','Inspecteur (TÜV NORD)')}</label><input id="qnIns" autocomplete="off">
     <div class="req-err" id="qnErr"></div>
@@ -7603,9 +7625,9 @@ function qaNew(){
   ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov);
 }
 function qaCreate(){ const v=id=>(document.getElementById(id).value||'').trim(); const pj=v('qnPj').toUpperCase().replace(/\s+/g,''); if(!pj){ document.getElementById('qnErr').textContent=L_('PJ number required.','N° PJ obligatoire.'); return; }
-  const d={id:'qa'+Date.now().toString(36),pj,gamme:v('qnG'),supplier:v('qnSup'),po:v('qnPo'),inspectionDate:v('qnDate'),inspector:v('qnIns'),status:'draft',results:{},dims:{},createdAt:new Date().toISOString(),createdBy:(window._currentUser&&window._currentUser.email)||''};
+  const d={id:'qa'+Date.now().toString(36),pj,gamme:v('qnG'),supplier:v('qnSup'),supplierSn:v('qnSn'),inspectionDate:v('qnDate'),inspector:v('qnIns'),status:'draft',results:{},dims:{},createdAt:new Date().toISOString(),createdBy:(window._currentUser&&window._currentUser.email)||''};
   qaSave(d); document.getElementById('qaNewOv').remove(); qaOpen(d.id); }
-function qaOpen(id){ qaOpenId=id; qaTab='check'; qaWatchPhotos(id); qaLoadAssets().then(()=>renderQualite()).catch(e=>{ toast('⚠ '+e.message); }); renderQualite(); }
+function qaOpen(id){ qaOpenId=id; qaTab='check'; if(qa3d&&qa3d.r.domElement.parentNode) qa3d.r.domElement.remove(); qaWatchPhotos(id); qaLoadAssets().then(()=>renderQualite()).catch(e=>{ toast('⚠ '+e.message); }); renderQualite(); }
 function qaBack(){ qaOpenId=null; qaWatchPhotos(null); renderQualite(); }
 const qaLocked=d=>['accepted','reserves','rejected'].includes(d.status)&&!(typeof isTimeAdmin==='function'&&isTimeAdmin());
 // ---------- dossier ----------
@@ -7613,18 +7635,20 @@ function renderQaDossier(el){
   const d=qaCur(), T=qaTpl(d), s=qaStats(d), lock=qaLocked(d);
   const sy=window.scrollY;
   let h=`<div class="qa-dh"><button class="btn btn-outline btn-sm" onclick="qaBack()">← ${L_('Files','Dossiers')}</button>
-    <div class="qa-dt"><b>${_esc(d.pj)}</b> ${qaStLbl(d.status)}<small>${_esc((MODELS[d.gamme]||{}).name||'')} · ${_esc(d.supplier||'—')}${d.po?' · PO '+_esc(d.po):''} · ${L_('Inspector','Inspecteur')} : ${_esc(d.inspector||'—')} · ${_esc(T.doc)}</small></div>
+    <div class="qa-dt"><b>${_esc(d.pj)}</b> ${qaStLbl(d.status)}<small>${_esc((MODELS[d.gamme]||{}).name||'')} · ${_esc(d.supplier||'—')}${d.supplierSn?' · S/N '+_esc(d.supplierSn):''} · ${L_('Inspector','Inspecteur')} : ${_esc(d.inspector||'—')} · ${_esc(T.doc)}</small></div>
     <button class="btn btn-outline btn-sm" onclick="qaReport()">📄 ${L_('Report','Rapport')}</button></div>
     <div class="qa-prog"><div><span>☑ ${L_('Checklist','Checklist')}</span><i><s style="width:${s.items?s.done/s.items*100:0}%"></s></i><b>${s.done}/${s.items}</b></div>
       <div><span>📐 ${L_('Required dimensions','Cotes obligatoires')}</span><i><s style="width:${s.req?s.reqDone/s.req*100:0}%"></s></i><b>${s.reqDone}/${s.req}</b></div>
       <div><span>📷 Photos</span><b>${s.photos}</b></div><div><span>✗ NOK</span><b style="color:${s.nok+s.dNok?'#ff8a82':'#7fe3d8'}">${s.nok+s.dNok}</b></div></div>
-    <div class="db-tabs" style="position:static">${[['check','☑ Checklist'],['dims','📐 '+L_('Dimensional views','Vues cotées')],['photos','📷 Photos'],['close','✍ '+L_('Sign-off','Clôture')]].map(([k,l])=>`<button class="${qaTab===k?'on':''}" onclick="qaTab='${k}';renderQualite()">${l}${k==='dims'&&s.dNok?` <span class="db-n">${s.dNok}</span>`:''}</button>`).join('')}</div>`;
+    <div class="db-tabs" style="position:static">${[['check','☑ Checklist'],['dims','📐 '+L_('Dimensional views','Vues cotées')],['3d','🧊 3D'],['photos','📷 Photos'],['close','✍ '+L_('Sign-off','Clôture')]].map(([k,l])=>`<button class="${qaTab===k?'on':''}" onclick="qaTab='${k}';renderQualite()">${l}${k==='dims'&&s.dNok?` <span class="db-n">${s.dNok}</span>`:''}</button>`).join('')}</div>`;
   if(lock) h+=`<div class="qa-lock">🔒 ${L_('File signed and closed – read only.','Dossier signé et clôturé – lecture seule.')}</div>`;
   if(qaTab==='check') h+=qaRenderCheck(d,T,lock);
   else if(qaTab==='dims') h+=qaRenderDims(d,T,lock);
+  else if(qaTab==='3d') h+=qaRender3D(d,T);
   else if(qaTab==='photos') h+=qaRenderPhotos(d,T,lock);
   else h+=qaRenderClose(d,T,s,lock);
   el.innerHTML=h; window.scrollTo(0,sy);
+  if(qaTab==='3d') setTimeout(qa3dMount,30);
 }
 function qaRenderCheck(d,T,lock){
   const r=d.results||{}; window._qaOpenSec=window._qaOpenSec||new Set(['A']);
@@ -7643,7 +7667,7 @@ function qaRenderCheck(d,T,lock){
           <textarea class="qa-com" placeholder="${L_('Comments / actions','Commentaires / actions')}${v.st==='nok'?' – '+L_('required for NOK','obligatoire si NOK'):''}" ${lock?'disabled':''} onchange="qaSet('${it.id}','c',this.value)">${_esc(v.c||'')}</textarea>
         </div>`; }).join('')}</details>`; }).join('');
 }
-function qaSet(itemId,field,val){ const d=qaCur(); if(!d||qaLocked(d)) return; const r={...(d.results||{})}; r[itemId]={...(r[itemId]||{}),[field]:val,by:(window._currentUser&&window._currentUser.email)||'',at:new Date().toISOString()};
+function qaSet(itemId,field,val){ const d=qaCur(); if(!d||qaLocked(d)) return; const r={...(d.results||{})}; r[itemId]={...(r[itemId]||{}),[field]:val,by:qaWho(),at:new Date().toISOString()};
   d.results=r; if(d.status==='draft') d.status='progress'; qaSave(d); renderQualite(); }
 function qaGoDims(itemId){ const T=qaTpl(qaCur()), dims=window.QA_ASSETS?window.QA_ASSETS.plans[T.plan].dims.filter(x=>x.item===itemId):[]; if(dims.length) qaPage=dims[0].page; window._qaDimFilter=itemId; qaTab='dims'; renderQualite(); }
 // ---------- vues cotées ----------
@@ -7682,7 +7706,7 @@ function qaDim(id){
 function qaDimLive(nom,tol){ const v=document.getElementById('qdV').value, r=document.getElementById('qdRes'); if(v===''){ r.innerHTML=''; return; } const dv=+v-nom, ok=Math.abs(dv)<=tol;
   r.innerHTML=`<span class="${ok?'ok':'nok'}">${ok?'✓ '+L_('Within tolerance','Dans la tolérance'):'✗ '+L_('Out of tolerance','Hors tolérance')} (Δ ${dv>0?'+':''}${Math.round(dv*10)/10} mm)</span>`; }
 function qaDimSave(id,next){ const d=qaCur(); if(!d||qaLocked(d)) return; const v=document.getElementById('qdV').value, c=document.getElementById('qdC').value;
-  d.dims={...(d.dims||{}),[id]:{v:v===''?null:+v,c,by:(window._currentUser&&window._currentUser.email)||'',at:new Date().toISOString()}}; if(d.status==='draft') d.status='progress';
+  d.dims={...(d.dims||{}),[id]:{v:v===''?null:+v,c,by:qaWho(),at:new Date().toISOString()}}; if(d.status==='draft') d.status='progress';
   qaSave(d); document.getElementById('qaDimOv').remove(); renderQualite();
   if(next){ const P=window.QA_ASSETS.plans[qaTpl(d).plan], f=window._qaDimFilter, L=P.dims.filter(x=>!f||x.item===f), i=L.findIndex(x=>x.id===id);
     const nx=L.slice(i+1).concat(L.slice(0,i)).find(x=>{ const m=(d.dims||{})[x.id]; return !m||m.v==null; }); if(nx) setTimeout(()=>qaDim(nx.id),120); else toast('✓ '+L_('All dimensions measured','Toutes les cotes sont mesurées'),'ok'); } }
@@ -7690,7 +7714,7 @@ function qaDimSave(id,next){ const d=qaCur(); if(!d||qaLocked(d)) return; const 
 function qaCompress(file){ return new Promise((res,rej)=>{ const img=new Image(), u=URL.createObjectURL(file); img.onload=()=>{ URL.revokeObjectURL(u); const k=Math.min(1,1600/Math.max(img.width,img.height)); const c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height);
   let q=.72, out=c.toDataURL('image/jpeg',q); while(out.length>900000&&q>.3){ q-=.1; out=c.toDataURL('image/jpeg',q); } res(out); }; img.onerror=rej; img.src=u; }); }
 async function qaAddPhotos(itemId,input){ const d=qaCur(); if(!d||qaLocked(d)) return; const files=[...(input.files||[])]; if(!files.length) return; toast(`📷 ${files.length} photo(s)…`);
-  for(const f of files){ try{ const data=await qaCompress(f); const p={id:'qp'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),dossierId:d.id,itemId,data,by:(window._currentUser&&window._currentUser.email)||'',at:new Date().toISOString()};
+  for(const f of files){ try{ const data=await qaCompress(f); const p={id:'qp'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),dossierId:d.id,itemId,data,by:qaWho(),at:new Date().toISOString()};
     qaPhotos.push(p); await window._fsSetDoc(window._fsDoc(window._db,'qaPhotos',p.id),p); }catch(e){ alert('Photo : '+(e.message||e)); } }
   if(d.status==='draft'){ d.status='progress'; qaSave(d); } toast('✓ '+L_('Photos saved in the file','Photos enregistrées dans le dossier'),'ok'); renderQualite(); }
 function qaRenderPhotos(d,T){ const P=qaPhotos.filter(p=>p.dossierId===d.id); if(!P.length) return `<div class="db-card"><p class="db-ok" style="color:var(--text2)">${L_('No photo yet. Add photos from each check point or dimension.','Aucune photo. Ajoutez-les depuis chaque point de contrôle ou chaque cote.')}</p></div>`;
@@ -7719,7 +7743,7 @@ function qaRenderClose(d,T,s,lock){
     ${missingReq||unanswered||noComment.length?`<div class="qa-warn" style="margin-bottom:8px">⚠ ${[unanswered?L_(`${unanswered} check point(s) not answered`,`${unanswered} point(s) sans réponse`):'',missingReq?L_(`${missingReq} mandatory dimension(s) not measured`,`${missingReq} cote(s) obligatoire(s) non mesurée(s)`):'',noComment.length?L_('NOK without comment: ','NOK sans commentaire : ')+noComment.join(', '):''].filter(Boolean).join(' · ')}</div>`:''}
     ${lock?'':`<label>${L_('Verdict','Verdict')}</label><div class="qa-seg big">${['accepted','reserves','rejected'].map(k=>`<button class="${window._qaVerdict===k?'on '+k:''}" onclick="window._qaVerdict='${k}';renderQualite()">${L_(QA_ST[k][0],QA_ST[k][1])}</button>`).join('')}</div>
     <label>${L_('Reserves / remarks','Réserves / remarques')}</label><textarea id="qaVN" class="qa-com">${_esc(d.verdictNote||'')}</textarea>
-    <label>${L_('Inspector name','Nom de l’inspecteur')}</label><input id="qaSN" value="${_esc(d.inspector||'')}" autocomplete="off">
+    <label>${L_('Inspector name','Nom de l’inspecteur')}</label><input id="qaSN" value="${_esc(d.inspector||(window._qaGuest?(localStorage.getItem('qaInspectorName')||''):''))}" autocomplete="off">
     <label>${L_('Signature','Signature')}</label><canvas id="qaSig" class="qa-sig" width="600" height="180"></canvas><button class="btn btn-outline btn-sm" onclick="qaSigClear()">${L_('Clear','Effacer')}</button>
     <div class="req-err" id="qaCloseErr"></div>
     <button class="btn btn-primary btn-full" style="margin-top:10px" onclick="qaSign()">✍ ${L_('Sign and close the inspection','Signer et clôturer l’inspection')}</button>`}</div>`;
@@ -7741,7 +7765,7 @@ function qaReport(){
   const w=window.open('','_blank'); if(!w){ alert('Autorisez les fenêtres pop-up.'); return; }
   w.document.write(`<html><head><meta charset="utf-8"><title>Supplier Acceptance ${_esc(d.pj)}</title><style>body{font-family:Arial,sans-serif;color:#111;margin:14mm;font-size:11px}h1{font-size:18px;color:#06303f;margin:0}h2{font-size:13px;color:#06303f;border-bottom:2px solid #06303f;padding-bottom:3px;margin-top:16px}table{width:100%;border-collapse:collapse;margin-top:6px}td,th{border:1px solid #bbb;padding:4px 5px;vertical-align:top;text-align:left}th{background:#e8f0f3}.st{font-weight:bold}.ph{display:flex;flex-wrap:wrap;gap:6px}.ph figure{margin:0;width:31%;break-inside:avoid}.ph img{width:100%;border:1px solid #ccc}.ph figcaption{font-size:9px;color:#555}.hd{display:flex;justify-content:space-between;align-items:flex-start}.box{border:1px solid #06303f;padding:6px 8px;margin-top:6px}</style></head><body>
     <div class="hd"><div><h1>SUPPLIER ACCEPTANCE SHEET</h1><div>${_esc(T.doc)} · ${_esc(T.scope)}</div></div><div style="text-align:right"><b style="font-size:16px;color:#06303f">ENOGIA</b><br>${new Date().toLocaleDateString('en-GB')}</div></div>
-    <table><tr><th>ENOGIA project</th><td>${_esc(d.pj)}</td><th>ORC type</th><td>${_esc((MODELS[d.gamme]||{}).name||'')}</td></tr><tr><th>Supplier</th><td>${_esc(d.supplier||'')}</td><th>Purchase order</th><td>${_esc(d.po||'')}</td></tr><tr><th>Inspector</th><td>${_esc(d.signName||d.inspector||'')}</td><th>Status</th><td class="st">${_esc(QA_ST[d.status||'draft'][0])}</td></tr></table>
+    <table><tr><th>ENOGIA project</th><td>${_esc(d.pj)}</td><th>ORC type</th><td>${_esc((MODELS[d.gamme]||{}).name||'')}</td></tr><tr><th>Supplier</th><td>${_esc(d.supplier||'')}</td><th>Supplier serial number</th><td>${_esc(d.supplierSn||'')}</td></tr><tr><th>Inspector</th><td>${_esc(d.signName||d.inspector||'')}</td><th>Status</th><td class="st">${_esc(QA_ST[d.status||'draft'][0])}</td></tr></table>
     <div class="box">Check points: ${s.done}/${s.items} · Mandatory dimensions: ${s.reqDone}/${s.req} · NOK: ${s.nok+s.dNok} · Photos: ${ph.length}</div>
     <h2>Reference documents</h2><table>${Object.entries(T.refs).map(([k,v])=>`<tr><th style="width:60px">${k}</th><td>${_esc(v)}</td></tr>`).join('')}</table>
     ${T.sections.map(sec=>`<h2>${sec.id} – ${_esc(sec.en)}</h2><table><tr><th style="width:34px">Item</th><th>Description</th><th style="width:22%">Acceptable limit</th><th style="width:60px">Result</th><th style="width:70px">Measure</th><th>Comments</th></tr>
@@ -7754,8 +7778,86 @@ function qaReport(){
     <script>setTimeout(()=>print(),600)<\/script></body></html>`); w.document.close();
 }
 // ---------- rôle inspecteur : accès limité au module Qualité ----------
-document.addEventListener('firebaseReady',()=>setTimeout(()=>{ if(isInspector()){ document.body.classList.add('qa-inspector'); qaLang='en'; showQualite(); } },900));
+document.addEventListener('firebaseReady',()=>setTimeout(()=>{ if(isInspector()){ document.body.classList.add('qa-inspector'); qaLang='en'; showQualite(); qaAskName(); } else if(new URLSearchParams(location.search).get('qa')) showQualite(); },900));
 const _qaObs=new MutationObserver(()=>{ if(document.getElementById('qaSig')) qaSigInit(); }); _qaObs.observe(document.documentElement,{childList:true,subtree:true});
+// ---------- Vue 3D du châssis (modèle CAO converti) ----------
+let qa3d=null, qa3dMode='both', qa3dCut={ax:'',v:100};
+function qaRender3D(d,T){
+  const A=window.QA_ASSETS; if(!A||!A.plans[T.plan].geo) return `<div class="db-card"><p class="db-ok" style="color:var(--text2)">${L_('Loading 3D model…','Chargement du modèle 3D…')}</p></div>`;
+  return `<div class="qa3d-bar"><div class="sn-seg">${[['iso','Iso'],['front',L_('Front','Face')],['side',L_('Side','Côté')],['top',L_('Top','Dessus')]].map(([k,l])=>`<button onclick="qa3dView('${k}')">${l}</button>`).join('')}</div>
+      <div class="sn-seg">${[['both',L_('Solid + edges','Volume + arêtes')],['solid',L_('Solid','Volume')],['edges',L_('Edges','Arêtes')]].map(([k,l])=>`<button class="${qa3dMode===k?'on':''}" onclick="qa3dSetMode('${k}')">${l}</button>`).join('')}</div>
+      <div class="qa3d-cut"><span>✂ ${L_('Section','Coupe')}</span><div class="sn-seg">${[['','—'],['z',L_('Length','Longueur')],['x',L_('Width','Largeur')],['y',L_('Height','Hauteur')]].map(([k,l])=>`<button class="${qa3dCut.ax===k?'on':''}" onclick="qa3dCut.ax='${k}';qa3dCut.v=60;renderQualite()">${l}</button>`).join('')}</div>${qa3dCut.ax?`<input type="range" min="2" max="100" value="${qa3dCut.v}" oninput="qa3dCut.v=+this.value;qa3dApplyCut()">`:''}</div></div>
+    <div id="qa3dBox" class="qa3d"></div>
+    <p class="caisse-note">${L_('Drag to rotate · scroll or pinch to zoom · right-click or two fingers to pan. Model: ','Glisser pour tourner · molette ou pincer pour zoomer · clic droit ou deux doigts pour déplacer. Modèle : ')}${_esc(window.QA_ASSETS.plans[T.plan].ref)} (CAO SolidWorks, RAL 5012).</p>`;
+}
+function qa3dBuild(geo){
+  const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)).buffer;
+  const P=new Uint16Array(b64(geo.pos)), I=geo.idx32?new Uint32Array(b64(geo.idx)):new Uint16Array(b64(geo.idx)), E=new Uint16Array(b64(geo.edges));
+  const f=new Float32Array(P.length); let mx=[0,0,0]; for(let i=0;i<P.length;i++){ f[i]=P[i]; if(P[i]>mx[i%3]) mx[i%3]=P[i]; }
+  for(let i=0;i<f.length;i+=3){ f[i]-=mx[0]/2; f[i+1]-=mx[1]/2; f[i+2]-=mx[2]/2; }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(f,3)); g.setIndex(new THREE.BufferAttribute(I,1)); g.computeVertexNormals();
+  const ge=new THREE.BufferGeometry(); ge.setAttribute('position',g.getAttribute('position')); ge.setIndex(new THREE.BufferAttribute(E,1));
+  return {g,ge,size:mx};
+}
+function qa3dMount(){
+  const box=document.getElementById('qa3dBox'); if(!box) return; const d=qaCur(), T=qaTpl(d), geo=window.QA_ASSETS&&window.QA_ASSETS.plans[T.plan].geo; if(!geo||typeof THREE==='undefined') return;
+  if(!qa3d){
+    const r=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true}); r.setPixelRatio(Math.min(2,window.devicePixelRatio||1)); r.localClippingEnabled=true; r.setClearColor(0xf2f5f7);
+    const sc=new THREE.Scene(), cam=new THREE.PerspectiveCamera(35,1,10,60000);
+    sc.add(new THREE.HemisphereLight(0xffffff,0x6b7d86,0.85)); const dl=new THREE.DirectionalLight(0xffffff,0.75); dl.position.set(3000,5000,4000); sc.add(dl); const dl2=new THREE.DirectionalLight(0xffffff,0.3); dl2.position.set(-4000,2000,-3000); sc.add(dl2);
+    const B=qa3dBuild(geo), plane=new THREE.Plane(new THREE.Vector3(0,0,-1),99999);
+    const mesh=new THREE.Mesh(B.g,new THREE.MeshStandardMaterial({color:0x5b9bd5,metalness:.15,roughness:.55,side:THREE.DoubleSide,clippingPlanes:[plane],polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1}));
+    const edges=new THREE.LineSegments(B.ge,new THREE.LineBasicMaterial({color:0x10313d,clippingPlanes:[plane]}));
+    sc.add(mesh); sc.add(edges);
+    const grid=new THREE.GridHelper(6000,30,0xb8c6cd,0xd6dfe3); grid.position.y=-B.size[1]/2-2; sc.add(grid);
+    qa3d={r,sc,cam,mesh,edges,plane,size:B.size,th:-0.85,ph:1.08,rad:7200,tgt:new THREE.Vector3(0,0,0)};
+    const c=r.domElement; let drag=null, pts={};
+    c.addEventListener('contextmenu',e=>e.preventDefault());
+    c.addEventListener('pointerdown',e=>{ c.setPointerCapture(e.pointerId); pts[e.pointerId]={x:e.clientX,y:e.clientY}; drag={btn:e.button,x:e.clientX,y:e.clientY}; });
+    c.addEventListener('pointermove',e=>{ if(!pts[e.pointerId]) return; const ids=Object.keys(pts);
+      if(ids.length===2){ const [a,b]=ids.map(k=>pts[k]); const d0=Math.hypot(a.x-b.x,a.y-b.y); pts[e.pointerId]={x:e.clientX,y:e.clientY}; const [a2,b2]=ids.map(k=>pts[k]); const d1=Math.hypot(a2.x-b2.x,a2.y-b2.y); if(d0>0){ qa3d.rad=Math.max(1200,Math.min(30000,qa3d.rad*d0/d1)); } qa3dPan((e.movementX||0)/2,(e.movementY||0)/2); qa3dDraw(); return; }
+      const dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag.x=e.clientX; drag.y=e.clientY; pts[e.pointerId]={x:e.clientX,y:e.clientY};
+      if(drag.btn===2||e.shiftKey) qa3dPan(dx,dy); else { qa3d.th-=dx*0.008; qa3d.ph=Math.max(0.08,Math.min(Math.PI-0.08,qa3d.ph-dy*0.008)); } qa3dDraw(); });
+    const up=e=>{ delete pts[e.pointerId]; }; c.addEventListener('pointerup',up); c.addEventListener('pointercancel',up);
+    c.addEventListener('wheel',e=>{ e.preventDefault(); qa3d.rad=Math.max(1200,Math.min(30000,qa3d.rad*(e.deltaY>0?1.1:0.9))); qa3dDraw(); },{passive:false});
+    window.addEventListener('resize',()=>{ if(document.getElementById('qa3dBox')) qa3dResize(); });
+  }
+  box.appendChild(qa3d.r.domElement); qa3dSetMode(qa3dMode,true); qa3dApplyCut(); qa3dResize();
+}
+function qa3dPan(dx,dy){ const k=qa3d.rad*0.0012, cam=qa3d.cam; const right=new THREE.Vector3().setFromMatrixColumn(cam.matrix,0), up=new THREE.Vector3().setFromMatrixColumn(cam.matrix,1); qa3d.tgt.addScaledVector(right,-dx*k).addScaledVector(up,dy*k); }
+function qa3dResize(){ const box=document.getElementById('qa3dBox'); if(!box||!qa3d) return; const w=box.clientWidth, h=box.clientHeight; qa3d.r.setSize(w,h,false); qa3d.r.domElement.style.width='100%'; qa3d.r.domElement.style.height='100%'; qa3d.cam.aspect=w/h; qa3d.cam.updateProjectionMatrix(); qa3dDraw(); }
+function qa3dDraw(){ if(!qa3d) return; const {cam,tgt,th,ph,rad}=qa3d; cam.position.set(tgt.x+rad*Math.sin(ph)*Math.sin(th),tgt.y+rad*Math.cos(ph),tgt.z+rad*Math.sin(ph)*Math.cos(th)); cam.lookAt(tgt); qa3d.r.render(qa3d.sc,cam); }
+function qa3dView(k){ if(!qa3d) return; const V={iso:[-0.85,1.08],front:[Math.PI/2,Math.PI/2],side:[0,Math.PI/2],top:[0,0.0001+0.08]}; [qa3d.th,qa3d.ph]=V[k]; qa3d.tgt.set(0,0,0); qa3d.rad=k==='iso'?7200:6200; qa3dDraw(); }
+function qa3dSetMode(m,silent){ qa3dMode=m; if(qa3d){ qa3d.mesh.visible=m!=='edges'; qa3d.edges.visible=m!=='solid'; qa3dDraw(); } if(!silent) document.querySelectorAll('.qa3d-bar .sn-seg:nth-child(2) button').forEach((b,i)=>b.classList.toggle('on',['both','solid','edges'][i]===m)); }
+function qa3dApplyCut(){ if(!qa3d) return; const s=qa3d.size, p=qa3d.plane, ax=qa3dCut.ax, f=qa3dCut.v/100;
+  if(!ax){ p.normal.set(0,0,-1); p.constant=99999; } else { const i={x:0,y:1,z:2}[ax], L=s[i]; p.normal.set(ax==='x'?-1:0,ax==='y'?-1:0,ax==='z'?-1:0); p.constant=-L/2+f*L; }
+  qa3dDraw(); }
+// ---------- Lien contrôleur (sans compte ENOGIA) : lien + QR code vers la partie Qualité seulement ----------
+const qaWho=()=>window._qaGuest?('TÜV · '+(localStorage.getItem('qaInspectorName')||'Inspector')):((window._currentUser&&window._currentUser.email)||'');
+function qaAskName(){ if(!window._qaGuest||localStorage.getItem('qaInspectorName')) return; const n=(prompt('Welcome to ENOGIA supplier acceptance.\nPlease enter your name (it will appear on your checks, photos and report):')||'').trim(); if(n) try{ localStorage.setItem('qaInspectorName',n); }catch(e){} }
+async function qaGetAccess(){ try{ const s=await window._fsGetDoc(window._fsDoc(window._db,'qaAccess','link')); return s.exists()?s.data():null; }catch(e){ return null; } }
+async function qaShareLink(){
+  let a=await qaGetAccess();
+  const gen=()=>Array.from(crypto.getRandomValues(new Uint8Array(15)),b=>'abcdefghjkmnpqrstuvwxyz23456789'[b%31]).join('');
+  if(!a||!a.token){ a={token:gen(),active:true,createdAt:new Date().toISOString(),by:(window._currentUser&&window._currentUser.email)||''}; await window._fsSetDoc(window._fsDoc(window._db,'qaAccess','link'),a); }
+  const url=location.origin+location.pathname+'?qa='+a.token;
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='qaLinkOv';
+  ov.innerHTML=`<div class="req-box" style="max-width:560px" onclick="event.stopPropagation()"><h3>🔗 Accès contrôleur TÜV NORD</h3>
+    <div class="req-sub">Ce lien ouvre <b>uniquement la partie Qualité</b> (en anglais) : le contrôleur voit les machines à contrôler, renseigne ses contrôles, prend ses photos et signe. Aucun compte ENOGIA n’est nécessaire.</div>
+    <div class="qa-link"><div id="qaQr"></div><div style="flex:1;min-width:0"><label>Lien</label><input id="qaUrl" value="${_esc(url)}" readonly onclick="this.select()">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('qaUrl').value).then(()=>toast('Lien copié','ok'))">📋 Copier</button>
+      <a class="btn btn-outline btn-sm" href="mailto:?subject=${encodeURIComponent('ENOGIA – Supplier acceptance inspections')}&body=${encodeURIComponent('Hello,\n\nPlease use the link below to access the ENOGIA supplier acceptance inspections (frames & piping). You will see the machines to inspect, fill in each check point, take photos and sign the report.\n\n'+url+'\n\nBest regards,\nENOGIA')}">✉️ Envoyer par mail</a>
+      <button class="btn btn-outline btn-sm" onclick="qaPrintQr()">🖨 Imprimer le QR</button></div></div></div>
+    <div class="qa-lstate">${a.active?'🟢 Lien actif':'⛔ Lien désactivé'} · créé le ${new Date(a.createdAt).toLocaleDateString('fr-FR')}</div>
+    <div class="req-actions"><button class="btn btn-outline" onclick="qaLinkToggle(${!a.active})">${a.active?'⛔ Désactiver':'🟢 Réactiver'}</button><button class="btn btn-outline" onclick="qaLinkRenew()">♻ Nouveau lien (révoque l’ancien)</button><button class="btn btn-primary" onclick="document.getElementById('qaLinkOv').remove()">Fermer</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov);
+  if(window.QRCode) new QRCode(document.getElementById('qaQr'),{text:url,width:170,height:170,correctLevel:QRCode.CorrectLevel.M});
+}
+async function qaLinkToggle(on){ const a=await qaGetAccess(); if(!a) return; a.active=on; await window._fsSetDoc(window._fsDoc(window._db,'qaAccess','link'),a); document.getElementById('qaLinkOv').remove(); qaShareLink(); toast(on?'Lien réactivé':'Lien désactivé','ok'); }
+async function qaLinkRenew(){ if(!confirm('Créer un nouveau lien ? L’ancien lien et son QR code ne fonctionneront plus.')) return; await window._fsSetDoc(window._fsDoc(window._db,'qaAccess','link'),{token:'',active:true,createdAt:new Date().toISOString()}); document.getElementById('qaLinkOv').remove(); qaShareLink(); }
+function qaPrintQr(){ const u=document.getElementById('qaUrl').value, img=document.querySelector('#qaQr canvas'); const w=window.open('','_blank'); if(!w) return;
+  w.document.write(`<html><head><title>ENOGIA – Supplier acceptance</title><style>body{font-family:Arial;text-align:center;margin:30mm 15mm}h1{color:#06303f}p{font-size:14px}</style></head><body><h1>ENOGIA · Supplier acceptance</h1><p>Scan to access the inspections (frames &amp; piping)</p>${img?`<img src="${img.toDataURL()}" style="width:70mm;height:70mm">`:''}<p style="font-size:11px;word-break:break-all">${u}</p><script>setTimeout(()=>print(),400)<\/script></body></html>`); w.document.close(); }
+
 // ---------- indicateur qualité fournisseur (tableau de bord) ----------
 function renderQaKpi(){
   if(!qaList.length) return '';
