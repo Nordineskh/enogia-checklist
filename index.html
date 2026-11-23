@@ -7581,8 +7581,9 @@ const QA_TEMPLATES={eno180ltv3:{doc:'Pi085-030-DD003 rev. B',plan:'chassis180',s
   {id:'D1',en:'Stress-free assembly/disassembly of volutes',fr:'Montage/démontage sans contrainte des volutes',lim:['Tightening torques respected','Couples de serrage respectés'],refs:['DR04']}]}]}};
 const QA_APP_T={app1:['Appendix 1 – Piping tappings','Annexe 1 – Piquages tuyauterie'],ctrl1:['Lube filter, lube pressure sensors, lube valve & pump (pump 81 mm, valve Ø37, filter hole Ø10 at 500 mm)','Filtre lub, capteurs pression lub, vanne et pompe lub (pompe 81 mm, vanne Ø37, trou filtre Ø10 à 500 mm)'],ctrl2:['Settling pot, expansion vessel, fan','Pot de décantation, vase d’expansion, ventilateur'],ctrl3:['Choke support, choke cover hole, braking resistor – check all dimensions','Support choke, trou carter choke, résistance de freinage – vérifier toutes les cotes'],ctrl4:['Electrical cabinet','Armoire électrique'],ctrl5:['Turbine support','Support turbine'],ctrl6:['External dimensions (parallelism)','Dimensions extérieures (parallélisme)'],ctrl7:['Unacceptable cleanliness – reference photos','Propreté inacceptable – photos de référence']};
 function qaTpl(d){ return QA_TEMPLATES[(d&&d.gamme)||'eno180ltv3']||QA_TEMPLATES.eno180ltv3; }
-function qaLoadAssets(){ if(window.QA_ASSETS) return Promise.resolve(window.QA_ASSETS); if(window._qaAP) return window._qaAP;
-  window._qaAP=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='qualite-assets.js?v=1'; s.onload=()=>res(window.QA_ASSETS); s.onerror=()=>{ window._qaAP=null; rej(new Error('qualite-assets.js introuvable')); }; document.head.appendChild(s); }); return window._qaAP; }
+const QA_ASSETS_V='3';   // à incrémenter à chaque nouvelle version de qualite-assets.js (évite l'ancienne version en cache)
+function qaLoadAssets(bust){ if(window.QA_ASSETS&&!bust) return Promise.resolve(window.QA_ASSETS); if(window._qaAP&&!bust) return window._qaAP;
+  window._qaAP=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='qualite-assets.js?v='+QA_ASSETS_V+(bust?'&t='+Date.now():''); s.onload=()=>res(window.QA_ASSETS); s.onerror=()=>{ window._qaAP=null; rej(new Error('qualite-assets.js introuvable')); }; document.head.appendChild(s); }); return window._qaAP; }
 function qaStart(){ if(qaStarted||!window._fsOnSnapshot) return; qaStarted=true;
   window._fsOnSnapshot(window._fsCollection(window._db,'qaDossiers'),s=>{ qaList=s.docs.map(d=>({id:d.id,...d.data()})); if(document.getElementById('scQualite').classList.contains('active')) renderQualite(); },e=>console.warn('qa',e)); }
 function qaWatchPhotos(id){ if(qaPhUnsub){ try{ qaPhUnsub(); }catch(e){} qaPhUnsub=null; } qaPhotos=[]; if(!id||!window._fsOnSnapshot) return;
@@ -7783,7 +7784,12 @@ const _qaObs=new MutationObserver(()=>{ if(document.getElementById('qaSig')) qaS
 // ---------- Vue 3D du châssis (modèle CAO converti) ----------
 let qa3d=null, qa3dMode='both', qa3dCut={ax:'',v:100};
 function qaRender3D(d,T){
-  const A=window.QA_ASSETS; if(!A||!A.plans[T.plan].geo) return `<div class="db-card"><p class="db-ok" style="color:var(--text2)">${L_('Loading 3D model…','Chargement du modèle 3D…')}</p></div>`;
+  const A=window.QA_ASSETS;
+  if(A&&!A.plans[T.plan].geo){
+    if(!window._qaReloaded){ window._qaReloaded=true; window.QA_ASSETS=null; qaLoadAssets(true).then(()=>renderQualite()).catch(()=>renderQualite()); }
+    else return `<div class="db-card"><p class="db-ok" style="color:#ffd27a">⚠ ${L_('The 3D model is missing from qualite-assets.js on the server.','Le modèle 3D est absent du fichier qualite-assets.js en ligne.')}</p><p class="caisse-note">${L_('Please upload the latest qualite-assets.js next to index.html.','Remplacez qualite-assets.js sur GitHub par la dernière version (celle qui contient le modèle 3D), à côté d’index.html, puis rechargez avec Ctrl+Maj+R.')}</p></div>`;
+  }
+  if(!window.QA_ASSETS||!window.QA_ASSETS.plans[T.plan].geo) return `<div class="db-card"><p class="db-ok" style="color:var(--text2)">${L_('Loading 3D model…','Chargement du modèle 3D…')}</p></div>`;
   return `<div class="qa3d-bar"><div class="sn-seg">${[['iso','Iso'],['front',L_('Front','Face')],['side',L_('Side','Côté')],['top',L_('Top','Dessus')]].map(([k,l])=>`<button onclick="qa3dView('${k}')">${l}</button>`).join('')}</div>
       <div class="sn-seg">${[['both',L_('Solid + edges','Volume + arêtes')],['solid',L_('Solid','Volume')],['edges',L_('Edges','Arêtes')]].map(([k,l])=>`<button class="${qa3dMode===k?'on':''}" onclick="qa3dSetMode('${k}')">${l}</button>`).join('')}</div>
       <div class="qa3d-cut"><span>✂ ${L_('Section','Coupe')}</span><div class="sn-seg">${[['','—'],['z',L_('Length','Longueur')],['x',L_('Width','Largeur')],['y',L_('Height','Hauteur')]].map(([k,l])=>`<button class="${qa3dCut.ax===k?'on':''}" onclick="qa3dCut.ax='${k}';qa3dCut.v=60;renderQualite()">${l}</button>`).join('')}</div>${qa3dCut.ax?`<input type="range" min="2" max="100" value="${qa3dCut.v}" oninput="qa3dCut.v=+this.value;qa3dApplyCut()">`:''}</div></div>
