@@ -782,6 +782,56 @@ button.btn-scan{font-size:16px;min-width:38px}
 .ap-l{font-size:12px;padding:3px 0;border-top:1px solid #ffffff0d;display:flex;gap:5px;align-items:baseline}.ap-l em{margin-left:auto;font-style:normal;font-size:10.5px;color:var(--text3);white-space:nowrap}
 .ap-more{font-size:11px;color:var(--text3);margin-top:3px}
 .ap-sk{font-size:12px;color:#ffd27a;margin:6px 0}.ap-sk summary{cursor:pointer;font-weight:700}.ap-sk div{color:var(--text2);padding:2px 0}
+.qa-top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.qa-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.qa-card{text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;cursor:pointer;color:var(--text);font-family:var(--font);display:flex;flex-direction:column;gap:5px}
+.qa-card:hover{border-color:var(--accent2)}.qa-c1{display:flex;justify-content:space-between;align-items:center}.qa-c1 b{font-size:17px}
+.qa-c2{font-size:12.5px;color:var(--text2)}.qa-c3{display:flex;gap:10px;font-size:12px;color:var(--text3);flex-wrap:wrap}
+.qa-st{font-size:11px;font-weight:700;border:1px solid;border-radius:20px;padding:2px 9px;white-space:nowrap}
+.qa-dh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}.qa-dt{flex:1;min-width:200px}.qa-dt b{font-size:20px;margin-right:6px}.qa-dt small{display:block;font-size:11.5px;color:var(--text3);margin-top:3px}
+.qa-prog{display:grid;grid-template-columns:2fr 2fr 1fr 1fr;gap:8px;margin-bottom:10px}.qa-prog>div{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px}
+.qa-prog span{font-size:11px;color:var(--text3)}.qa-prog i{display:block;height:6px;border-radius:3px;background:#ffffff14;overflow:hidden}.qa-prog s{display:block;height:100%;background:var(--accent);text-decoration:none}.qa-prog b{font-size:15px}
+.qa-lock{background:#2aa99e1a;border:1px solid #2aa99e66;color:#7fe3d8;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:10px}
+.qa-sec{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px}
+.qa-sec>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}.qa-sec>summary::-webkit-details-marker{display:none}.qa-sec[open]>summary{border-bottom:1px solid var(--border)}
+.qa-sec>summary b{font-size:15px}.qa-sec>summary em{margin-left:auto;font-style:normal;font-size:12px;color:var(--text3)}.qa-sec[open] .pl-chev{transform:rotate(90deg)}
+.qa-it{padding:12px 14px;border-top:1px solid #ffffff0d;border-left:4px solid transparent}.qa-it:first-of-type{border-top:none}
+.qa-it.ok{border-left-color:#2aa99e}.qa-it.nok{border-left-color:#ff3b30;background:#ff3b300a}.qa-it.na{border-left-color:#7a8b92}
+.qa-ih{display:flex;gap:10px}.qa-id{background:#00364a;border:1px solid var(--border);border-radius:6px;font-weight:700;font-size:12px;padding:3px 7px;height:fit-content;color:#9fdcff}
+.qa-tx{flex:1}.qa-tx b{font-size:13.5px;font-weight:600}.qa-tx small{display:block;font-size:11.5px;color:var(--text3);margin-top:3px}
+.qa-ref{display:inline-block;background:#0086c233;color:#9fdcff;border-radius:4px;padding:0 5px;font-size:10.5px;margin-left:3px;cursor:help}
+.qa-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.qa-seg{display:flex;background:#00364a;border:1px solid var(--border);border-radius:8px;padding:3px}.qa-seg button{background:none;border:none;color:var(--text2);padding:8px 13px;border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;font-family:var(--font)}
+.qa-seg button.on.ok,.qa-seg button.on.accepted{background:#2aa99e;color:#fff}.qa-seg button.on.nok,.qa-seg button.on.rejected{background:#ff3b30;color:#fff}.qa-seg button.on.na{background:#7a8b92;color:#fff}.qa-seg button.on.reserves{background:#f2c230;color:#231a00}
+.qa-seg.big button{flex:1;padding:11px}.qa-seg.big{display:flex}
+.qa-meas{width:150px !important;padding:8px !important}
+.qa-cam{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.qa-cam.need{border-color:#f2c230;color:#ffd27a}
+.qa-com{width:100%;min-height:38px;margin-top:8px;background:#00364a;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px;font-size:13px;font-family:var(--font);resize:vertical}
+.qa-thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.qa-thumbs img,.qa-mini{width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer}
+.qa-warn{font-size:12px;color:#ffd27a;margin-top:6px}
+.qa-dbar{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:8px}
+.qa-pages{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;flex:1;min-width:0}
+.qa-pg{position:relative;flex-shrink:0;width:84px;background:#00364a;border:2px solid var(--border);border-radius:8px;padding:3px;cursor:pointer;color:var(--text2);font-family:var(--font)}
+.qa-pg img{width:100%;display:block;border-radius:4px;background:#fff}.qa-pg span{font-size:10px;display:block;margin-top:2px}.qa-pg.on{border-color:var(--accent2)}
+.qa-pg em{position:absolute;top:2px;right:2px;font-style:normal;font-size:9.5px;font-weight:700;background:#06303fdd;border-radius:6px;padding:1px 4px;color:#9fdcff}.qa-pg em.ok{color:#2ee07a}.qa-pg em.bad{color:#ff8a82}
+.qa-zoom{display:flex;align-items:center;gap:6px;background:#00364a;border:1px solid var(--border);border-radius:8px;padding:3px}.qa-zoom button{background:none;border:none;color:#fff;font-size:18px;width:34px;height:32px;cursor:pointer}.qa-zoom span{font-size:12px;min-width:44px;text-align:center}
+.qa-filter{font-size:12px;color:#9fdcff;margin-bottom:6px}.qa-filter button{background:none;border:none;color:#ff8a82;cursor:pointer}
+.qa-plan-wrap{overflow:auto;max-height:76vh;border:1px solid var(--border);border-radius:10px;background:#fff}
+.qa-plan{position:relative}.qa-plan img{width:100%;display:block}
+.qa-bub{position:absolute;transform:translate(-50%,-135%);min-width:24px;height:24px;border-radius:12px;border:2px solid #fff;background:#5d6b72;color:#fff;font-weight:700;font-size:12px;cursor:pointer;box-shadow:0 2px 6px #0007;padding:0 5px;font-family:var(--font);z-index:2}
+.qa-bub.req{box-shadow:0 0 0 3px #0086c2,0 2px 6px #0007}.qa-bub.ok{background:#1a9c6b}.qa-bub.nok{background:#d93025;animation:andonBlink 1.4s infinite}.qa-bub.dim{opacity:.25}
+.qa-bub.mini{position:static;transform:none;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;box-shadow:none}.qa-bub.mini.req{box-shadow:0 0 0 2px #0086c2}
+.stk-table tr.qa-dr{cursor:pointer}.stk-table tr.qa-dr.nok td{background:#ff3b300f}
+.qa-nom{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}.qa-nom div{background:#00364a;border:1px solid var(--border);border-radius:8px;padding:8px}.qa-nom small{display:block;font-size:10.5px;color:var(--text3)}.qa-nom b{font-size:16px}
+.qa-res{margin-top:6px;font-weight:700;font-size:13px}.qa-res .ok{color:#2ee07a}.qa-res .nok{color:#ff8a82}
+.qa-gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.qa-gal.big{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.qa-gal figure{margin:0;cursor:pointer}.qa-gal img{width:100%;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer}.qa-gal figcaption{font-size:10.5px;color:var(--text3);margin-top:2px}
+.qa-app{margin-bottom:12px}.qa-app b{display:block;margin-bottom:6px;font-size:13px}
+.qa-pv .qa-pvb{max-width:95vw;max-height:92vh;display:flex;flex-direction:column;gap:8px;align-items:center}.qa-pvb img{max-width:95vw;max-height:80vh;border-radius:8px}.qa-pva{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.qa-pva small{color:#ccc}
+.qa-sig{display:block;width:100%;max-width:600px;height:auto;aspect-ratio:600/180;border-radius:8px;border:2px dashed var(--border);background:#fff;touch-action:none;margin-bottom:6px}
+.qa-sig-img{max-width:300px;background:#fff;border-radius:6px}
+body.qa-inspector .menu-item:not(.qa-mi):not([onclick*="_signOut"]),body.qa-inspector .menu-sec{display:none}
+@media (max-width:700px){ .qa-prog{grid-template-columns:1fr 1fr} .qa-nom{grid-template-columns:1fr} }
 /* Tableau de bord */
 .db-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:4px 0 14px;position:sticky;top:0;z-index:15;background:var(--bg)}
 .db-tabs button{flex-shrink:0;background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap}
@@ -920,6 +970,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
     <button class="menu-item" onclick="closeAppMenu();showAtelier(false)"><span class="menu-item-icon">🏭</span> Atelier 3D en direct</button>
     <button class="menu-item" onclick="closeAppMenu();showStock()"><span class="menu-item-icon">🗄️</span> Stock</button>
     <button class="menu-item" onclick="closeAppMenu();showCaisses()"><span class="menu-item-icon">📦</span> Caisses atelier</button>
+    <button class="menu-item qa-mi" onclick="closeAppMenu();showQualite()"><span class="menu-item-icon">✅</span> Qualité fournisseur</button>
     <button class="menu-item" onclick="closeAppMenu();showVSM()"><span class="menu-item-icon">🗺️</span> Value Stream Map</button>
     <div class="menu-sec">Écrans atelier</div>
     <button class="menu-item" onclick="closeAppMenu();showPlanTv()"><span class="menu-item-icon">📺</span> Planning (TV)</button>
@@ -4644,7 +4695,7 @@ async function renderDashboard(){
   Object.entries(byModel).forEach(([modelName,ms])=>{ mach+=`<div class="dash-section-title">⚙️ ${modelName}</div><div class="kpi-grid">${ms.map(s=>renderKPICard(s,isAdmin)).join('')}</div>`; });
   html+=pane('mach',mach);
   // Qualité
-  html+=pane('qual',`<div class="db-tiles">${sup('🎯 1er passage',fpRate==null?'—':fpRate+' %',`${fpPass}/${fpTotal} sous-étapes VE`,pctCol(fpRate,80,60))}${sup('⚠️ Non-conformités',ncTotal,'ce mois','#ff6b62')}${sup('📐 Nomenclatures',kpiNomencl==null?'—':kpiNomencl+' %',`${ncErreurGameme} gamme · ${ncDefautAssemblage} assemblage · ${nomenReqTotal} non-respect`,pctCol(kpiNomencl,90,70))}${sup('⭐ Avancement OP moyen',avgQ+' %','des machines du mois',pctCol(avgQ,80,50))}</div>`+(typeof renderNvaSection==='function'?renderNvaSection(monthSessions):'')+renderNCChart(monthSessions)+renderRequestsSection(monthSessions));
+  html+=pane('qual',`<div class="db-tiles">${sup('🎯 1er passage',fpRate==null?'—':fpRate+' %',`${fpPass}/${fpTotal} sous-étapes VE`,pctCol(fpRate,80,60))}${sup('⚠️ Non-conformités',ncTotal,'ce mois','#ff6b62')}${sup('📐 Nomenclatures',kpiNomencl==null?'—':kpiNomencl+' %',`${ncErreurGameme} gamme · ${ncDefautAssemblage} assemblage · ${nomenReqTotal} non-respect`,pctCol(kpiNomencl,90,70))}${sup('⭐ Avancement OP moyen',avgQ+' %','des machines du mois',pctCol(avgQ,80,50))}</div>`+(typeof renderNvaSection==='function'?renderNvaSection(monthSessions):'')+(typeof renderQaKpi==='function'?renderQaKpi():'')+renderNCChart(monthSessions)+renderRequestsSection(monthSessions));
   // Temps
   html+=pane('temps',(typeof renderArretSection==='function'?renderArretSection(monthSessions):'')+renderStepTimeChart(monthSessions)+renderOpComparison(monthSessions)+renderTimeSection(monthSessions));
   // Planning & flux
@@ -5419,6 +5470,10 @@ function updateStockLabel(){
   <div class="caisse-bar"><label>Gamme<select id="caisseGamme" onchange="if(this.value==='all'){caisseMode='mix';}else{caisseMode='one';caisseGamme=this.value;}renderCaisses()"></select></label>
     <label>Salve à préparer<div class="cn-step"><button onclick="setCaisseN((+document.getElementById('caisseN').value||1)-1)">−</button><input id="caisseN" type="number" min="1" max="50" value="10" onchange="setCaisseN(this.value)"><button onclick="setCaisseN((+document.getElementById('caisseN').value||1)+1)">＋</button></div><small>machines</small></label></div>
   <div id="caisseBody"></div>
+</div>
+<div class="screen" id="scQualite" style="max-width:1280px">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button class="btn btn-outline btn-sm" id="qaLangBtn" onclick="qaLang=qaLang==='en'?'fr':'en';renderQualite()">🇬🇧 EN</button></div>
+  <div id="qaBody"></div>
 </div>
 <div class="screen" id="scVSM" style="padding:0;max-width:100%;margin:0">
 <div style="display:flex;height:calc(100vh - 97px)">
@@ -7461,6 +7516,257 @@ function applyAutoPlan(){
 }
 function undoAutoPlan(){ const b=planTeam.lastAutoBatch; const L=planTasks.filter(t=>t.autoBatch===b&&taskStatus(t).st==='todo'); if(!b||!L.length){ toast('Rien à annuler'); return; }
   if(!confirm(`Retirer les ${L.length} tâche(s) de la dernière planification automatique qui ne sont pas commencées ?`)) return; L.forEach(t=>planRemove(t.id)); planTeam.lastAutoBatch=null; planSaveCfg(); }
+
+
+// ===================== QUALITÉ FOURNISSEUR (Supplier Acceptance – TÜV NORD) =====================
+const QA_INSPECTORS=[];   // adresses des contrôleurs TÜV NORD (accès limité au module Qualité)
+const isInspector=()=>QA_INSPECTORS.map(x=>x.toLowerCase()).includes(((window._currentUser&&window._currentUser.email)||'').toLowerCase());
+let qaLang='fr', qaList=[], qaPhotos=[], qaOpenId=null, qaTab='check', qaPage=3, qaZoom=1, qaStarted=false, qaPhUnsub=null;
+const L_=(en,fr)=>qaLang==='en'?en:fr;
+// Tolérances ISO 13920 classe A (constructions soudées) — norme indiquée sur le plan
+function tolA(n){ n=Math.abs(n); if(n<=30) return 1; if(n<=120) return 1; if(n<=400) return 1; if(n<=1000) return 2; if(n<=2000) return 3; if(n<=4000) return 4; if(n<=8000) return 5; return 6; }
+const QA_TEMPLATES={eno180ltv3:{doc:'Pi085-030-DD003 rev. B',plan:'chassis180',scope:'Frame + piping',
+ refs:{DR01:'Pi085-511-DC001-G – Chassis 180LTV3',DR02:'Pi085-510-DC001-C – Cycle ORC',DR03:'Pi085-510-DC007-A – Tank Pi085B',DR04:'Pi085-043-DC001-E – P&ID ENO-180LTV3',DR05:'Pi085-510-DC008-A – Clarinet lub inox',DR06:'Pi085-510-DC004-B – Cycle lub inox'},
+ sections:[
+ {id:'A',en:'Frame manufacturing',fr:'Fabrication du châssis',items:[
+  {id:'A0',en:'Check flatness of frame',fr:'Contrôler la planéité du châssis',lim:['ISO 13920 class A – flatness','ISO 13920 classe A – planéité'],refs:['DR01'],app:['ctrl6'],photo:1,meas:1},
+  {id:'A1',en:'Check that all welds on flat surfaces are ground',fr:'Vérifier que toutes les soudures sur surfaces planes sont meulées',lim:['No excess material restricting mechanical assembly','Aucun surplus de matière gênant le montage'],refs:['DR01'],photo:1},
+  {id:'A2',en:'Frame dimensions (parallelism, priority dimensions of each cycle)',fr:'Dimensions du châssis (parallélisme, cotes prioritaires de chaque cycle)',lim:['ISO 13920 class A – see dimensional views','ISO 13920 classe A – voir vues cotées'],refs:['DR01'],app:['ctrl1','ctrl2','ctrl3','ctrl4','ctrl6'],dims:1,photo:1},
+  {id:'A3',en:'Holes (position, threads if applicable)',fr:'Perçages (position, taraudages le cas échéant)',lim:['ISO 13920 class A','ISO 13920 classe A'],refs:['DR01'],dims:1},
+  {id:'A4',en:'Presence and position of tubing half-shell supports Ø26 – qty 5',fr:'Présence et position des supports demi-coquille Ø26 – qté 5',lim:['5 supports, 0 missing tape','5 supports, aucun ruban manquant'],refs:['DR01'],photo:1,meas:1,count:5},
+  {id:'A5',en:'Presence and position of tubing half-shell supports Ø16 – qty 3',fr:'Présence et position des supports demi-coquille Ø16 – qté 3',lim:['3 supports, 0 missing tape','3 supports, aucun ruban manquant'],refs:['DR01'],photo:1,meas:1,count:3},
+  {id:'A6',en:'Presence, flatness and position of all cable trays',fr:'Présence, planéité et position de tous les chemins de câbles',lim:['Number of items as per drawing (sheet 11)','Nombre de repères conforme au plan (feuille 11)'],refs:['DR01'],photo:1},
+  {id:'A7',en:'A washer under each screw on both outer sides of the flanges',fr:'Une rondelle sous chaque vis des deux côtés extérieurs des brides',lim:['No washer missing','Aucune rondelle manquante'],refs:['DR02'],photo:1},
+  {id:'A8',en:'Position of the electrical cabinet holes',fr:'Position des perçages de l’armoire électrique',lim:['ISO 13920 class A','ISO 13920 classe A'],refs:['DR01'],app:['ctrl4'],dims:1,photo:1},
+  {id:'A10',en:'Conformity of all threads',fr:'Conformité de tous les taraudages',lim:['No burr detected','Aucune bavure'],refs:['DR01']},
+  {id:'A11',en:'Holes for all sensors',fr:'Perçages de tous les capteurs',lim:['ISO 13920 class A','ISO 13920 classe A'],refs:['DR01'],app:['ctrl1'],dims:1},
+  {id:'A12',en:'Position & dimensions of supports (cooling square, turbine frame, lube, choke…)',fr:'Position et dimensions des supports (équerre cooling, cadre turbine, lub, choke…)',lim:['ISO 13920 class A','ISO 13920 classe A'],refs:['DR01'],app:['ctrl1','ctrl2','ctrl3','ctrl5'],dims:1,photo:1}]},
+ {id:'B',en:'Piping manufacturing',fr:'Fabrication des tuyauteries',items:[
+  {id:'B0',en:'No conventional (non-nylstop) nuts on flanges/counter-flanges',fr:'Absence d’écrous classiques (non nylstop) sur brides/contre-brides',lim:['Absence','Absence'],refs:['DR02'],photo:1},
+  {id:'B1',en:'Tappings on line ENO-PL-LHP/LLP: 4× DN8 1/4" NPT female + 1× DN15 1/2" NPT male',fr:'Piquages ligne ENO-PL-LHP/LLP : 4× DN8 1/4" NPT femelle + 1× DN15 1/2" NPT mâle',lim:['Presence and position as per P&ID','Présence et position selon P&ID'],refs:['DR02'],app:['app1'],photo:1,count:5},
+  {id:'B2',en:'Tapping on ENO-RES-01: 1× DN25 1" NPT female',fr:'Piquage ENO-RES-01 : 1× DN25 1" NPT femelle',lim:['Presence and position','Présence et position'],refs:['DR03'],app:['app1'],photo:1,count:1},
+  {id:'B3',en:'Tappings on line ENO-PL-VLP: 4× DN8 1/4" NPT female',fr:'Piquages ligne ENO-PL-VLP : 4× DN8 1/4" NPT femelle',lim:['Presence, position, no burr','Présence, position, aucune bavure'],refs:['DR02'],app:['app1'],photo:1,count:4},
+  {id:'B4',en:'Tappings on line ENO-PL-VHP: 2× DN8 1/4" NPT female',fr:'Piquages ligne ENO-PL-VHP : 2× DN8 1/4" NPT femelle',lim:['Presence and position','Présence et position'],refs:['DR02'],app:['app1'],photo:1,count:2},
+  {id:'B5',en:'CE plates on line ENO-PL-VHP and on ENO-RES-01 (presence and position)',fr:'Plaques CE sur la ligne ENO-PL-VHP et sur ENO-RES-01 (présence et position)',lim:['CE plates present and readable','Plaques CE présentes et lisibles'],refs:['DR04'],photo:1},
+  {id:'B7',en:'Protection cap on every pipe inlet',fr:'Bouchon de protection sur chaque entrée de tuyauterie',lim:['Every cap present','Tous les bouchons présents'],photo:1},
+  {id:'B8',en:'Pipework components orientation (cycle pump, valve, bypass valve, filter)',fr:'Sens des composants (pompe de cycle, vanne, by-pass, filtre)',lim:['As per P&ID / flow direction','Conforme P&ID / sens d’écoulement'],refs:['DR02'],photo:1}]},
+ {id:'C',en:'Cleanliness',fr:'Propreté',items:[
+  {id:'C0',en:'External pipe cleanliness (passivation of stainless pipes, brushing of dissimilar welds)',fr:'Propreté extérieure (passivation inox, brossage des soudures hétérogènes)',lim:['All welds clean, no marks','Soudures propres, sans trace'],refs:['DR04'],app:['ctrl7'],photo:1},
+  {id:'C1',en:'Internal pipe cleanliness (HP gas cleaning + blowing/drying + white cloth wipe)',fr:'Propreté intérieure (nettoyage gaz HP + soufflage/séchage + chiffon blanc)',lim:['No significant foreign matter','Pas de corps étranger significatif'],refs:['DR04','DR05','DR06'],app:['ctrl7'],photo:1},
+  {id:'C2',en:'Endoscope inspection (no chips, no dust, no debris)',fr:'Inspection à l’endoscope (ni copeaux, ni poussière, ni débris)',lim:['No significant foreign matter – compare with reference photos','Pas de corps étranger – comparer aux photos de référence'],refs:['DR04','DR05','DR06'],app:['ctrl7'],photo:1},
+  {id:'C3',en:'Endoscopic inspection report available',fr:'Rapport d’inspection endoscopique disponible',lim:['Report attached (photo)','Rapport joint (photo)'],refs:['DR04','DR05','DR06'],photo:1}]},
+ {id:'D',en:'Assembly',fr:'Montage',items:[
+  {id:'D0',en:'Stress-free assembly/disassembly of piping components',fr:'Montage/démontage sans contrainte des composants de tuyauterie',lim:['Tightening torques respected','Couples de serrage respectés'],refs:['DR04']},
+  {id:'D1',en:'Stress-free assembly/disassembly of volutes',fr:'Montage/démontage sans contrainte des volutes',lim:['Tightening torques respected','Couples de serrage respectés'],refs:['DR04']}]}]}};
+const QA_APP_T={app1:['Appendix 1 – Piping tappings','Annexe 1 – Piquages tuyauterie'],ctrl1:['Lube filter, lube pressure sensors, lube valve & pump (pump 81 mm, valve Ø37, filter hole Ø10 at 500 mm)','Filtre lub, capteurs pression lub, vanne et pompe lub (pompe 81 mm, vanne Ø37, trou filtre Ø10 à 500 mm)'],ctrl2:['Settling pot, expansion vessel, fan','Pot de décantation, vase d’expansion, ventilateur'],ctrl3:['Choke support, choke cover hole, braking resistor – check all dimensions','Support choke, trou carter choke, résistance de freinage – vérifier toutes les cotes'],ctrl4:['Electrical cabinet','Armoire électrique'],ctrl5:['Turbine support','Support turbine'],ctrl6:['External dimensions (parallelism)','Dimensions extérieures (parallélisme)'],ctrl7:['Unacceptable cleanliness – reference photos','Propreté inacceptable – photos de référence']};
+function qaTpl(d){ return QA_TEMPLATES[(d&&d.gamme)||'eno180ltv3']||QA_TEMPLATES.eno180ltv3; }
+function qaLoadAssets(){ if(window.QA_ASSETS) return Promise.resolve(window.QA_ASSETS); if(window._qaAP) return window._qaAP;
+  window._qaAP=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='qualite-assets.js?v=1'; s.onload=()=>res(window.QA_ASSETS); s.onerror=()=>{ window._qaAP=null; rej(new Error('qualite-assets.js introuvable')); }; document.head.appendChild(s); }); return window._qaAP; }
+function qaStart(){ if(qaStarted||!window._fsOnSnapshot) return; qaStarted=true;
+  window._fsOnSnapshot(window._fsCollection(window._db,'qaDossiers'),s=>{ qaList=s.docs.map(d=>({id:d.id,...d.data()})); if(document.getElementById('scQualite').classList.contains('active')) renderQualite(); },e=>console.warn('qa',e)); }
+function qaWatchPhotos(id){ if(qaPhUnsub){ try{ qaPhUnsub(); }catch(e){} qaPhUnsub=null; } qaPhotos=[]; if(!id||!window._fsOnSnapshot) return;
+  qaPhUnsub=window._fsOnSnapshot(window._fsQuery(window._fsCollection(window._db,'qaPhotos'),window._fsWhere('dossierId','==',id)),s=>{ qaPhotos=s.docs.map(d=>({id:d.id,...d.data()})); if(qaOpenId===id) renderQualite(); },()=>{}); }
+const qaCur=()=>qaList.find(d=>d.id===qaOpenId);
+async function qaSave(d){ d.updatedAt=new Date().toISOString(); const i=qaList.findIndex(x=>x.id===d.id); if(i>=0) qaList[i]=d; else qaList.push(d); try{ await window._fsSetDoc(window._fsDoc(window._db,'qaDossiers',d.id),d); }catch(e){ alert('Enregistrement impossible : '+(e.message||e)); } }
+function showQualite(){ exitTv&&exitTv(); showScreen('scQualite'); qaStart(); if(isInspector()) qaLang='en'; renderQualite(); }
+function qaStats(d){ const T=qaTpl(d), items=T.sections.flatMap(s=>s.items), r=d.results||{}; const A=window.QA_ASSETS, dims=A?A.plans[T.plan].dims:[];
+  const done=items.filter(i=>r[i.id]&&r[i.id].st).length, nok=items.filter(i=>r[i.id]&&r[i.id].st==='nok').length;
+  const dm=d.dims||{}, req=dims.filter(x=>x.req), dDone=dims.filter(x=>dm[x.id]&&dm[x.id].v!==''&&dm[x.id].v!=null), dNok=dDone.filter(x=>Math.abs(+dm[x.id].v-x.nom)>tolA(x.nom));
+  return {items:items.length,done,nok,dims:dims.length,dDone:dDone.length,req:req.length,reqDone:req.filter(x=>dm[x.id]&&dm[x.id].v!=null&&dm[x.id].v!=='').length,dNok:dNok.length,photos:qaPhotos.filter(p=>p.dossierId===d.id).length}; }
+const QA_ST={draft:['To inspect','À inspecter','#7a8b92'],progress:['In progress','En cours','#2b8fd6'],accepted:['Accepted','Accepté','#2aa99e'],reserves:['Accepted with reserves','Accepté avec réserves','#f2c230'],rejected:['Rejected','Refusé','#ff3b30']};
+const qaStLbl=k=>{ const s=QA_ST[k]||QA_ST.draft; return `<span class="qa-st" style="background:${s[2]}22;color:${s[2]};border-color:${s[2]}66">${L_(s[0],s[1])}</span>`; };
+// ---------- liste des dossiers ----------
+function renderQualite(){
+  const el=document.getElementById('qaBody'); if(!el) return; const insp=isInspector();
+  document.getElementById('qaLangBtn').textContent=qaLang==='en'?'🇫🇷 FR':'🇬🇧 EN';
+  if(qaOpenId&&qaCur()) return renderQaDossier(el);
+  qaOpenId=null;
+  const L=qaList.slice().sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+  el.innerHTML=`<div class="qa-top"><div><div class="project-title" style="font-size:26px">${L_('Supplier quality – Acceptance','Qualité fournisseur – Réception')}</div><div style="font-size:12px;color:var(--text3)">${L_('Frame & piping inspections at suppliers (TÜV NORD)','Contrôles châssis et tuyauterie chez les fournisseurs (TÜV NORD)')}</div></div>
+    ${insp?'':`<button class="btn btn-primary btn-sm" onclick="qaNew()">＋ ${L_('New inspection file','Nouveau dossier')}</button>`}</div>
+    ${L.length?`<div class="qa-list">${L.map(d=>{ const s=qaStats(d); return `<button class="qa-card" onclick="qaOpen('${d.id}')"><div class="qa-c1"><b>${_esc(d.pj||'—')}</b>${qaStLbl(d.status)}</div>
+      <div class="qa-c2">${_esc((MODELS[d.gamme]||{}).name||d.gamme)} · ${_esc(d.supplier||'')} ${d.po?'· PO '+_esc(d.po):''}</div>
+      <div class="qa-c3"><span>☑ ${s.done}/${s.items}</span><span>📐 ${s.dDone}/${s.dims||'—'}</span>${s.nok+s.dNok?`<span style="color:#ff8a82">✗ ${s.nok+s.dNok} NOK</span>`:''}<span>${d.inspectionDate?new Date(d.inspectionDate).toLocaleDateString(qaLang==='en'?'en-GB':'fr-FR'):''}</span></div></button>`; }).join('')}</div>`
+      :`<div class="db-card"><p class="db-ok" style="color:var(--text2)">${L_('No inspection file yet.','Aucun dossier pour le moment.')}</p></div>`}`;
+}
+function qaNew(){
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='qaNewOv';
+  ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()"><h3>＋ ${L_('New inspection file','Nouveau dossier de réception')}</h3>
+    <label>N° PJ</label><input id="qnPj" placeholder="PJ450" autocomplete="off">
+    <label>${L_('Range','Gamme')}</label><select id="qnG">${Object.keys(QA_TEMPLATES).map(k=>`<option value="${k}">${_esc(MODELS[k].name)}</option>`).join('')}</select>
+    <label>${L_('Supplier','Fournisseur')}</label><input id="qnSup" placeholder="${L_('Polish frame & piping supplier','Fournisseur châssis/tuyauterie (Pologne)')}" autocomplete="off">
+    <label>${L_('Purchase order','Bon de commande')}</label><input id="qnPo" autocomplete="off">
+    <label>${L_('Planned inspection date','Date d’inspection prévue')}</label><input id="qnDate" type="date">
+    <label>${L_('Inspector (TÜV NORD)','Inspecteur (TÜV NORD)')}</label><input id="qnIns" autocomplete="off">
+    <div class="req-err" id="qnErr"></div>
+    <div class="req-actions"><button class="btn btn-outline" onclick="document.getElementById('qaNewOv').remove()">${L_('Cancel','Annuler')}</button><button class="btn btn-primary" onclick="qaCreate()">${L_('Create','Créer')}</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov);
+}
+function qaCreate(){ const v=id=>(document.getElementById(id).value||'').trim(); const pj=v('qnPj').toUpperCase().replace(/\s+/g,''); if(!pj){ document.getElementById('qnErr').textContent=L_('PJ number required.','N° PJ obligatoire.'); return; }
+  const d={id:'qa'+Date.now().toString(36),pj,gamme:v('qnG'),supplier:v('qnSup'),po:v('qnPo'),inspectionDate:v('qnDate'),inspector:v('qnIns'),status:'draft',results:{},dims:{},createdAt:new Date().toISOString(),createdBy:(window._currentUser&&window._currentUser.email)||''};
+  qaSave(d); document.getElementById('qaNewOv').remove(); qaOpen(d.id); }
+function qaOpen(id){ qaOpenId=id; qaTab='check'; qaWatchPhotos(id); qaLoadAssets().then(()=>renderQualite()).catch(e=>{ toast('⚠ '+e.message); }); renderQualite(); }
+function qaBack(){ qaOpenId=null; qaWatchPhotos(null); renderQualite(); }
+const qaLocked=d=>['accepted','reserves','rejected'].includes(d.status)&&!(typeof isTimeAdmin==='function'&&isTimeAdmin());
+// ---------- dossier ----------
+function renderQaDossier(el){
+  const d=qaCur(), T=qaTpl(d), s=qaStats(d), lock=qaLocked(d);
+  const sy=window.scrollY;
+  let h=`<div class="qa-dh"><button class="btn btn-outline btn-sm" onclick="qaBack()">← ${L_('Files','Dossiers')}</button>
+    <div class="qa-dt"><b>${_esc(d.pj)}</b> ${qaStLbl(d.status)}<small>${_esc((MODELS[d.gamme]||{}).name||'')} · ${_esc(d.supplier||'—')}${d.po?' · PO '+_esc(d.po):''} · ${L_('Inspector','Inspecteur')} : ${_esc(d.inspector||'—')} · ${_esc(T.doc)}</small></div>
+    <button class="btn btn-outline btn-sm" onclick="qaReport()">📄 ${L_('Report','Rapport')}</button></div>
+    <div class="qa-prog"><div><span>☑ ${L_('Checklist','Checklist')}</span><i><s style="width:${s.items?s.done/s.items*100:0}%"></s></i><b>${s.done}/${s.items}</b></div>
+      <div><span>📐 ${L_('Required dimensions','Cotes obligatoires')}</span><i><s style="width:${s.req?s.reqDone/s.req*100:0}%"></s></i><b>${s.reqDone}/${s.req}</b></div>
+      <div><span>📷 Photos</span><b>${s.photos}</b></div><div><span>✗ NOK</span><b style="color:${s.nok+s.dNok?'#ff8a82':'#7fe3d8'}">${s.nok+s.dNok}</b></div></div>
+    <div class="db-tabs" style="position:static">${[['check','☑ Checklist'],['dims','📐 '+L_('Dimensional views','Vues cotées')],['photos','📷 Photos'],['close','✍ '+L_('Sign-off','Clôture')]].map(([k,l])=>`<button class="${qaTab===k?'on':''}" onclick="qaTab='${k}';renderQualite()">${l}${k==='dims'&&s.dNok?` <span class="db-n">${s.dNok}</span>`:''}</button>`).join('')}</div>`;
+  if(lock) h+=`<div class="qa-lock">🔒 ${L_('File signed and closed – read only.','Dossier signé et clôturé – lecture seule.')}</div>`;
+  if(qaTab==='check') h+=qaRenderCheck(d,T,lock);
+  else if(qaTab==='dims') h+=qaRenderDims(d,T,lock);
+  else if(qaTab==='photos') h+=qaRenderPhotos(d,T,lock);
+  else h+=qaRenderClose(d,T,s,lock);
+  el.innerHTML=h; window.scrollTo(0,sy);
+}
+function qaRenderCheck(d,T,lock){
+  const r=d.results||{}; window._qaOpenSec=window._qaOpenSec||new Set(['A']);
+  return T.sections.map(sec=>{ const its=sec.items, dn=its.filter(i=>r[i.id]&&r[i.id].st).length, nk=its.filter(i=>r[i.id]&&r[i.id].st==='nok').length;
+    return `<details class="qa-sec" ${window._qaOpenSec.has(sec.id)?'open':''} ontoggle="this.open?window._qaOpenSec.add('${sec.id}'):window._qaOpenSec.delete('${sec.id}')"><summary><span class="pl-chev">▸</span><b>${sec.id} – ${L_(sec.en,sec.fr)}</b><em>${dn}/${its.length}${nk?` · <span style="color:#ff8a82">${nk} NOK</span>`:''}</em></summary>
+      ${its.map(it=>{ const v=r[it.id]||{}, ph=qaPhotos.filter(p=>p.itemId===it.id), needPh=it.photo&&!ph.length&&v.st&&v.st!=='na';
+        return `<div class="qa-it ${v.st||''}" id="qi_${it.id}"><div class="qa-ih"><span class="qa-id">${it.id}</span><div class="qa-tx"><b>${L_(it.en,it.fr)}</b><small>🎯 ${L_(it.lim[0],it.lim[1])}${(it.refs||[]).map(x=>` <span class="qa-ref" title="${_esc(T.refs[x]||'')}">${x}</span>`).join('')}</small></div></div>
+          <div class="qa-row">
+            <div class="qa-seg">${[['ok','✓ OK'],['nok','✗ NOK'],['na','N/A']].map(([k,l])=>`<button class="${v.st===k?'on '+k:''}" ${lock?'disabled':''} onclick="qaSet('${it.id}','st','${v.st===k?'':k}')">${l}</button>`).join('')}</div>
+            ${it.meas||it.count?`<input class="qa-meas" placeholder="${it.count?L_('Qty found','Qté trouvée')+' / '+it.count:L_('Measure','Mesure')}" value="${_esc(v.m||'')}" ${lock?'disabled':''} onchange="qaSet('${it.id}','m',this.value)">`:''}
+            ${it.dims?`<button class="btn btn-outline btn-sm" onclick="qaGoDims('${it.id}')">📐 ${L_('Dimensions','Cotes')}</button>`:''}
+            ${(it.app||[]).length?`<button class="btn btn-outline btn-sm" onclick="qaShowApp('${it.app.join(',')}')">📎 ${L_('Reference','Référence')}</button>`:''}
+            <label class="btn btn-outline btn-sm qa-cam ${needPh?'need':''}">📷 ${ph.length||''}<input type="file" accept="image/*" capture="environment" multiple style="display:none" ${lock?'disabled':''} onchange="qaAddPhotos('${it.id}',this)"></label></div>
+          ${ph.length?`<div class="qa-thumbs">${ph.map(p=>`<img src="${p.data}" onclick="qaViewPhoto('${p.id}')" alt="">`).join('')}</div>`:''}
+          ${needPh?`<div class="qa-warn">📷 ${L_('Photo required for this check point','Photo obligatoire pour ce point de contrôle')}</div>`:''}
+          <textarea class="qa-com" placeholder="${L_('Comments / actions','Commentaires / actions')}${v.st==='nok'?' – '+L_('required for NOK','obligatoire si NOK'):''}" ${lock?'disabled':''} onchange="qaSet('${it.id}','c',this.value)">${_esc(v.c||'')}</textarea>
+        </div>`; }).join('')}</details>`; }).join('');
+}
+function qaSet(itemId,field,val){ const d=qaCur(); if(!d||qaLocked(d)) return; const r={...(d.results||{})}; r[itemId]={...(r[itemId]||{}),[field]:val,by:(window._currentUser&&window._currentUser.email)||'',at:new Date().toISOString()};
+  d.results=r; if(d.status==='draft') d.status='progress'; qaSave(d); renderQualite(); }
+function qaGoDims(itemId){ const T=qaTpl(qaCur()), dims=window.QA_ASSETS?window.QA_ASSETS.plans[T.plan].dims.filter(x=>x.item===itemId):[]; if(dims.length) qaPage=dims[0].page; window._qaDimFilter=itemId; qaTab='dims'; renderQualite(); }
+// ---------- vues cotées ----------
+function qaRenderDims(d,T,lock){
+  const A=window.QA_ASSETS; if(!A) return `<div class="db-card"><p class="db-ok" style="color:var(--text2)">${L_('Loading drawings…','Chargement des plans…')} <small>(qualite-assets.js)</small></p></div>`;
+  const P=A.plans[T.plan], dm=d.dims||{}, f=window._qaDimFilter;
+  const pagesWith=[...new Set(P.dims.map(x=>x.page))].sort((a,b)=>a-b);
+  const st=x=>{ const m=dm[x.id]; if(!m||m.v===''||m.v==null) return 'todo'; return Math.abs(+m.v-x.nom)<=tolA(x.nom)?'ok':'nok'; };
+  const onPage=P.dims.filter(x=>x.page===qaPage);
+  let h=`<div class="qa-dbar"><div class="qa-pages">${P.pages.map((u,i)=>{ const pg=i+1, n=P.dims.filter(x=>x.page===pg), dn=n.filter(x=>st(x)!=='todo').length, bad=n.filter(x=>st(x)==='nok').length;
+      return `<button class="qa-pg ${qaPage===pg?'on':''}" onclick="qaPage=${pg};renderQualite()"><img src="${u}" alt=""><span>${L_('Sheet','Feuille')} ${pg}</span>${n.length?`<em class="${bad?'bad':dn===n.length?'ok':''}">${dn}/${n.length}</em>`:''}</button>`; }).join('')}</div>
+    <div class="qa-zoom"><button onclick="qaZoom=Math.max(1,qaZoom-.5);renderQualite()">−</button><span>${Math.round(qaZoom*100)} %</span><button onclick="qaZoom=Math.min(4,qaZoom+.5);renderQualite()">＋</button></div></div>
+    ${f?`<div class="qa-filter">${L_('Filter','Filtre')} : ${f} <button onclick="window._qaDimFilter=null;renderQualite()">✕</button></div>`:''}
+    <div class="qa-plan-wrap"><div class="qa-plan" style="width:${qaZoom*100}%"><img src="${P.pages[qaPage-1]}" alt="">
+      ${onPage.map(x=>`<button class="qa-bub ${st(x)} ${x.req?'req':''} ${f&&x.item!==f?'dim':''}" style="left:${x.x}%;top:${x.y}%" onclick="qaDim('${x.id}')" title="${_esc(L_(x.en,x.fr))}">${x.n}</button>`).join('')}</div></div>
+    <p class="caisse-note">${L_('Tap a numbered bubble to enter the measured value. Tolerances: ISO 13920 class A (welded constructions), as specified on the drawing. Bubbles with a blue ring are mandatory.','Touchez une bulle numérotée pour saisir la valeur mesurée. Tolérances : ISO 13920 classe A (constructions soudées), comme indiqué sur le plan. Les bulles cerclées de bleu sont obligatoires.')}</p>
+    <div class="db-card"><h3>${L_('Dimensions list','Liste des cotes')}</h3><div style="overflow-x:auto"><table class="stk-table ord"><thead><tr><th>#</th><th>${L_('Sheet','Feuille')}</th><th>${L_('Description','Description')}</th><th>Item</th><th class="num">${L_('Nominal','Nominal')}</th><th class="num">${L_('Tol.','Tol.')}</th><th class="num">${L_('Measured','Mesuré')}</th><th class="num">Δ</th></tr></thead><tbody>
+    ${P.dims.filter(x=>!f||x.item===f).map(x=>{ const m=dm[x.id], s2=st(x), dv=m&&m.v!==''&&m.v!=null?(+m.v-x.nom):null; return `<tr class="qa-dr ${s2}" onclick="qaPage=${x.page};qaDim('${x.id}')"><td><span class="qa-bub mini ${s2} ${x.req?'req':''}">${x.n}</span></td><td>${x.page}</td><td>${_esc(L_(x.en,x.fr))}</td><td>${x.item}</td><td class="num">${x.nom}</td><td class="num">±${tolA(x.nom)}</td><td class="num"><b>${m&&m.v!=null&&m.v!==''?m.v:'—'}</b></td><td class="num" style="color:${s2==='nok'?'#ff8a82':'#7fe3d8'}">${dv==null?'':(dv>0?'+':'')+Math.round(dv*10)/10}</td></tr>`; }).join('')}</tbody></table></div></div>`;
+  return h;
+}
+function qaDim(id){
+  const d=qaCur(), T=qaTpl(d), P=window.QA_ASSETS.plans[T.plan], x=P.dims.find(z=>z.id===id), m=(d.dims||{})[id]||{}, lock=qaLocked(d);
+  if(qaPage!==x.page){ qaPage=x.page; renderQualite(); }
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='qaDimOv';
+  const ph=qaPhotos.filter(p=>p.itemId===id);
+  ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()"><h3><span class="qa-bub mini ${x.req?'req':''}">${x.n}</span> ${_esc(L_(x.en,x.fr))}</h3>
+    <div class="req-sub">${L_('Sheet','Feuille')} ${x.page} · ${x.item} · ${x.req?L_('mandatory','obligatoire'):L_('optional','facultative')}</div>
+    <div class="qa-nom"><div><small>${L_('Nominal','Nominal')}</small><b>${x.nom} mm</b></div><div><small>${L_('Tolerance','Tolérance')} (ISO 13920 A)</small><b>± ${tolA(x.nom)} mm</b></div><div><small>${L_('Accepted range','Plage acceptée')}</small><b>${x.nom-tolA(x.nom)} … ${x.nom+tolA(x.nom)}</b></div></div>
+    <label>${L_('Measured value (mm)','Valeur mesurée (mm)')}</label><input id="qdV" type="number" step="0.1" inputmode="decimal" value="${m.v??''}" ${lock?'disabled':''} oninput="qaDimLive(${x.nom},${tolA(x.nom)})" onkeydown="if(event.key==='Enter')qaDimSave('${id}',true)">
+    <div id="qdRes" class="qa-res"></div>
+    <label>${L_('Comment','Commentaire')}</label><input id="qdC" value="${_esc(m.c||'')}" ${lock?'disabled':''} autocomplete="off">
+    <div class="qa-row" style="margin-top:8px"><label class="btn btn-outline btn-sm qa-cam">📷 ${ph.length||''} ${L_('Photo','Photo')}<input type="file" accept="image/*" capture="environment" multiple style="display:none" ${lock?'disabled':''} onchange="qaAddPhotos('${id}',this)"></label>${ph.map(p=>`<img class="qa-mini" src="${p.data}" onclick="qaViewPhoto('${p.id}')">`).join('')}</div>
+    <div class="req-actions"><button class="btn btn-outline" onclick="document.getElementById('qaDimOv').remove()">${L_('Close','Fermer')}</button>${lock?'':`<button class="btn btn-outline" onclick="qaDimSave('${id}',false)">${L_('Save','Enregistrer')}</button><button class="btn btn-primary" onclick="qaDimSave('${id}',true)">${L_('Save & next','Enregistrer et suivante')} ›</button>`}</div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov); qaDimLive(x.nom,tolA(x.nom)); setTimeout(()=>{ const i=document.getElementById('qdV'); if(i&&!lock) i.focus(); },80);
+}
+function qaDimLive(nom,tol){ const v=document.getElementById('qdV').value, r=document.getElementById('qdRes'); if(v===''){ r.innerHTML=''; return; } const dv=+v-nom, ok=Math.abs(dv)<=tol;
+  r.innerHTML=`<span class="${ok?'ok':'nok'}">${ok?'✓ '+L_('Within tolerance','Dans la tolérance'):'✗ '+L_('Out of tolerance','Hors tolérance')} (Δ ${dv>0?'+':''}${Math.round(dv*10)/10} mm)</span>`; }
+function qaDimSave(id,next){ const d=qaCur(); if(!d||qaLocked(d)) return; const v=document.getElementById('qdV').value, c=document.getElementById('qdC').value;
+  d.dims={...(d.dims||{}),[id]:{v:v===''?null:+v,c,by:(window._currentUser&&window._currentUser.email)||'',at:new Date().toISOString()}}; if(d.status==='draft') d.status='progress';
+  qaSave(d); document.getElementById('qaDimOv').remove(); renderQualite();
+  if(next){ const P=window.QA_ASSETS.plans[qaTpl(d).plan], f=window._qaDimFilter, L=P.dims.filter(x=>!f||x.item===f), i=L.findIndex(x=>x.id===id);
+    const nx=L.slice(i+1).concat(L.slice(0,i)).find(x=>{ const m=(d.dims||{})[x.id]; return !m||m.v==null; }); if(nx) setTimeout(()=>qaDim(nx.id),120); else toast('✓ '+L_('All dimensions measured','Toutes les cotes sont mesurées'),'ok'); } }
+// ---------- photos ----------
+function qaCompress(file){ return new Promise((res,rej)=>{ const img=new Image(), u=URL.createObjectURL(file); img.onload=()=>{ URL.revokeObjectURL(u); const k=Math.min(1,1600/Math.max(img.width,img.height)); const c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+  let q=.72, out=c.toDataURL('image/jpeg',q); while(out.length>900000&&q>.3){ q-=.1; out=c.toDataURL('image/jpeg',q); } res(out); }; img.onerror=rej; img.src=u; }); }
+async function qaAddPhotos(itemId,input){ const d=qaCur(); if(!d||qaLocked(d)) return; const files=[...(input.files||[])]; if(!files.length) return; toast(`📷 ${files.length} photo(s)…`);
+  for(const f of files){ try{ const data=await qaCompress(f); const p={id:'qp'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),dossierId:d.id,itemId,data,by:(window._currentUser&&window._currentUser.email)||'',at:new Date().toISOString()};
+    qaPhotos.push(p); await window._fsSetDoc(window._fsDoc(window._db,'qaPhotos',p.id),p); }catch(e){ alert('Photo : '+(e.message||e)); } }
+  if(d.status==='draft'){ d.status='progress'; qaSave(d); } toast('✓ '+L_('Photos saved in the file','Photos enregistrées dans le dossier'),'ok'); renderQualite(); }
+function qaRenderPhotos(d,T){ const P=qaPhotos.filter(p=>p.dossierId===d.id); if(!P.length) return `<div class="db-card"><p class="db-ok" style="color:var(--text2)">${L_('No photo yet. Add photos from each check point or dimension.','Aucune photo. Ajoutez-les depuis chaque point de contrôle ou chaque cote.')}</p></div>`;
+  const g={}; P.forEach(p=>{ (g[p.itemId]=g[p.itemId]||[]).push(p); });
+  const lab=k=>{ const it=T.sections.flatMap(s=>s.items).find(i=>i.id===k); if(it) return k+' – '+L_(it.en,it.fr); const x=window.QA_ASSETS&&window.QA_ASSETS.plans[T.plan].dims.find(z=>z.id===k); return x?'📐 '+x.n+' – '+L_(x.en,x.fr):k; };
+  return Object.entries(g).map(([k,L])=>`<div class="db-card"><h3>${_esc(lab(k))} <small>${L.length}</small></h3><div class="qa-gal">${L.map(p=>`<figure onclick="qaViewPhoto('${p.id}')"><img src="${p.data}" alt=""><figcaption>${new Date(p.at).toLocaleString(qaLang==='en'?'en-GB':'fr-FR',{dateStyle:'short',timeStyle:'short'})}</figcaption></figure>`).join('')}</div></div>`).join(''); }
+function qaViewPhoto(id){ const p=qaPhotos.find(x=>x.id===id); if(!p) return; const d=qaCur(); const ov=document.createElement('div'); ov.className='req-overlay qa-pv'; ov.id='qaPvOv';
+  ov.innerHTML=`<div class="qa-pvb" onclick="event.stopPropagation()"><img src="${p.data}" alt=""><div class="qa-pva"><small>${_esc(p.by||'')} · ${new Date(p.at).toLocaleString()}</small>${d&&!qaLocked(d)?`<button class="btn btn-outline btn-sm" onclick="qaDelPhoto('${p.id}')">🗑 ${L_('Delete','Supprimer')}</button>`:''}<button class="btn btn-primary btn-sm" onclick="document.getElementById('qaPvOv').remove()">${L_('Close','Fermer')}</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov); }
+async function qaDelPhoto(id){ if(!confirm(L_('Delete this photo?','Supprimer cette photo ?'))) return; qaPhotos=qaPhotos.filter(p=>p.id!==id); try{ await window._fsDeleteDoc(window._fsDoc(window._db,'qaPhotos',id)); }catch(e){} const o=document.getElementById('qaPvOv'); if(o) o.remove(); renderQualite(); }
+function qaShowApp(keys){ const A=window.QA_ASSETS; if(!A){ toast(L_('Loading…','Chargement…')); return; } const ks=keys.split(',');
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='qaAppOv';
+  ov.innerHTML=`<div class="req-box" style="max-width:980px;max-height:92vh;overflow:auto" onclick="event.stopPropagation()"><h3>📎 ${L_('Control appendices','Annexes de contrôle')}</h3>${ks.map(k=>`<div class="qa-app"><b>${_esc(L_(...(QA_APP_T[k]||[k,k])))}</b><div class="qa-gal big">${(A.appendix[k]||[]).map(u=>`<img src="${u}" alt="" onclick="window.open().document.write('<img src=&quot;'+this.src+'&quot; style=&quot;max-width:100%&quot;>')">`).join('')}</div></div>`).join('')}
+    <div class="req-actions"><button class="btn btn-primary" onclick="document.getElementById('qaAppOv').remove()">${L_('Close','Fermer')}</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov); }
+// ---------- clôture et signature ----------
+function qaRenderClose(d,T,s,lock){
+  const missingReq=s.req-s.reqDone, unanswered=s.items-s.done;
+  const noComment=T.sections.flatMap(x=>x.items).filter(i=>(d.results||{})[i.id]&&d.results[i.id].st==='nok'&&!(d.results[i.id].c||'').trim()).map(i=>i.id);
+  if(d.signedAt) return `<div class="db-card"><h3>✍ ${L_('Signed','Signé')}</h3><p>${qaStLbl(d.status)} — ${_esc(d.signName||'')} · ${new Date(d.signedAt).toLocaleString()}</p>${d.signature?`<img src="${d.signature}" class="qa-sig-img" alt="">`:''}${d.verdictNote?`<p class="caisse-note">${_esc(d.verdictNote)}</p>`:''}
+    ${typeof isTimeAdmin==='function'&&isTimeAdmin()?`<button class="btn btn-outline btn-sm" onclick="qaReopen()">🔓 ${L_('Reopen','Rouvrir le dossier')}</button>`:''}</div>`;
+  return `<div class="db-card"><h3>${L_('Inspection summary','Bilan de l’inspection')}</h3>
+    <div class="db-tiles"><div class="db-tile" style="border-top-color:var(--accent)"><span>☑ ${L_('Check points','Points de contrôle')}</span><b>${s.done}/${s.items}</b><small>${unanswered?L_(unanswered+' not answered',unanswered+' sans réponse'):L_('all answered','tous renseignés')}</small></div>
+      <div class="db-tile" style="border-top-color:#2b8fd6"><span>📐 ${L_('Mandatory dimensions','Cotes obligatoires')}</span><b>${s.reqDone}/${s.req}</b><small>${s.dDone}/${s.dims} ${L_('measured in total','mesurées au total')}</small></div>
+      <div class="db-tile" style="border-top-color:${s.nok+s.dNok?'#ff3b30':'var(--green)'}"><span>✗ NOK</span><b style="color:${s.nok+s.dNok?'#ff8a82':'var(--green)'}">${s.nok+s.dNok}</b><small>${s.nok} ${L_('check points','points')} · ${s.dNok} ${L_('dimensions','cotes')}</small></div></div>
+    ${missingReq||unanswered||noComment.length?`<div class="qa-warn" style="margin-bottom:8px">⚠ ${[unanswered?L_(`${unanswered} check point(s) not answered`,`${unanswered} point(s) sans réponse`):'',missingReq?L_(`${missingReq} mandatory dimension(s) not measured`,`${missingReq} cote(s) obligatoire(s) non mesurée(s)`):'',noComment.length?L_('NOK without comment: ','NOK sans commentaire : ')+noComment.join(', '):''].filter(Boolean).join(' · ')}</div>`:''}
+    ${lock?'':`<label>${L_('Verdict','Verdict')}</label><div class="qa-seg big">${['accepted','reserves','rejected'].map(k=>`<button class="${window._qaVerdict===k?'on '+k:''}" onclick="window._qaVerdict='${k}';renderQualite()">${L_(QA_ST[k][0],QA_ST[k][1])}</button>`).join('')}</div>
+    <label>${L_('Reserves / remarks','Réserves / remarques')}</label><textarea id="qaVN" class="qa-com">${_esc(d.verdictNote||'')}</textarea>
+    <label>${L_('Inspector name','Nom de l’inspecteur')}</label><input id="qaSN" value="${_esc(d.inspector||'')}" autocomplete="off">
+    <label>${L_('Signature','Signature')}</label><canvas id="qaSig" class="qa-sig" width="600" height="180"></canvas><button class="btn btn-outline btn-sm" onclick="qaSigClear()">${L_('Clear','Effacer')}</button>
+    <div class="req-err" id="qaCloseErr"></div>
+    <button class="btn btn-primary btn-full" style="margin-top:10px" onclick="qaSign()">✍ ${L_('Sign and close the inspection','Signer et clôturer l’inspection')}</button>`}</div>`;
+}
+function qaSigInit(){ const c=document.getElementById('qaSig'); if(!c||c._init) return; c._init=true; const g=c.getContext('2d'); g.lineWidth=2.5; g.lineCap='round'; g.strokeStyle='#0b2a35'; g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); let dn=false;
+  const pos=e=>{ const r=c.getBoundingClientRect(), t=e.touches?e.touches[0]:e; return [(t.clientX-r.left)*c.width/r.width,(t.clientY-r.top)*c.height/r.height]; };
+  const st=e=>{ dn=true; c._dirty=true; const [x,y]=pos(e); g.beginPath(); g.moveTo(x,y); e.preventDefault(); }, mv=e=>{ if(!dn) return; const [x,y]=pos(e); g.lineTo(x,y); g.stroke(); e.preventDefault(); }, en=()=>{ dn=false; };
+  c.addEventListener('mousedown',st); c.addEventListener('mousemove',mv); window.addEventListener('mouseup',en); c.addEventListener('touchstart',st,{passive:false}); c.addEventListener('touchmove',mv,{passive:false}); c.addEventListener('touchend',en); }
+function qaSigClear(){ const c=document.getElementById('qaSig'); if(!c) return; const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); c._dirty=false; }
+function qaSign(){ const d=qaCur(); const v=window._qaVerdict, nm=(document.getElementById('qaSN').value||'').trim(), c=document.getElementById('qaSig'), e=document.getElementById('qaCloseErr');
+  if(!v){ e.textContent=L_('Select a verdict.','Choisissez un verdict.'); return; } if(!nm){ e.textContent=L_('Inspector name required.','Nom de l’inspecteur obligatoire.'); return; } if(!c._dirty){ e.textContent=L_('Signature required.','Signature obligatoire.'); return; }
+  d.status=v; d.verdictNote=document.getElementById('qaVN').value; d.signName=nm; d.inspector=d.inspector||nm; d.signature=c.toDataURL('image/png'); d.signedAt=new Date().toISOString(); d.signedBy=(window._currentUser&&window._currentUser.email)||'';
+  qaSave(d); window._qaVerdict=null; toast('✍ '+L_('Inspection signed','Inspection signée'),'ok'); renderQualite(); }
+function qaReopen(){ const d=qaCur(); if(!confirm('Rouvrir ce dossier signé ?')) return; d.status='progress'; d.signedAt=null; d.signature=null; qaSave(d); renderQualite(); }
+// ---------- rapport imprimable (PDF via l'impression du navigateur) ----------
+function qaReport(){
+  const d=qaCur(), T=qaTpl(d), s=qaStats(d), r=d.results||{}, dm=d.dims||{}, A=window.QA_ASSETS, dims=A?A.plans[T.plan].dims:[], ph=qaPhotos.filter(p=>p.dossierId===d.id);
+  const stc=k=>k==='ok'?'#1a9c6b':k==='nok'?'#d93025':'#777';
+  const w=window.open('','_blank'); if(!w){ alert('Autorisez les fenêtres pop-up.'); return; }
+  w.document.write(`<html><head><meta charset="utf-8"><title>Supplier Acceptance ${_esc(d.pj)}</title><style>body{font-family:Arial,sans-serif;color:#111;margin:14mm;font-size:11px}h1{font-size:18px;color:#06303f;margin:0}h2{font-size:13px;color:#06303f;border-bottom:2px solid #06303f;padding-bottom:3px;margin-top:16px}table{width:100%;border-collapse:collapse;margin-top:6px}td,th{border:1px solid #bbb;padding:4px 5px;vertical-align:top;text-align:left}th{background:#e8f0f3}.st{font-weight:bold}.ph{display:flex;flex-wrap:wrap;gap:6px}.ph figure{margin:0;width:31%;break-inside:avoid}.ph img{width:100%;border:1px solid #ccc}.ph figcaption{font-size:9px;color:#555}.hd{display:flex;justify-content:space-between;align-items:flex-start}.box{border:1px solid #06303f;padding:6px 8px;margin-top:6px}</style></head><body>
+    <div class="hd"><div><h1>SUPPLIER ACCEPTANCE SHEET</h1><div>${_esc(T.doc)} · ${_esc(T.scope)}</div></div><div style="text-align:right"><b style="font-size:16px;color:#06303f">ENOGIA</b><br>${new Date().toLocaleDateString('en-GB')}</div></div>
+    <table><tr><th>ENOGIA project</th><td>${_esc(d.pj)}</td><th>ORC type</th><td>${_esc((MODELS[d.gamme]||{}).name||'')}</td></tr><tr><th>Supplier</th><td>${_esc(d.supplier||'')}</td><th>Purchase order</th><td>${_esc(d.po||'')}</td></tr><tr><th>Inspector</th><td>${_esc(d.signName||d.inspector||'')}</td><th>Status</th><td class="st">${_esc(QA_ST[d.status||'draft'][0])}</td></tr></table>
+    <div class="box">Check points: ${s.done}/${s.items} · Mandatory dimensions: ${s.reqDone}/${s.req} · NOK: ${s.nok+s.dNok} · Photos: ${ph.length}</div>
+    <h2>Reference documents</h2><table>${Object.entries(T.refs).map(([k,v])=>`<tr><th style="width:60px">${k}</th><td>${_esc(v)}</td></tr>`).join('')}</table>
+    ${T.sections.map(sec=>`<h2>${sec.id} – ${_esc(sec.en)}</h2><table><tr><th style="width:34px">Item</th><th>Description</th><th style="width:22%">Acceptable limit</th><th style="width:60px">Result</th><th style="width:70px">Measure</th><th>Comments</th></tr>
+      ${sec.items.map(it=>{ const v=r[it.id]||{}; return `<tr><td>${it.id}</td><td>${_esc(it.en)}</td><td>${_esc(it.lim[0])}</td><td class="st" style="color:${stc(v.st)}">${v.st?v.st.toUpperCase():'—'}</td><td>${_esc(v.m||'')}</td><td>${_esc(v.c||'')}</td></tr>`; }).join('')}</table>`).join('')}
+    <h2>Dimensional inspection (ISO 13920 class A)</h2><table><tr><th>#</th><th>Sheet</th><th>Description</th><th>Nominal</th><th>Tol.</th><th>Measured</th><th>Result</th></tr>
+      ${dims.map(x=>{ const m=dm[x.id]; const has=m&&m.v!=null&&m.v!==''; const ok=has&&Math.abs(+m.v-x.nom)<=tolA(x.nom); return `<tr><td>${x.n}${x.req?'*':''}</td><td>${x.page}</td><td>${_esc(x.en)}</td><td>${x.nom}</td><td>±${tolA(x.nom)}</td><td>${has?m.v:'—'}</td><td class="st" style="color:${has?(ok?'#1a9c6b':'#d93025'):'#777'}">${has?(ok?'OK':'NOK'):'—'}</td></tr>`; }).join('')}</table><div style="font-size:9px;color:#555">* mandatory dimension</div>
+    ${d.verdictNote?`<h2>Reserves / remarks</h2><div class="box">${_esc(d.verdictNote)}</div>`:''}
+    <h2>Photos</h2><div class="ph">${ph.map(p=>`<figure><img src="${p.data}"><figcaption>${_esc(p.itemId)} · ${new Date(p.at).toLocaleString('en-GB')}</figcaption></figure>`).join('')||'—'}</div>
+    <h2>Sign-off</h2><table><tr><th>Inspector (TÜV NORD)</th><td>${_esc(d.signName||'')}<br>${d.signedAt?new Date(d.signedAt).toLocaleString('en-GB'):''}${d.signature?`<br><img src="${d.signature}" style="height:60px">`:''}</td><th>ENOGIA</th><td style="height:70px"></td></tr></table>
+    <script>setTimeout(()=>print(),600)<\/script></body></html>`); w.document.close();
+}
+// ---------- rôle inspecteur : accès limité au module Qualité ----------
+document.addEventListener('firebaseReady',()=>setTimeout(()=>{ if(isInspector()){ document.body.classList.add('qa-inspector'); qaLang='en'; showQualite(); } },900));
+const _qaObs=new MutationObserver(()=>{ if(document.getElementById('qaSig')) qaSigInit(); }); _qaObs.observe(document.documentElement,{childList:true,subtree:true});
+// ---------- indicateur qualité fournisseur (tableau de bord) ----------
+function renderQaKpi(){
+  if(!qaList.length) return '';
+  const closed=qaList.filter(d=>d.signedAt), acc=closed.filter(d=>d.status==='accepted').length, res=closed.filter(d=>d.status==='reserves').length, rej=closed.filter(d=>d.status==='rejected').length;
+  const bySec={}; qaList.forEach(d=>{ const T=qaTpl(d); T.sections.forEach(s=>s.items.forEach(i=>{ if((d.results||{})[i.id]&&d.results[i.id].st==='nok') bySec[s.fr]=(bySec[s.fr]||0)+1; })); });
+  const bs=Object.entries(bySec).sort((a,b)=>b[1]-a[1]), mx=bs.length?bs[0][1]:1;
+  return `<div class="dash-section-title">🏭 Réception fournisseur (TÜV NORD)</div><div class="db-tiles">
+    <div class="db-tile" style="border-top-color:var(--accent)"><span>✅ Acceptés 1er passage</span><b style="color:#7fe3d8">${closed.length?Math.round(acc/closed.length*100)+' %':'—'}</b><small>${acc} accepté(s) · ${res} avec réserves · ${rej} refusé(s)</small></div>
+    <div class="db-tile" style="border-top-color:#2b8fd6"><span>📂 Dossiers</span><b>${qaList.length}</b><small>${qaList.length-closed.length} en cours</small></div></div>
+    ${bs.length?`<div class="db-card"><h3>NOK par rubrique</h3>${bs.map(([k,v])=>`<div class="nva-row"><span>${_esc(k)}</span><span class="nva-bar"><i style="width:${Math.round(v/mx*100)}%;background:#ff6b62"></i></span><b>${v}</b><small></small></div>`).join('')}</div>`:''}`;
+}
 
 // ---------- KPI Industrie 4.0 (tableau de bord) ----------
 function renderI40Section(monthSessions){
