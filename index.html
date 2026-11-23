@@ -835,6 +835,13 @@ button.btn-scan{font-size:16px;min-width:38px}
 .qa3d{width:100%;height:min(70vh,640px);border-radius:12px;overflow:hidden;border:1px solid var(--border);background:#f2f5f7;touch-action:none}
 .qa-link{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin:10px 0}#qaQr{background:#fff;padding:8px;border-radius:8px;line-height:0}.qa-lstate{font-size:12px;color:var(--text3)}
 body.qa-inspector #btnMenuHome,body.qa-inspector .hdr-right .badge:not(#userEmail){display:none}
+.qa-bub.chk{border-style:dashed;background:#b07c10}
+.qa-plan.moving{cursor:crosshair;outline:3px dashed #f2c230}
+.qa-admin-dim{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;background:#f2c2300f;border:1px dashed #f2c23066;border-radius:8px;padding:8px;margin:6px 0}.qa-admin-dim label{margin:0 !important}.qa-admin-dim input{width:110px !important}
+.qa-cfg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.qa-params{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}.qa-params label{display:flex !important;flex-direction:column;gap:4px;margin:0 !important}
+.qa-sel{background:#00364a;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px}
+.qa-log{font-size:12px;color:var(--text2);padding:4px 0;border-top:1px solid #ffffff0d}.qa-log small{color:var(--text3)}
 body.qa-inspector .menu-item:not(.qa-mi):not([onclick*="_signOut"]),body.qa-inspector .menu-sec{display:none}
 @media (max-width:700px){ .qa-prog{grid-template-columns:1fr 1fr} .qa-nom{grid-template-columns:1fr} }
 /* Tableau de bord */
@@ -7550,18 +7557,23 @@ const QA_TEMPLATES={eno180ltv3:{doc:'Pi085-030-DD003 rev. B',plan:'chassis180',s
  refs:{DR01:'Pi085-511-DC001-G – Chassis 180LTV3',DR02:'Pi085-510-DC001-C – Cycle ORC',DR03:'Pi085-510-DC007-A – Tank Pi085B',DR04:'Pi085-043-DC001-E – P&ID ENO-180LTV3',DR05:'Pi085-510-DC008-A – Clarinet lub inox',DR06:'Pi085-510-DC004-B – Cycle lub inox'},
  sections:[
  {id:'A',en:'Frame manufacturing',fr:'Fabrication du châssis',items:[
-  {id:'A0',en:'Check flatness of frame',fr:'Contrôler la planéité du châssis',lim:['ISO 13920 class A – flatness','ISO 13920 classe A – planéité'],refs:['DR01'],app:['ctrl6'],photo:1,meas:1},
+  {id:'A0',en:'Check flatness of frame',fr:'Contrôler la planéité du châssis',lim:['{tolStd} – flatness','{tolStd} – planéité'],refs:['DR01'],app:['ctrl6'],photo:1,meas:1},
   {id:'A1',en:'Check that all welds on flat surfaces are ground',fr:'Vérifier que toutes les soudures sur surfaces planes sont meulées',lim:['No excess material restricting mechanical assembly','Aucun surplus de matière gênant le montage'],refs:['DR01'],photo:1},
-  {id:'A2',en:'Frame dimensions (parallelism, priority dimensions of each cycle)',fr:'Dimensions du châssis (parallélisme, cotes prioritaires de chaque cycle)',lim:['ISO 13920 class A – see dimensional views','ISO 13920 classe A – voir vues cotées'],refs:['DR01'],app:['ctrl1','ctrl2','ctrl3','ctrl4','ctrl6'],dims:1,photo:1},
-  {id:'A3',en:'Holes (position, threads if applicable)',fr:'Perçages (position, taraudages le cas échéant)',lim:['ISO 13920 class A','ISO 13920 classe A'],refs:['DR01'],dims:1},
-  {id:'A4',en:'Presence and position of tubing half-shell supports Ø26 – qty 5',fr:'Présence et position des supports demi-coquille Ø26 – qté 5',lim:['5 supports, 0 missing tape','5 supports, aucun ruban manquant'],refs:['DR01'],photo:1,meas:1,count:5},
-  {id:'A5',en:'Presence and position of tubing half-shell supports Ø16 – qty 3',fr:'Présence et position des supports demi-coquille Ø16 – qté 3',lim:['3 supports, 0 missing tape','3 supports, aucun ruban manquant'],refs:['DR01'],photo:1,meas:1,count:3},
-  {id:'A6',en:'Presence, flatness and position of all cable trays',fr:'Présence, planéité et position de tous les chemins de câbles',lim:['Number of items as per drawing (sheet 11)','Nombre de repères conforme au plan (feuille 11)'],refs:['DR01'],photo:1},
+  {id:'A2',en:'Frame dimensions (parallelism, priority dimensions of each cycle)',fr:'Dimensions du châssis (parallélisme, cotes prioritaires de chaque cycle)',lim:['{tolStd} – see dimensional views – refer to 3D for missing dimensions','{tolStd} – voir vues cotées – se référer à la 3D pour les cotes manquantes'],refs:['DR01'],app:['ctrl1','ctrl2','ctrl3','ctrl4','ctrl6'],dims:1,photo:1},
+  {id:'A3',en:'Holes (position, threads if applicable)',fr:'Perçages (position, taraudages le cas échéant)',lim:['{tolStd}','{tolStd}'],refs:['DR01'],dims:1},
+  {id:'A4',en:'Presence and position of tubing half-shell supports Ø26 – qty {s26}',fr:'Présence et position des supports demi-coquille Ø26 – qté {s26}',lim:['{s26} supports (Béné-inox 372121-269), 0 missing tape – sheet 11','{s26} supports (Béné-inox 372121-269), aucun ruban manquant – feuille 11'],refs:['DR01'],photo:1,meas:1,count:'s26'},
+  {id:'A5',en:'Presence and position of tubing half-shell supports Ø16 – qty {s16}',fr:'Présence et position des supports demi-coquille Ø16 – qté {s16}',lim:['{s16} supports (Béné-inox 372121-16), 0 missing tape – sheet 11','{s16} supports (Béné-inox 372121-16), aucun ruban manquant – feuille 11'],refs:['DR01'],photo:1,meas:1,count:'s16'},
+  {id:'A6',en:'Presence, flatness and position of all cable trays',fr:'Présence, planéité et position de tous les chemins de câbles',lim:['{trays} cable trays ({trayRefs} items, sheet 11) – bolted, not welded – item 3 removable','{trays} chemins de câbles ({trayRefs} repères, feuille 11) – boulonnés, non soudés – repère 3 démontable'],refs:['DR01'],photo:1,meas:1,count:'trays'},
   {id:'A7',en:'A washer under each screw on both outer sides of the flanges',fr:'Une rondelle sous chaque vis des deux côtés extérieurs des brides',lim:['No washer missing','Aucune rondelle manquante'],refs:['DR02'],photo:1},
-  {id:'A8',en:'Position of the electrical cabinet holes',fr:'Position des perçages de l’armoire électrique',lim:['ISO 13920 class A','ISO 13920 classe A'],refs:['DR01'],app:['ctrl4'],dims:1,photo:1},
+  {id:'A8',en:'Position of the electrical cabinet holes',fr:'Position des perçages de l’armoire électrique',lim:['{tolStd}','{tolStd}'],refs:['DR01'],app:['ctrl4'],dims:1,photo:1},
   {id:'A10',en:'Conformity of all threads',fr:'Conformité de tous les taraudages',lim:['No burr detected','Aucune bavure'],refs:['DR01']},
-  {id:'A11',en:'Holes for all sensors',fr:'Perçages de tous les capteurs',lim:['ISO 13920 class A','ISO 13920 classe A'],refs:['DR01'],app:['ctrl1'],dims:1},
-  {id:'A12',en:'Position & dimensions of supports (cooling square, turbine frame, lube, choke…)',fr:'Position et dimensions des supports (équerre cooling, cadre turbine, lub, choke…)',lim:['ISO 13920 class A','ISO 13920 classe A'],refs:['DR01'],app:['ctrl1','ctrl2','ctrl3','ctrl5'],dims:1,photo:1}]},
+  {id:'A11',en:'Holes for all sensors',fr:'Perçages de tous les capteurs',lim:['{tolStd}','{tolStd}'],refs:['DR01'],app:['ctrl1'],dims:1},
+  {id:'A12',en:'Position & dimensions of supports (cooling square, turbine frame, lube, choke…)',fr:'Position et dimensions des supports (équerre cooling, cadre turbine, lub, choke…)',lim:['{tolStd}','{tolStd}'],refs:['DR01'],app:['ctrl1','ctrl2','ctrl3','ctrl5'],dims:1,photo:1},
+  {id:'A13',planItem:1,en:'Lube supports Pi085-511-DC012-C – qty {lubSup}',fr:'Supports lub Pi085-511-DC012-C – qté {lubSup}',lim:['{lubSup} supports present and positioned (sheet 11, item 21)','{lubSup} supports présents et positionnés (feuille 11, repère 21)'],refs:['DR01'],photo:1,meas:1,count:'lubSup'},
+  {id:'A14',planItem:1,en:'Continuous welding at each tube base',fr:'Soudure continue au pied de chaque tube',lim:['Continuous weld – ISO 3834 / ISO 2553','Cordon continu – ISO 3834 / ISO 2553'],refs:['DR01'],photo:1},
+  {id:'A15',planItem:1,en:'All burrs and sharp edges removed',fr:'Toutes les bavures et arêtes vives supprimées',lim:['ISO 13715','ISO 13715'],refs:['DR01']},
+  {id:'A16',planItem:1,en:'Surface treatment: sand blasting + powder coating RAL 5012',fr:'Traitement : sablage + thermolaquage RAL 5012',lim:['Uniform colour RAL 5012, no bare metal, no runs','Teinte RAL 5012 uniforme, sans manque ni coulure'],refs:['DR01'],photo:1},
+  {id:'A17',planItem:1,en:'Material 1.0037 (S235JR) – material certificate',fr:'Matière 1.0037 (S235JR) – certificat matière',lim:['Certificate available (photo)','Certificat disponible (photo)'],refs:['DR01'],photo:1}]},
  {id:'B',en:'Piping manufacturing',fr:'Fabrication des tuyauteries',items:[
   {id:'B0',en:'No conventional (non-nylstop) nuts on flanges/counter-flanges',fr:'Absence d’écrous classiques (non nylstop) sur brides/contre-brides',lim:['Absence','Absence'],refs:['DR02'],photo:1},
   {id:'B1',en:'Tappings on line ENO-PL-LHP/LLP: 4× DN8 1/4" NPT female + 1× DN15 1/2" NPT male',fr:'Piquages ligne ENO-PL-LHP/LLP : 4× DN8 1/4" NPT femelle + 1× DN15 1/2" NPT mâle',lim:['Presence and position as per P&ID','Présence et position selon P&ID'],refs:['DR02'],app:['app1'],photo:1,count:5},
@@ -7580,7 +7592,15 @@ const QA_TEMPLATES={eno180ltv3:{doc:'Pi085-030-DD003 rev. B',plan:'chassis180',s
   {id:'D0',en:'Stress-free assembly/disassembly of piping components',fr:'Montage/démontage sans contrainte des composants de tuyauterie',lim:['Tightening torques respected','Couples de serrage respectés'],refs:['DR04']},
   {id:'D1',en:'Stress-free assembly/disassembly of volutes',fr:'Montage/démontage sans contrainte des volutes',lim:['Tightening torques respected','Couples de serrage respectés'],refs:['DR04']}]}]}};
 const QA_APP_T={app1:['Appendix 1 – Piping tappings','Annexe 1 – Piquages tuyauterie'],ctrl1:['Lube filter, lube pressure sensors, lube valve & pump (pump 81 mm, valve Ø37, filter hole Ø10 at 500 mm)','Filtre lub, capteurs pression lub, vanne et pompe lub (pompe 81 mm, vanne Ø37, trou filtre Ø10 à 500 mm)'],ctrl2:['Settling pot, expansion vessel, fan','Pot de décantation, vase d’expansion, ventilateur'],ctrl3:['Choke support, choke cover hole, braking resistor – check all dimensions','Support choke, trou carter choke, résistance de freinage – vérifier toutes les cotes'],ctrl4:['Electrical cabinet','Armoire électrique'],ctrl5:['Turbine support','Support turbine'],ctrl6:['External dimensions (parallelism)','Dimensions extérieures (parallélisme)'],ctrl7:['Unacceptable cleanliness – reference photos','Propreté inacceptable – photos de référence']};
-function qaTpl(d){ return QA_TEMPLATES[(d&&d.gamme)||'eno180ltv3']||QA_TEMPLATES.eno180ltv3; }
+function qaTpl(d){
+  const g=(d&&d.gamme)||'eno180ltv3', base=QA_TEMPLATES[g]||QA_TEMPLATES.eno180ltv3, c=(typeof qaCfg!=='undefined'&&qaCfg[g])||{}, P=typeof qaParams==='function'?qaParams(g):{};
+  const sub=s=>String(s==null?'':s).replace(/\{(\w+)\}/g,(m,k)=>P[k]!=null?P[k]:m).replace(/ISO\s*2768[-\s]*fH/gi,P.tolStd||'ISO 13920 class A');
+  const baseItems={}; base.sections.forEach(s=>s.items.forEach(i=>baseItems[i.id]=i));
+  let sections=base.sections;
+  if(c.sheet&&c.sheet.sections){ sections=c.sheet.sections.map(s=>{ const bs=base.sections.find(x=>x.id===s.id)||{}; return {id:s.id,en:bs.en||s.en,fr:bs.fr||s.en,items:s.items.map(it=>{ const b=baseItems[it.id]; return b?{...b,refs:it.refs&&it.refs.length?it.refs:b.refs}:{id:it.id,en:it.en,fr:it.en,lim:[it.lim||'',it.lim||''],refs:it.refs||[],photo:/presence|position|check/i.test(it.en)?1:0,fresh:1}; }).concat((bs.items||[]).filter(b=>b.planItem&&!s.items.some(x=>x.id===b.id)))}; }); }   // les points issus du plan restent toujours présents
+  const refs={...base.refs,...((c.sheet&&c.sheet.refs)||{})}; refs.DR01=c.planRef?c.planRef:base.refs.DR01;   // le plan châssis fait foi (dernier indice importé)
+  return {...base,doc:(c.sheet&&c.sheet.doc)||base.doc,refs,sections:sections.map(s=>({...s,items:s.items.map(i=>({...i,en:sub(i.en),fr:sub(i.fr),lim:[sub(i.lim[0]),sub(i.lim[1])],count:typeof i.count==='string'?P[i.count]:i.count}))}))};
+}
 const QA_ASSETS_V='3';   // à incrémenter à chaque nouvelle version de qualite-assets.js (évite l'ancienne version en cache)
 function qaLoadAssets(bust){ if(window.QA_ASSETS&&!bust) return Promise.resolve(window.QA_ASSETS); if(window._qaAP&&!bust) return window._qaAP;
   window._qaAP=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='qualite-assets.js?v='+QA_ASSETS_V+(bust?'&t='+Date.now():''); s.onload=()=>res(window.QA_ASSETS); s.onerror=()=>{ window._qaAP=null; rej(new Error('qualite-assets.js introuvable')); }; document.head.appendChild(s); }); return window._qaAP; }
@@ -7591,7 +7611,7 @@ function qaWatchPhotos(id){ if(qaPhUnsub){ try{ qaPhUnsub(); }catch(e){} qaPhUns
 const qaCur=()=>qaList.find(d=>d.id===qaOpenId);
 async function qaSave(d){ d.updatedAt=new Date().toISOString(); const i=qaList.findIndex(x=>x.id===d.id); if(i>=0) qaList[i]=d; else qaList.push(d); try{ await window._fsSetDoc(window._fsDoc(window._db,'qaDossiers',d.id),d); }catch(e){ alert('Enregistrement impossible : '+(e.message||e)); } }
 function showQualite(){ exitTv&&exitTv(); showScreen('scQualite'); qaStart(); if(isInspector()) qaLang='en'; renderQualite(); }
-function qaStats(d){ const T=qaTpl(d), items=T.sections.flatMap(s=>s.items), r=d.results||{}; const A=window.QA_ASSETS, dims=A?A.plans[T.plan].dims:[];
+function qaStats(d){ const T=qaTpl(d), items=T.sections.flatMap(s=>s.items), r=d.results||{}; const dims=window.QA_ASSETS?(qaPlan(d).dims||[]):[];
   const done=items.filter(i=>r[i.id]&&r[i.id].st).length, nok=items.filter(i=>r[i.id]&&r[i.id].st==='nok').length;
   const dm=d.dims||{}, req=dims.filter(x=>x.req), dDone=dims.filter(x=>dm[x.id]&&dm[x.id].v!==''&&dm[x.id].v!=null), dNok=dDone.filter(x=>Math.abs(+dm[x.id].v-x.nom)>tolA(x.nom));
   return {items:items.length,done,nok,dims:dims.length,dDone:dDone.length,req:req.length,reqDone:req.filter(x=>dm[x.id]&&dm[x.id].v!=null&&dm[x.id].v!=='').length,dNok:dNok.length,photos:qaPhotos.filter(p=>p.dossierId===d.id).length}; }
@@ -7606,7 +7626,7 @@ function renderQualite(){
   const L=qaList.slice().sort((a,b)=>(['accepted','reserves','rejected'].includes(a.status)?1:0)-(['accepted','reserves','rejected'].includes(b.status)?1:0)||String(a.inspectionDate||'9').localeCompare(String(b.inspectionDate||'9'))||String(b.createdAt).localeCompare(String(a.createdAt)));
   const todo=L.filter(d=>!['accepted','reserves','rejected'].includes(d.status)), done=L.filter(d=>['accepted','reserves','rejected'].includes(d.status));
   el.innerHTML=`<div class="qa-top"><div><div class="project-title" style="font-size:26px">${L_('Supplier quality – Acceptance','Qualité fournisseur – Réception')}</div><div style="font-size:12px;color:var(--text3)">${L_('Frame & piping inspections at suppliers (TÜV NORD)','Contrôles châssis et tuyauterie chez les fournisseurs (TÜV NORD)')}</div></div>
-    ${insp?'':`<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="qaShareLink()">🔗 ${L_('Inspector link & QR','Lien & QR contrôleur')}</button><button class="btn btn-primary btn-sm" onclick="qaNew()">＋ ${L_('New inspection file','Nouveau dossier')}</button></div>`}</div>
+    ${insp?'':`<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="qaOpenCfg()">⚙️ ${L_('Settings by range','Paramètres par gamme')}</button><button class="btn btn-outline btn-sm" onclick="qaShareLink()">🔗 ${L_('Inspector link & QR','Lien & QR contrôleur')}</button><button class="btn btn-primary btn-sm" onclick="qaNew()">＋ ${L_('New inspection file','Nouveau dossier')}</button></div>`}</div>
     ${L.length?[[todo,L_('Machines to inspect','Machines à contrôler')],[done,L_('Closed inspections','Inspections clôturées')]].filter(x=>x[0].length).map(([G,title])=>`<div class="qa-gh">${title} <span>${G.length}</span></div><div class="qa-list">${G.map(d=>{ const s=qaStats(d); return `<button class="qa-card" onclick="qaOpen('${d.id}')"><div class="qa-c1"><b>${_esc(d.pj||'—')}</b>${qaStLbl(d.status)}</div>
       <div class="qa-c2">${_esc((MODELS[d.gamme]||{}).name||d.gamme)} · ${_esc(d.supplier||'')}${d.supplierSn?' · S/N '+_esc(d.supplierSn):''}</div>
       <div class="qa-c3"><span>☑ ${s.done}/${s.items}</span><span>📐 ${s.dDone}/${s.dims||'—'}</span>${s.nok+s.dNok?`<span style="color:#ff8a82">✗ ${s.nok+s.dNok} NOK</span>`:''}<span>${d.inspectionDate?'📅 '+new Date(d.inspectionDate).toLocaleDateString(qaLang==='en'?'en-GB':'fr-FR'):''}</span></div></button>`; }).join('')}</div>`).join('')
@@ -7626,7 +7646,7 @@ function qaNew(){
   ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov);
 }
 function qaCreate(){ const v=id=>(document.getElementById(id).value||'').trim(); const pj=v('qnPj').toUpperCase().replace(/\s+/g,''); if(!pj){ document.getElementById('qnErr').textContent=L_('PJ number required.','N° PJ obligatoire.'); return; }
-  const d={id:'qa'+Date.now().toString(36),pj,gamme:v('qnG'),supplier:v('qnSup'),supplierSn:v('qnSn'),inspectionDate:v('qnDate'),inspector:v('qnIns'),status:'draft',results:{},dims:{},createdAt:new Date().toISOString(),createdBy:(window._currentUser&&window._currentUser.email)||''};
+  const d={id:'qa'+Date.now().toString(36),pj,gamme:v('qnG'),supplier:v('qnSup'),supplierSn:v('qnSn'),inspectionDate:v('qnDate'),inspector:v('qnIns'),planRev:qaPlan({gamme:v('qnG')}).rev,status:'draft',results:{},dims:{},createdAt:new Date().toISOString(),createdBy:(window._currentUser&&window._currentUser.email)||''};
   qaSave(d); document.getElementById('qaNewOv').remove(); qaOpen(d.id); }
 function qaOpen(id){ qaOpenId=id; qaTab='check'; if(qa3d&&qa3d.r.domElement.parentNode) qa3d.r.domElement.remove(); qaWatchPhotos(id); qaLoadAssets().then(()=>renderQualite()).catch(e=>{ toast('⚠ '+e.message); }); renderQualite(); }
 function qaBack(){ qaOpenId=null; qaWatchPhotos(null); renderQualite(); }
@@ -7636,7 +7656,7 @@ function renderQaDossier(el){
   const d=qaCur(), T=qaTpl(d), s=qaStats(d), lock=qaLocked(d);
   const sy=window.scrollY;
   let h=`<div class="qa-dh"><button class="btn btn-outline btn-sm" onclick="qaBack()">← ${L_('Files','Dossiers')}</button>
-    <div class="qa-dt"><b>${_esc(d.pj)}</b> ${qaStLbl(d.status)}<small>${_esc((MODELS[d.gamme]||{}).name||'')} · ${_esc(d.supplier||'—')}${d.supplierSn?' · S/N '+_esc(d.supplierSn):''} · ${L_('Inspector','Inspecteur')} : ${_esc(d.inspector||'—')} · ${_esc(T.doc)}</small></div>
+    <div class="qa-dt"><b>${_esc(d.pj)}</b> ${qaStLbl(d.status)}<small>${_esc((MODELS[d.gamme]||{}).name||'')} · ${_esc(d.supplier||'—')}${d.supplierSn?' · S/N '+_esc(d.supplierSn):''} · ${L_('Inspector','Inspecteur')} : ${_esc(d.inspector||'—')} · ${_esc(T.doc)} · ${L_('Drawing','Plan')} ${_esc(qaPlan(d).ref||'')}</small></div>
     <button class="btn btn-outline btn-sm" onclick="qaReport()">📄 ${L_('Report','Rapport')}</button></div>
     <div class="qa-prog"><div><span>☑ ${L_('Checklist','Checklist')}</span><i><s style="width:${s.items?s.done/s.items*100:0}%"></s></i><b>${s.done}/${s.items}</b></div>
       <div><span>📐 ${L_('Required dimensions','Cotes obligatoires')}</span><i><s style="width:${s.req?s.reqDone/s.req*100:0}%"></s></i><b>${s.reqDone}/${s.req}</b></div>
@@ -7670,11 +7690,11 @@ function qaRenderCheck(d,T,lock){
 }
 function qaSet(itemId,field,val){ const d=qaCur(); if(!d||qaLocked(d)) return; const r={...(d.results||{})}; r[itemId]={...(r[itemId]||{}),[field]:val,by:qaWho(),at:new Date().toISOString()};
   d.results=r; if(d.status==='draft') d.status='progress'; qaSave(d); renderQualite(); }
-function qaGoDims(itemId){ const T=qaTpl(qaCur()), dims=window.QA_ASSETS?window.QA_ASSETS.plans[T.plan].dims.filter(x=>x.item===itemId):[]; if(dims.length) qaPage=dims[0].page; window._qaDimFilter=itemId; qaTab='dims'; renderQualite(); }
+function qaGoDims(itemId){ const T=qaTpl(qaCur()), dims=window.QA_ASSETS?(qaPlan(qaCur()).dims||[]).filter(x=>x.item===itemId):[]; if(dims.length) qaPage=dims[0].page; window._qaDimFilter=itemId; qaTab='dims'; renderQualite(); }
 // ---------- vues cotées ----------
 function qaRenderDims(d,T,lock){
   const A=window.QA_ASSETS; if(!A) return `<div class="db-card"><p class="db-ok" style="color:var(--text2)">${L_('Loading drawings…','Chargement des plans…')} <small>(qualite-assets.js)</small></p></div>`;
-  const P=A.plans[T.plan], dm=d.dims||{}, f=window._qaDimFilter;
+  const P=qaPlan(d), dm=d.dims||{}, f=window._qaDimFilter; if(!P.pages) return `<div class="db-card"><p class="db-ok" style="color:var(--text2)">${L_('Loading drawing revision','Chargement de l’indice')} ${_esc(P.rev)}…</p></div>`;
   const pagesWith=[...new Set(P.dims.map(x=>x.page))].sort((a,b)=>a-b);
   const st=x=>{ const m=dm[x.id]; if(!m||m.v===''||m.v==null) return 'todo'; return Math.abs(+m.v-x.nom)<=tolA(x.nom)?'ok':'nok'; };
   const onPage=P.dims.filter(x=>x.page===qaPage);
@@ -7682,21 +7702,24 @@ function qaRenderDims(d,T,lock){
       return `<button class="qa-pg ${qaPage===pg?'on':''}" onclick="qaPage=${pg};renderQualite()"><img src="${u}" alt=""><span>${L_('Sheet','Feuille')} ${pg}</span>${n.length?`<em class="${bad?'bad':dn===n.length?'ok':''}">${dn}/${n.length}</em>`:''}</button>`; }).join('')}</div>
     <div class="qa-zoom"><button onclick="qaZoom=Math.max(1,qaZoom-.5);renderQualite()">−</button><span>${Math.round(qaZoom*100)} %</span><button onclick="qaZoom=Math.min(4,qaZoom+.5);renderQualite()">＋</button></div></div>
     ${f?`<div class="qa-filter">${L_('Filter','Filtre')} : ${f} <button onclick="window._qaDimFilter=null;renderQualite()">✕</button></div>`:''}
-    <div class="qa-plan-wrap"><div class="qa-plan" style="width:${qaZoom*100}%"><img src="${P.pages[qaPage-1]}" alt="">
-      ${onPage.map(x=>`<button class="qa-bub ${st(x)} ${x.req?'req':''} ${f&&x.item!==f?'dim':''}" style="left:${x.x}%;top:${x.y}%" onclick="qaDim('${x.id}')" title="${_esc(L_(x.en,x.fr))}">${x.n}</button>`).join('')}</div></div>
+    ${window._qaMoveDim?`<div class="qa-filter" style="color:#ffd27a">📍 ${L_('Tap the drawing where the dimension is','Touchez le plan à l’endroit de la cote')} <button onclick="window._qaMoveDim=null;renderQualite()">✕</button></div>`:''}
+    ${!isInspector()&&P.dims.some(x=>x.check)?`<div class="qa-warn" style="margin-bottom:6px">⚠ ${P.dims.filter(x=>x.check).length} cote(s) non retrouvée(s) sur l’indice ${_esc(P.rev)} : ouvrez-les (bulle en pointillés) pour corriger la valeur ou repositionner la bulle.</div>`:''}
+    <div class="qa-plan-wrap"><div class="qa-plan ${window._qaMoveDim?'moving':''}" style="width:${qaZoom*100}%" onclick="qaPlanClick(event)"><img src="${P.pages[qaPage-1]}" alt="">
+      ${onPage.map(x=>`<button class="qa-bub ${st(x)} ${x.req?'req':''} ${x.check?'chk':''} ${f&&x.item!==f?'dim':''}" style="left:${x.x}%;top:${x.y}%" onclick="qaDim('${x.id}')" title="${_esc(L_(x.en,x.fr))}">${x.n}</button>`).join('')}</div></div>
     <p class="caisse-note">${L_('Tap a numbered bubble to enter the measured value. Tolerances: ISO 13920 class A (welded constructions), as specified on the drawing. Bubbles with a blue ring are mandatory.','Touchez une bulle numérotée pour saisir la valeur mesurée. Tolérances : ISO 13920 classe A (constructions soudées), comme indiqué sur le plan. Les bulles cerclées de bleu sont obligatoires.')}</p>
     <div class="db-card"><h3>${L_('Dimensions list','Liste des cotes')}</h3><div style="overflow-x:auto"><table class="stk-table ord"><thead><tr><th>#</th><th>${L_('Sheet','Feuille')}</th><th>${L_('Description','Description')}</th><th>Item</th><th class="num">${L_('Nominal','Nominal')}</th><th class="num">${L_('Tol.','Tol.')}</th><th class="num">${L_('Measured','Mesuré')}</th><th class="num">Δ</th></tr></thead><tbody>
     ${P.dims.filter(x=>!f||x.item===f).map(x=>{ const m=dm[x.id], s2=st(x), dv=m&&m.v!==''&&m.v!=null?(+m.v-x.nom):null; return `<tr class="qa-dr ${s2}" onclick="qaPage=${x.page};qaDim('${x.id}')"><td><span class="qa-bub mini ${s2} ${x.req?'req':''}">${x.n}</span></td><td>${x.page}</td><td>${_esc(L_(x.en,x.fr))}</td><td>${x.item}</td><td class="num">${x.nom}</td><td class="num">±${tolA(x.nom)}</td><td class="num"><b>${m&&m.v!=null&&m.v!==''?m.v:'—'}</b></td><td class="num" style="color:${s2==='nok'?'#ff8a82':'#7fe3d8'}">${dv==null?'':(dv>0?'+':'')+Math.round(dv*10)/10}</td></tr>`; }).join('')}</tbody></table></div></div>`;
   return h;
 }
 function qaDim(id){
-  const d=qaCur(), T=qaTpl(d), P=window.QA_ASSETS.plans[T.plan], x=P.dims.find(z=>z.id===id), m=(d.dims||{})[id]||{}, lock=qaLocked(d);
+  const d=qaCur(), T=qaTpl(d), P=qaPlan(d), x=P.dims.find(z=>z.id===id), m=(d.dims||{})[id]||{}, lock=qaLocked(d);
   if(qaPage!==x.page){ qaPage=x.page; renderQualite(); }
   const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='qaDimOv';
   const ph=qaPhotos.filter(p=>p.itemId===id);
   ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()"><h3><span class="qa-bub mini ${x.req?'req':''}">${x.n}</span> ${_esc(L_(x.en,x.fr))}</h3>
     <div class="req-sub">${L_('Sheet','Feuille')} ${x.page} · ${x.item} · ${x.req?L_('mandatory','obligatoire'):L_('optional','facultative')}</div>
     <div class="qa-nom"><div><small>${L_('Nominal','Nominal')}</small><b>${x.nom} mm</b></div><div><small>${L_('Tolerance','Tolérance')} (ISO 13920 A)</small><b>± ${tolA(x.nom)} mm</b></div><div><small>${L_('Accepted range','Plage acceptée')}</small><b>${x.nom-tolA(x.nom)} … ${x.nom+tolA(x.nom)}</b></div></div>
+    ${!isInspector()?`<div class="qa-admin-dim"><label>Nominal (plan ${_esc(P.rev)})<input type="number" value="${x.nom}" onchange="qaSetNominal('${id}',this.value)"></label><button class="btn btn-outline btn-sm" onclick="qaStartMove('${id}')">📍 Déplacer la bulle</button>${x.check?'<span style="color:#ffd27a;font-size:12px">⚠ non retrouvée sur cet indice</span>':''}</div>`:''}
     <label>${L_('Measured value (mm)','Valeur mesurée (mm)')}</label><input id="qdV" type="number" step="0.1" inputmode="decimal" value="${m.v??''}" ${lock?'disabled':''} oninput="qaDimLive(${x.nom},${tolA(x.nom)})" onkeydown="if(event.key==='Enter')qaDimSave('${id}',true)">
     <div id="qdRes" class="qa-res"></div>
     <label>${L_('Comment','Commentaire')}</label><input id="qdC" value="${_esc(m.c||'')}" ${lock?'disabled':''} autocomplete="off">
@@ -7709,7 +7732,7 @@ function qaDimLive(nom,tol){ const v=document.getElementById('qdV').value, r=doc
 function qaDimSave(id,next){ const d=qaCur(); if(!d||qaLocked(d)) return; const v=document.getElementById('qdV').value, c=document.getElementById('qdC').value;
   d.dims={...(d.dims||{}),[id]:{v:v===''?null:+v,c,by:qaWho(),at:new Date().toISOString()}}; if(d.status==='draft') d.status='progress';
   qaSave(d); document.getElementById('qaDimOv').remove(); renderQualite();
-  if(next){ const P=window.QA_ASSETS.plans[qaTpl(d).plan], f=window._qaDimFilter, L=P.dims.filter(x=>!f||x.item===f), i=L.findIndex(x=>x.id===id);
+  if(next){ const P=qaPlan(d), f=window._qaDimFilter, L=P.dims.filter(x=>!f||x.item===f), i=L.findIndex(x=>x.id===id);
     const nx=L.slice(i+1).concat(L.slice(0,i)).find(x=>{ const m=(d.dims||{})[x.id]; return !m||m.v==null; }); if(nx) setTimeout(()=>qaDim(nx.id),120); else toast('✓ '+L_('All dimensions measured','Toutes les cotes sont mesurées'),'ok'); } }
 // ---------- photos ----------
 function qaCompress(file){ return new Promise((res,rej)=>{ const img=new Image(), u=URL.createObjectURL(file); img.onload=()=>{ URL.revokeObjectURL(u); const k=Math.min(1,1600/Math.max(img.width,img.height)); const c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height);
@@ -7720,7 +7743,7 @@ async function qaAddPhotos(itemId,input){ const d=qaCur(); if(!d||qaLocked(d)) r
   if(d.status==='draft'){ d.status='progress'; qaSave(d); } toast('✓ '+L_('Photos saved in the file','Photos enregistrées dans le dossier'),'ok'); renderQualite(); }
 function qaRenderPhotos(d,T){ const P=qaPhotos.filter(p=>p.dossierId===d.id); if(!P.length) return `<div class="db-card"><p class="db-ok" style="color:var(--text2)">${L_('No photo yet. Add photos from each check point or dimension.','Aucune photo. Ajoutez-les depuis chaque point de contrôle ou chaque cote.')}</p></div>`;
   const g={}; P.forEach(p=>{ (g[p.itemId]=g[p.itemId]||[]).push(p); });
-  const lab=k=>{ const it=T.sections.flatMap(s=>s.items).find(i=>i.id===k); if(it) return k+' – '+L_(it.en,it.fr); const x=window.QA_ASSETS&&window.QA_ASSETS.plans[T.plan].dims.find(z=>z.id===k); return x?'📐 '+x.n+' – '+L_(x.en,x.fr):k; };
+  const lab=k=>{ const it=T.sections.flatMap(s=>s.items).find(i=>i.id===k); if(it) return k+' – '+L_(it.en,it.fr); const x=window.QA_ASSETS&&(qaPlan(qaCur()).dims||[]).find(z=>z.id===k); return x?'📐 '+x.n+' – '+L_(x.en,x.fr):k; };
   return Object.entries(g).map(([k,L])=>`<div class="db-card"><h3>${_esc(lab(k))} <small>${L.length}</small></h3><div class="qa-gal">${L.map(p=>`<figure onclick="qaViewPhoto('${p.id}')"><img src="${p.data}" alt=""><figcaption>${new Date(p.at).toLocaleString(qaLang==='en'?'en-GB':'fr-FR',{dateStyle:'short',timeStyle:'short'})}</figcaption></figure>`).join('')}</div></div>`).join(''); }
 function qaViewPhoto(id){ const p=qaPhotos.find(x=>x.id===id); if(!p) return; const d=qaCur(); const ov=document.createElement('div'); ov.className='req-overlay qa-pv'; ov.id='qaPvOv';
   ov.innerHTML=`<div class="qa-pvb" onclick="event.stopPropagation()"><img src="${p.data}" alt=""><div class="qa-pva"><small>${_esc(p.by||'')} · ${new Date(p.at).toLocaleString()}</small>${d&&!qaLocked(d)?`<button class="btn btn-outline btn-sm" onclick="qaDelPhoto('${p.id}')">🗑 ${L_('Delete','Supprimer')}</button>`:''}<button class="btn btn-primary btn-sm" onclick="document.getElementById('qaPvOv').remove()">${L_('Close','Fermer')}</button></div></div>`;
@@ -7761,7 +7784,7 @@ function qaSign(){ const d=qaCur(); const v=window._qaVerdict, nm=(document.getE
 function qaReopen(){ const d=qaCur(); if(!confirm('Rouvrir ce dossier signé ?')) return; d.status='progress'; d.signedAt=null; d.signature=null; qaSave(d); renderQualite(); }
 // ---------- rapport imprimable (PDF via l'impression du navigateur) ----------
 function qaReport(){
-  const d=qaCur(), T=qaTpl(d), s=qaStats(d), r=d.results||{}, dm=d.dims||{}, A=window.QA_ASSETS, dims=A?A.plans[T.plan].dims:[], ph=qaPhotos.filter(p=>p.dossierId===d.id);
+  const d=qaCur(), T=qaTpl(d), s=qaStats(d), r=d.results||{}, dm=d.dims||{}, A=window.QA_ASSETS, dims=A?(qaPlan(d).dims||[]):[], ph=qaPhotos.filter(p=>p.dossierId===d.id);
   const stc=k=>k==='ok'?'#1a9c6b':k==='nok'?'#d93025':'#777';
   const w=window.open('','_blank'); if(!w){ alert('Autorisez les fenêtres pop-up.'); return; }
   w.document.write(`<html><head><meta charset="utf-8"><title>Supplier Acceptance ${_esc(d.pj)}</title><style>body{font-family:Arial,sans-serif;color:#111;margin:14mm;font-size:11px}h1{font-size:18px;color:#06303f;margin:0}h2{font-size:13px;color:#06303f;border-bottom:2px solid #06303f;padding-bottom:3px;margin-top:16px}table{width:100%;border-collapse:collapse;margin-top:6px}td,th{border:1px solid #bbb;padding:4px 5px;vertical-align:top;text-align:left}th{background:#e8f0f3}.st{font-weight:bold}.ph{display:flex;flex-wrap:wrap;gap:6px}.ph figure{margin:0;width:31%;break-inside:avoid}.ph img{width:100%;border:1px solid #ccc}.ph figcaption{font-size:9px;color:#555}.hd{display:flex;justify-content:space-between;align-items:flex-start}.box{border:1px solid #06303f;padding:6px 8px;margin-top:6px}</style></head><body>
@@ -7863,6 +7886,123 @@ async function qaLinkToggle(on){ const a=await qaGetAccess(); if(!a) return; a.a
 async function qaLinkRenew(){ if(!confirm('Créer un nouveau lien ? L’ancien lien et son QR code ne fonctionneront plus.')) return; await window._fsSetDoc(window._fsDoc(window._db,'qaAccess','link'),{token:'',active:true,createdAt:new Date().toISOString()}); document.getElementById('qaLinkOv').remove(); qaShareLink(); }
 function qaPrintQr(){ const u=document.getElementById('qaUrl').value, img=document.querySelector('#qaQr canvas'); const w=window.open('','_blank'); if(!w) return;
   w.document.write(`<html><head><title>ENOGIA – Supplier acceptance</title><style>body{font-family:Arial;text-align:center;margin:30mm 15mm}h1{color:#06303f}p{font-size:14px}</style></head><body><h1>ENOGIA · Supplier acceptance</h1><p>Scan to access the inspections (frames &amp; piping)</p>${img?`<img src="${img.toDataURL()}" style="width:70mm;height:70mm">`:''}<p style="font-size:11px;word-break:break-all">${u}</p><script>setTimeout(()=>print(),400)<\/script></body></html>`); w.document.close(); }
+
+// ===================== CONFIGURATION QUALITÉ PAR GAMME (mise à jour par import plan PDF / fiche Excel) =====================
+let qaCfg={}, qaPageCache={};
+function qaCfgStart(){ if(window._qaCfgL||!window._fsOnSnapshot) return; window._qaCfgL=true;
+  window._fsOnSnapshot(window._fsCollection(window._db,'qaConfig'),s=>{ qaCfg={}; s.docs.forEach(x=>qaCfg[x.id]=x.data()); if(document.getElementById('scQualite').classList.contains('active')) renderQualite(); },()=>{}); }
+document.addEventListener('firebaseReady',()=>setTimeout(qaCfgStart,800));
+const qaParams=g=>({s26:6,s16:3,trays:21,trayRefs:17,lubSup:2,tolStd:'ISO 13920 class A',...((QA_TEMPLATES[g]||{}).params||{}),...((qaCfg[g]||{}).params||{})});
+// Plan effectif d'un dossier : la révision du dossier si elle est connue, sinon la dernière importée
+function qaPlan(d){
+  const g=(d&&d.gamme)||'eno180ltv3', base=QA_TEMPLATES[g]||QA_TEMPLATES.eno180ltv3, A=window.QA_ASSETS, asset=A&&A.plans[base.plan], c=qaCfg[g]||{};
+  const rev=(d&&d.planRev)||c.planRev||(asset&&asset.rev)||'G';
+  const fromCfg=c.planRev&&rev===c.planRev&&c.pages;
+  const pages=fromCfg?(qaPageCache[g+'_'+rev]||null):(asset?asset.pages:null);
+  if(fromCfg&&!qaPageCache[g+'_'+rev]&&!qaPageCache['_l'+g+rev]) qaLoadCfgPages(g,rev,c.pages);
+  return {ref:fromCfg?c.planRef:(asset?asset.ref:''),rev,pages,dims:(fromCfg&&c.dims)?c.dims:(asset?asset.dims:[]),geo:asset&&asset.geo,loading:fromCfg&&!pages};
+}
+async function qaLoadCfgPages(g,rev,n){ qaPageCache['_l'+g+rev]=1; const out=[]; for(let i=1;i<=n;i++){ try{ const s=await window._fsGetDoc(window._fsDoc(window._db,'qaPlanPages',`${g}_${rev}_${i}`)); out.push(s.exists()?s.data().data:''); }catch(e){ out.push(''); } } qaPageCache[g+'_'+rev]=out; renderQualite(); }
+// ---------- chargement des bibliothèques à la demande ----------
+function loadScriptOnce(src){ return new Promise((res,rej)=>{ if(document.querySelector(`script[src="${src}"]`)) return res(); const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('Chargement impossible : '+src)); document.head.appendChild(s); }); }
+async function qaPdfLib(){ await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js'); window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js'; return window.pdfjsLib; }
+async function qaXlsxLib(){ await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'); return window.XLSX; }
+// ---------- analyse d'un plan PDF ----------
+function pdfWords(tc,vp){ return tc.items.filter(it=>it.str&&it.str.trim()).map(it=>{ const [a,b,,,e,f]=it.transform, n=Math.hypot(a,b)||1, w=it.width||0; const cx=e+(a/n)*w/2, cy=f+(b/n)*w/2; return {t:it.str.trim(),x:cx/vp.width*100,y:(1-cy/vp.height)*100}; }); }
+function qaParseBom(W){
+  const hq=W.find(w=>/quantit/i.test(w.t)), hn=W.find(w=>/^No\.?$/.test(w.t)); if(!hq||!hn) return null;
+  const isInt=s=>/^\d+$/.test(s); const qty=W.filter(w=>isInt(w.t)&&Math.abs(w.x-hq.x)<2.5&&w.y>hq.y), ids=W.filter(w=>isInt(w.t)&&Math.abs(w.x-hn.x)<1.4&&w.y>hn.y).sort((a,b)=>a.y-b.y);
+  return ids.map((w,k)=>{ const y0=k?(w.y+ids[k-1].y)/2:w.y-1.5, y1=k+1<ids.length?(w.y+ids[k+1].y)/2:w.y+1.5; const q=qty.find(x=>x.y>=y0&&x.y<=y1);
+    const desc=W.filter(x=>x.y>=y0&&x.y<=y1&&x.x>hn.x+1.4&&x.x<hq.x-2.5).map(x=>x.t).join(' '); return {no:+w.t,qty:q?+q.t:null,desc}; }).filter(r=>r.qty!=null);
+}
+async function qaAnalyzePdf(file,g){
+  const pdfjs=await qaPdfLib(), doc=await pdfjs.getDocument({data:await file.arrayBuffer()}).promise, n=doc.numPages, pages=[], words={};
+  for(let i=1;i<=n;i++){ const pg=await doc.getPage(i), vp1=pg.getViewport({scale:1}), sc=1800/vp1.width, vp=pg.getViewport({scale:sc});
+    const c=document.createElement('canvas'); c.width=Math.round(vp.width); c.height=Math.round(vp.height); const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
+    await pg.render({canvasContext:ctx,viewport:vp}).promise; let q=.6, u=c.toDataURL('image/jpeg',q); while(u.length>850000&&q>.25){ q-=.08; u=c.toDataURL('image/jpeg',q); } pages.push(u);
+    words[i]=pdfWords(await pg.getTextContent(),vp1); toast(`📄 Feuille ${i}/${n} analysée`); }
+  // révision et référence (cartouche de la 1re feuille)
+  const W1=words[1]||[], lab=W1.find(w=>/^Revision$/i.test(w.t)); let rev=null;
+  if(lab){ const c2=W1.filter(w=>/^[A-Z]$/.test(w.t)&&w.y>lab.y&&w.y<lab.y+5&&Math.abs(w.x-lab.x)<4).sort((a,b)=>(a.y-lab.y)-(b.y-lab.y)); if(c2.length) rev=c2[0].t; }
+  const full=W1.map(w=>w.t).join(' '), mref=full.match(/(Pi\d{3})\s*-\s*(\d{3})\s*-\s*(DC\d{3})/i);
+  const mrevName=file.name.match(/DC\d{3}-([A-Z])-/i); if(!rev&&mrevName) rev=mrevName[1].toUpperCase();
+  const planRef=mref?`${mref[1]}-${mref[2]}-${mref[3]}-${rev||'?'}`:file.name.replace(/\.pdf$/i,'');
+  // nomenclature (supports, chemins de câbles, supports lub)
+  let bom=null; for(let i=1;i<=n&&!bom;i++){ const b=qaParseBom(words[i]); if(b&&b.some(r=>/cable tray|support/i.test(r.desc))) bom=b; }
+  const P0=qaParams(g), params={...P0};
+  if(bom){ const s26=bom.find(r=>/support\s*Ø\s*26/i.test(r.desc)), s16=bom.find(r=>/support\s*Ø\s*16/i.test(r.desc)), tr=bom.filter(r=>/cable tray/i.test(r.desc)), lub=bom.find(r=>/lub support/i.test(r.desc));
+    if(s26) params.s26=s26.qty; if(s16) params.s16=s16.qty; if(tr.length){ params.trays=tr.reduce((a,r)=>a+r.qty,0); params.trayRefs=tr.length; } if(lub) params.lubSup=lub.qty; }
+  const tolM=(words[1]||[]).map(w=>w.t).join(' ').match(/ISO\s*13920[^:]*class\s*([A-D])/i); if(tolM) params.tolStd='ISO 13920 class '+tolM[1].toUpperCase();
+  // relocalisation des cotes de contrôle sur le nouveau plan
+  const old=qaPlan({gamme:g}).dims||[], dims=[], lost=[];
+  old.forEach(x=>{ const txt=String(x.nom).replace('.',','), alts=[txt,String(x.nom)];
+    let best=null, bd=1e9; [x.page,...Object.keys(words).map(Number).filter(p=>p!==x.page)].forEach(p=>{ (words[p]||[]).forEach(w=>{ if(!alts.includes(w.t)) return; const dd=Math.hypot(w.x-x.x,w.y-x.y)+(p===x.page?0:60); if(dd<bd){ bd=dd; best={p,w}; } }); });
+    if(best&&bd<25) dims.push({...x,page:best.p,x:+best.w.x.toFixed(2),y:+best.w.y.toFixed(2),check:false}); else { dims.push({...x,check:true}); lost.push(x); } });
+  return {rev:rev||'?',planRef,pages,params,P0,bom,dims,lost,n,fileName:file.name};
+}
+async function qaApplyPdf(g,R){
+  const who=(window._currentUser&&window._currentUser.email)||'';
+  for(let i=0;i<R.pages.length;i++){ await window._fsSetDoc(window._fsDoc(window._db,'qaPlanPages',`${g}_${R.rev}_${i+1}`),{gamme:g,rev:R.rev,i:i+1,data:R.pages[i]}); toast(`⬆ Feuille ${i+1}/${R.pages.length} enregistrée`); }
+  const c={...(qaCfg[g]||{})}; c.planRef=R.planRef; c.planRev=R.rev; c.pages=R.pages.length; c.params=R.params; c.dims=R.dims; c.updatedAt=new Date().toISOString();
+  c.log=[{at:c.updatedAt,by:who,type:'plan',txt:`Plan ${R.planRef} importé (${R.pages.length} feuilles) — ${R.lost.length} cote(s) à vérifier`},...(c.log||[])].slice(0,30);
+  qaPageCache[g+'_'+R.rev]=R.pages; qaCfg[g]=c; await window._fsSetDoc(window._fsDoc(window._db,'qaConfig',g),c); toast(`✓ Plan ${R.rev} en service`,'ok');
+}
+// ---------- analyse d'une fiche d'acceptation Excel ----------
+async function qaAnalyzeSheet(file,g){
+  const X=await qaXlsxLib(), wb=X.read(await file.arrayBuffer(),{type:'array'});
+  const sn=wb.SheetNames.find(n=>/acceptance/i.test(n))||wb.SheetNames.find(n=>/form/i.test(n)); if(!sn) throw new Error('Feuille « AcceptanceForm » introuvable');
+  const rows=X.utils.sheet_to_json(wb.Sheets[sn],{header:1,blankrows:false}).map(r=>r.map(v=>v==null?'':String(v).replace(/\s+/g,' ').trim()).filter(Boolean));
+  const refs={}, sections=[]; let cur=null;
+  rows.forEach(r=>{ r.forEach((v,i)=>{ if(/^DR\d+$/.test(v)&&r[i+1]) refs[v]=r[i+1]; });
+    const sec=r[0]&&r[0].match(/^([A-E])\s*[-–]\s*(.+)$/); if(sec){ cur={id:sec[1],en:sec[2].replace(/\s*\|.*$/,''),items:[]}; sections.push(cur); return; }
+    if(cur&&/^[A-E]\d+$/.test(r[0])&&r[1]){ const desc=r[1], lim=r[2]&&!/^(OK\/NOK|SUPPLIER|ENOGIA)$/i.test(r[2])?r[2]:''; const tags=[...desc.matchAll(/\[(DR\d+)\]/g)].map(m=>m[1]);
+      cur.items.push({id:r[0],en:desc.replace(/\s*\[[^\]]+\]/g,'').trim(),lim:lim,refs:tags,app:[...desc.matchAll(/Appendix\s*(?:control)?\s*(\d)/gi)].map(m=>m[1])}); } });
+  const tr=wb.SheetNames.find(n=>/tracking/i.test(n)); let docRef='', revS='';
+  if(tr){ const R2=X.utils.sheet_to_json(wb.Sheets[tr],{header:1,blankrows:false}).map(r=>r.map(v=>v==null?'':String(v).trim()).filter(Boolean)); R2.forEach(r=>{ if(/document reference/i.test(r[0])&&r[1]) docRef=r[1]; if(/^[A-Z]$/.test(r[0])&&r.length>=3) revS=r[0]; }); }
+  return {sections:sections.filter(s=>s.items.length),refs,doc:(docRef||file.name.replace(/\.xlsx?$/i,''))+(revS?' rev. '+revS:''),fileName:file.name};
+}
+async function qaApplySheet(g,S){ const c={...(qaCfg[g]||{})}; c.sheet={doc:S.doc,refs:S.refs,sections:S.sections}; c.updatedAt=new Date().toISOString();
+  c.log=[{at:c.updatedAt,by:(window._currentUser&&window._currentUser.email)||'',type:'sheet',txt:`Fiche ${S.doc} importée (${S.sections.reduce((a,s)=>a+s.items.length,0)} points)`},...(c.log||[])].slice(0,30);
+  qaCfg[g]=c; await window._fsSetDoc(window._fsDoc(window._db,'qaConfig',g),c); toast('✓ Fiche mise à jour','ok'); }
+// ---------- écran Paramètres par gamme ----------
+let qaCfgG='eno180ltv3';
+function qaOpenCfg(){ const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='qaCfgOv'; ov.innerHTML='<div class="req-box sk-box" onclick="event.stopPropagation()" id="qaCfgBox"></div>'; ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov); qaRenderCfg(); qaLoadAssets().then(qaRenderCfg).catch(()=>{}); }
+function qaRenderCfg(){
+  const box=document.getElementById('qaCfgBox'); if(!box) return; const g=qaCfgG, P=qaParams(g), c=qaCfg[g]||{}, pl=qaPlan({gamme:g}), T=qaTpl({gamme:g}), check=(pl.dims||[]).filter(x=>x.check).length;
+  box.innerHTML=`<div class="sk-head"><h3 style="margin:0">⚙️ Paramètres de contrôle par gamme</h3><select onchange="qaCfgG=this.value;qaRenderCfg()" class="qa-sel">${Object.keys(MODELS).filter(k=>MODELS[k].getSteps().length).map(k=>`<option value="${k}" ${k===g?'selected':''}>${_esc(MODELS[k].name)}${QA_TEMPLATES[k]?'':' (à créer)'}</option>`).join('')}</select></div>
+    ${QA_TEMPLATES[g]?`<div class="qa-cfg-grid">
+      <div class="db-card"><h3>📄 Plan châssis</h3><p><b>${_esc(pl.ref||'—')}</b> · indice <b>${_esc(pl.rev)}</b> · ${(pl.pages||[]).length||c.pages||0} feuilles · ${(pl.dims||[]).length} cotes${check?` · <span style="color:#ffd27a">${check} à vérifier</span>`:''}</p>
+        <label class="btn btn-primary btn-sm" style="cursor:pointer">📄 Importer un nouvel indice (PDF)<input type="file" accept="application/pdf" style="display:none" onchange="qaImportPdf(this)"></label>
+        <p class="caisse-note">Révision, nomenclature (supports Ø26/Ø16, chemins de câbles, supports lub), norme de tolérance et position des cotes sont lus automatiquement. Les dossiers déjà ouverts gardent leur indice.</p></div>
+      <div class="db-card"><h3>📊 Fiche d’acceptation</h3><p><b>${_esc(T.doc)}</b> · ${T.sections.reduce((a,s)=>a+s.items.length,0)} points de contrôle${c.sheet?' (importée)':''}</p>
+        <label class="btn btn-primary btn-sm" style="cursor:pointer">📊 Importer une nouvelle fiche (Excel)<input type="file" accept=".xls,.xlsx" style="display:none" onchange="qaImportSheet(this)"></label>
+        <p class="caisse-note">Les points sont relus depuis l’onglet AcceptanceForm. Traductions, photos obligatoires, annexes et liens aux cotes sont conservés pour les points existants. Les tolérances suivent toujours le plan.</p></div></div>
+    <div class="db-card"><h3>🔢 Quantités et normes (issues du plan, modifiables)</h3><div class="qa-params">
+      ${[['s26','Supports demi-coquille Ø26'],['s16','Supports demi-coquille Ø16'],['trays','Chemins de câbles (pièces)'],['trayRefs','Chemins de câbles (repères)'],['lubSup','Supports lub']].map(([k,l])=>`<label>${l}<input type="number" min="0" value="${P[k]}" onchange="qaSetParam('${k}',+this.value)"></label>`).join('')}
+      <label>Norme de tolérance<input value="${_esc(P.tolStd)}" onchange="qaSetParam('tolStd',this.value)"></label></div></div>
+    ${(c.log||[]).length?`<div class="db-card"><h3>Historique</h3>${c.log.map(l=>`<div class="qa-log">${new Date(l.at).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})} · ${_esc(l.txt)} <small>${_esc(l.by||'')}</small></div>`).join('')}</div>`:''}`
+    :`<div class="db-card"><p class="db-ok" style="color:var(--text2)">Cette gamme n’a pas encore de fiche de contrôle. Envoyez-moi sa fiche d’acceptation et son plan châssis pour la créer.</p></div>`}
+    <div class="req-actions"><button class="btn btn-primary" onclick="document.getElementById('qaCfgOv').remove()">Fermer</button></div>`;
+}
+async function qaSetParam(k,v){ const c={...(qaCfg[qaCfgG]||{})}; c.params={...qaParams(qaCfgG),[k]:v}; c.updatedAt=new Date().toISOString(); qaCfg[qaCfgG]=c; await window._fsSetDoc(window._fsDoc(window._db,'qaConfig',qaCfgG),c); toast('Paramètre enregistré','ok'); }
+async function qaImportPdf(input){ const f=input.files&&input.files[0]; if(!f) return; const g=qaCfgG; let R; try{ toast('📄 Analyse du plan…'); R=await qaAnalyzePdf(f,g); }catch(e){ alert('Analyse impossible : '+(e.message||e)); return; }
+  const diff=['s26','s16','trays','trayRefs','lubSup','tolStd'].filter(k=>String(R.P0[k])!==String(R.params[k]));
+  const lab={s26:'Supports Ø26',s16:'Supports Ø16',trays:'Chemins de câbles (pièces)',trayRefs:'Chemins de câbles (repères)',lubSup:'Supports lub',tolStd:'Norme de tolérance'};
+  if(!confirm(`Plan ${R.planRef} (indice ${R.rev}, ${R.n} feuilles)\n\n${diff.length?'Changements détectés :\n'+diff.map(k=>`• ${lab[k]} : ${R.P0[k]} → ${R.params[k]}`).join('\n'):'Aucun changement de quantité détecté.'}\n\nCotes de contrôle : ${R.dims.length-R.lost.length}/${R.dims.length} retrouvées${R.lost.length?`\nÀ vérifier : ${R.lost.map(x=>'n°'+x.n+' ('+x.nom+')').join(', ')}`:''}\n\nMettre ce plan en service ?`)) return;
+  await qaApplyPdf(g,R); qaRenderCfg(); renderQualite(); }
+async function qaImportSheet(input){ const f=input.files&&input.files[0]; if(!f) return; const g=qaCfgG; let S; try{ S=await qaAnalyzeSheet(f,g); }catch(e){ alert('Lecture impossible : '+(e.message||e)); return; }
+  const n=S.sections.reduce((a,s)=>a+s.items.length,0), base=qaTpl({gamme:g}), oldIds=new Set(base.sections.flatMap(s=>s.items.map(i=>i.id))), newIds=S.sections.flatMap(s=>s.items.map(i=>i.id));
+  const added=newIds.filter(i=>!oldIds.has(i)), removed=[...oldIds].filter(i=>!newIds.includes(i));
+  if(!confirm(`Fiche ${S.doc}\n${n} points de contrôle dans ${S.sections.length} rubriques.\n${added.length?'Nouveaux points : '+added.join(', ')+'\n':''}${removed.length?'Points retirés : '+removed.join(', ')+'\n':''}\nMettre cette fiche en service ?`)) return;
+  await qaApplySheet(g,S); qaRenderCfg(); renderQualite(); }
+// ---------- déplacement / correction d'une cote (équipe ENOGIA) ----------
+function qaStartMove(id){ window._qaMoveDim=id; const o=document.getElementById('qaDimOv'); if(o) o.remove(); toast('📍 Touchez le plan à l’endroit de la cote'); renderQualite(); }
+async function qaPlanClick(ev){ const id=window._qaMoveDim; if(!id) return; const r=ev.currentTarget.getBoundingClientRect(), x=(ev.clientX-r.left)/r.width*100, y=(ev.clientY-r.top)/r.height*100;
+  const d=qaCur(), g=d.gamme, pl=qaPlan(d), c={...(qaCfg[g]||{})}; if(!c.planRev){ c.planRev=pl.rev; c.planRef=pl.ref; }
+  if(!c.pages&&!c.dims){ c.dims=pl.dims.map(z=>({...z})); }
+  c.dims=(c.dims||pl.dims).map(z=>z.id===id?{...z,page:qaPage,x:+x.toFixed(2),y:+(y+2).toFixed(2),check:false}:z);
+  window._qaMoveDim=null; qaCfg[g]=c; await window._fsSetDoc(window._fsDoc(window._db,'qaConfig',g),c); toast('✓ Bulle repositionnée','ok'); renderQualite(); }
+async function qaSetNominal(id,v){ const d=qaCur(), g=d.gamme, pl=qaPlan(d), c={...(qaCfg[g]||{})}; if(!c.planRev){ c.planRev=pl.rev; c.planRef=pl.ref; } c.dims=(c.dims||pl.dims).map(z=>z.id===id?{...z,nom:+v,check:false}:z); qaCfg[g]=c; await window._fsSetDoc(window._fsDoc(window._db,'qaConfig',g),c); }
 
 // ---------- indicateur qualité fournisseur (tableau de bord) ----------
 function renderQaKpi(){
