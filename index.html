@@ -844,6 +844,16 @@ body.qa-inspector #btnMenuHome,body.qa-inspector .hdr-right .badge:not(#userEmai
 .qa-log{font-size:12px;color:var(--text2);padding:4px 0;border-top:1px solid #ffffff0d}.qa-log small{color:var(--text3)}
 body.qa-inspector .menu-item:not(.qa-mi):not([onclick*="_signOut"]),body.qa-inspector .menu-sec{display:none}
 @media (max-width:700px){ .qa-prog{grid-template-columns:1fr 1fr} .qa-nom{grid-template-columns:1fr} }
+.mp-ov{z-index:4000}
+.mp-box{max-width:980px;max-height:92vh;overflow:auto}
+.mp-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;position:sticky;top:-18px;background:inherit;padding-top:4px;z-index:2}.mp-head span{margin-left:auto;font-size:12px;color:var(--text3)}
+.mp-m{border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:10px;background:#00364a}
+.mp-mh b{font-size:16px}.mp-mh small{display:block;font-size:11.5px;color:var(--text3)}
+.mp-st{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#9fdcff;margin:10px 0 6px}
+.mp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.mp-grid figure{margin:0}.mp-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer;background:#ffffff10}
+.mp-grid figure.nc img{border-color:#ff6b62}.mp-grid figcaption{font-size:10.5px;color:var(--text3);margin-top:3px;line-height:1.3}
+.mp-none{font-size:12.5px;color:var(--text3)}
 /* Tableau de bord */
 .db-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:4px 0 14px;position:sticky;top:0;z-index:15;background:var(--bg)}
 .db-tabs button{flex-shrink:0;background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap}
@@ -5983,7 +5993,7 @@ function i40Machines(){
     else { const f=flowOf(s); if(f==='shipped') return; zone=f==='cond'?'z4':'z3'; level=f==='cond'?12:11; stepName=f==='cond'?'Conditionnement':'Banc d’essai'; }
     const li=p<100?lateInfo(s,std):{late:false};
     if(behind) stepName=(stepName||'')+` · ⚠ ${behind} sous-étape${behind>1?'s':''} non validée${behind>1?'s':''} avant`;
-    out.push({id:s.id,behind,sn:(s.projet&&s.projet!=='–'?s.projet:'')||(s.serie&&s.serie!=='–'?s.serie:'Sans n°'),serie:s.serie,projet:s.projet,model:model.name,zone,level,step,stepName,pct:p,op:s.op||'',andon:andonColorFor(s),late:li.late,lateTxt:li.late?`${li.item} : ${li.el} min (standard ${li.ref} min)`:'',started:s.started});
+    out.push({id:s.id,nph:(typeof machinePhotoCount==='function'?machinePhotoCount(s):0),behind,sn:(s.projet&&s.projet!=='–'?s.projet:'')||(s.serie&&s.serie!=='–'?s.serie:'Sans n°'),serie:s.serie,projet:s.projet,model:model.name,zone,level,step,stepName,pct:p,op:s.op||'',andon:andonColorFor(s),late:li.late,lateTxt:li.late?`${li.item} : ${li.el} min (standard ${li.ref} min)`:'',started:s.started});
   });
   return out.sort((a,b)=>String(a.started).localeCompare(String(b.started)));
 }
@@ -6005,6 +6015,7 @@ window.addEventListener('message',e=>{
   if(d.type==='enogia-ready') i40Refresh();
   if(d.type==='enogia-open'&&d.id){ exitTv(); const s=(sessions.find(x=>String(x.id)===String(d.id)))||liveSessions.find(x=>String(x.id)===String(d.id)); if(s){ if(!sessions.find(x=>x.id===s.id)) sessions.push(s); loadSession(s.id); } }
   if(d.type==='enogia-stock') showStock();
+  if(d.type==='enogia-photos'&&Array.isArray(d.ids)) openMachinePhotos(d.ids,d.title);
 });
 
 // ---------- Écrans ----------
@@ -8014,6 +8025,28 @@ function renderQaKpi(){
     <div class="db-tile" style="border-top-color:var(--accent)"><span>✅ Acceptés 1er passage</span><b style="color:#7fe3d8">${closed.length?Math.round(acc/closed.length*100)+' %':'—'}</b><small>${acc} accepté(s) · ${res} avec réserves · ${rej} refusé(s)</small></div>
     <div class="db-tile" style="border-top-color:#2b8fd6"><span>📂 Dossiers</span><b>${qaList.length}</b><small>${qaList.length-closed.length} en cours</small></div></div>
     ${bs.length?`<div class="db-card"><h3>NOK par rubrique</h3>${bs.map(([k,v])=>`<div class="nva-row"><span>${_esc(k)}</span><span class="nva-bar"><i style="width:${Math.round(v/mx*100)}%;background:#ff6b62"></i></span><b>${v}</b><small></small></div>`).join('')}</div>`:''}`;
+}
+
+
+// ===================== PHOTOS DES MACHINES (depuis l'atelier 3D) =====================
+function machinePhotoRefs(s){
+  const steps=(MODELS[s.modelId]||MODELS.eno180ltv3).getSteps(), out=[];
+  (s.steps||[]).forEach((st,si)=>{ (st.items||[]).forEach((it,ii)=>(it.photos||[]).forEach(p=>out.push({p,step:(steps[si]||{}).name||'',sub:((steps[si]||{items:[]}).items[ii]||{}).label||'',kind:'checklist'})));
+    (st.requests||[]).forEach(r=>(r.photos||[]).forEach(p=>out.push({p,step:(steps[si]||{}).name||'',sub:(r.kind==='nc'?'NC – ':'Manque – ')+(r.desc||r.ref||''),kind:r.kind==='nc'?'nc':'req',at:r.date}))); });
+  return out;
+}
+const machinePhotoCount=s=>machinePhotoRefs(s).length;
+function openMachinePhotos(ids,title){
+  const all=(typeof liveSessions!=='undefined'&&liveSessions.length?liveSessions:sessions);
+  const ms=ids.map(id=>all.find(s=>String(s.id)===String(id))).filter(Boolean);
+  const ov=document.createElement('div'); ov.className='req-overlay mp-ov'; ov.id='mpOv';
+  const total=ms.reduce((a,s)=>a+machinePhotoCount(s),0);
+  ov.innerHTML=`<div class="req-box mp-box" onclick="event.stopPropagation()"><div class="mp-head"><h3 style="margin:0">📷 ${_esc(title||'Photos')}</h3><span>${total} photo${total>1?'s':''}</span><button class="btn btn-outline btn-sm" onclick="document.getElementById('mpOv').remove()">✕</button></div>
+    ${ms.map(s=>{ const R=machinePhotoRefs(s), byStep={}; R.forEach(r=>{ (byStep[r.step]=byStep[r.step]||[]).push(r); });
+      return `<div class="mp-m"><div class="mp-mh"><b>${_esc(s.projet||s.serie||'')}</b><small>${_esc((MODELS[s.modelId]||{}).name||'')}${s.serie&&s.serie!==s.projet?' · S/N '+_esc(s.serie):''} · ${calcProgress(s).pct}%</small></div>
+        ${R.length?Object.entries(byStep).map(([st,L])=>`<div class="mp-st">${_esc(st)}</div><div class="mp-grid">${L.map(r=>`<figure class="${r.kind}"><img ${String(r.p).startsWith('data:')?`src="${r.p}"`:`data-pid="${r.p}"`} alt="" onclick="viewPhoto(this.src)"><figcaption>${r.kind==='nc'?'⚠ ':''}${_esc(r.sub)}</figcaption></figure>`).join('')}</div>`).join('')
+          :'<p class="mp-none">Aucune photo pour cette machine pour le moment.</p>'}</div>`; }).join('')||'<p class="mp-none">Aucune machine.</p>'}</div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov); hydratePhotos();
 }
 
 // ---------- KPI Industrie 4.0 (tableau de bord) ----------
