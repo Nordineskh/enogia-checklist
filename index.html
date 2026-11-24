@@ -842,6 +842,13 @@ body.qa-inspector #btnMenuHome,body.qa-inspector .hdr-right .badge:not(#userEmai
 .qa-params{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}.qa-params label{display:flex !important;flex-direction:column;gap:4px;margin:0 !important}
 .qa-sel{background:#00364a;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px}
 .qa-log{font-size:12px;color:var(--text2);padding:4px 0;border-top:1px solid #ffffff0d}.qa-log small{color:var(--text3)}
+.qa3d{position:relative}.qa3d.picking canvas{cursor:crosshair}
+.qa-pins{position:absolute;inset:0;pointer-events:none;z-index:2}
+.qa-pin{position:absolute;transform:translate(-50%,-50%);min-width:28px;height:28px;border-radius:14px;border:3px solid #fff;background:var(--c,#ff8a3d);color:#1a1200;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px #0008;pointer-events:auto;cursor:pointer;font-family:var(--font);padding:0 4px}
+.qa-pin.closed{opacity:.55;background:#9aa9b0}.qa-pin.draft{background:#fff;color:#0b2a35;border-color:#0086c2;animation:andonBlink 1.2s infinite}
+.qa-pin.static{position:static;transform:none;flex-shrink:0}
+.qa-defbar{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.qa-defrow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #ffffff0d;cursor:pointer}.qa-defrow>div{flex:1}.qa-defrow b{font-size:13.5px;font-weight:600}.qa-defrow small{display:block;font-size:11.5px;color:var(--text3)}.qa-defrow.closed b{text-decoration:line-through;opacity:.7}
 body.qa-inspector .menu-item:not(.qa-mi):not([onclick*="_signOut"]),body.qa-inspector .menu-sec{display:none}
 @media (max-width:700px){ .qa-prog{grid-template-columns:1fr 1fr} .qa-nom{grid-template-columns:1fr} }
 .mp-ov{z-index:4000}
@@ -7625,7 +7632,7 @@ function showQualite(){ exitTv&&exitTv(); showScreen('scQualite'); qaStart(); if
 function qaStats(d){ const T=qaTpl(d), items=T.sections.flatMap(s=>s.items), r=d.results||{}; const dims=window.QA_ASSETS?(qaPlan(d).dims||[]):[];
   const done=items.filter(i=>r[i.id]&&r[i.id].st).length, nok=items.filter(i=>r[i.id]&&r[i.id].st==='nok').length;
   const dm=d.dims||{}, req=dims.filter(x=>x.req), dDone=dims.filter(x=>dm[x.id]&&dm[x.id].v!==''&&dm[x.id].v!=null), dNok=dDone.filter(x=>Math.abs(+dm[x.id].v-x.nom)>tolA(x.nom));
-  return {items:items.length,done,nok,dims:dims.length,dDone:dDone.length,req:req.length,reqDone:req.filter(x=>dm[x.id]&&dm[x.id].v!=null&&dm[x.id].v!=='').length,dNok:dNok.length,photos:qaPhotos.filter(p=>p.dossierId===d.id).length}; }
+  return {items:items.length,done,nok,dims:dims.length,dDone:dDone.length,req:req.length,reqDone:req.filter(x=>dm[x.id]&&dm[x.id].v!=null&&dm[x.id].v!=='').length,dNok:dNok.length,photos:qaPhotos.filter(p=>p.dossierId===d.id).length,def:(d.defects||[]).filter(x=>x.status!=='closed').length}; }
 const QA_ST={draft:['To inspect','À inspecter','#7a8b92'],progress:['In progress','En cours','#2b8fd6'],accepted:['Accepted','Accepté','#2aa99e'],reserves:['Accepted with reserves','Accepté avec réserves','#f2c230'],rejected:['Rejected','Refusé','#ff3b30']};
 const qaStLbl=k=>{ const s=QA_ST[k]||QA_ST.draft; return `<span class="qa-st" style="background:${s[2]}22;color:${s[2]};border-color:${s[2]}66">${L_(s[0],s[1])}</span>`; };
 // ---------- liste des dossiers ----------
@@ -7640,7 +7647,7 @@ function renderQualite(){
     ${insp?'':`<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="qaOpenCfg()">⚙️ ${L_('Settings by range','Paramètres par gamme')}</button><button class="btn btn-outline btn-sm" onclick="qaShareLink()">🔗 ${L_('Inspector link & QR','Lien & QR contrôleur')}</button><button class="btn btn-primary btn-sm" onclick="qaNew()">＋ ${L_('New inspection file','Nouveau dossier')}</button></div>`}</div>
     ${L.length?[[todo,L_('Machines to inspect','Machines à contrôler')],[done,L_('Closed inspections','Inspections clôturées')]].filter(x=>x[0].length).map(([G,title])=>`<div class="qa-gh">${title} <span>${G.length}</span></div><div class="qa-list">${G.map(d=>{ const s=qaStats(d); return `<button class="qa-card" onclick="qaOpen('${d.id}')"><div class="qa-c1"><b>${_esc(d.pj||'—')}</b>${qaStLbl(d.status)}</div>
       <div class="qa-c2">${_esc((MODELS[d.gamme]||{}).name||d.gamme)} · ${_esc(d.supplier||'')}${d.supplierSn?' · S/N '+_esc(d.supplierSn):''}</div>
-      <div class="qa-c3"><span>☑ ${s.done}/${s.items}</span><span>📐 ${s.dDone}/${s.dims||'—'}</span>${s.nok+s.dNok?`<span style="color:#ff8a82">✗ ${s.nok+s.dNok} NOK</span>`:''}<span>${d.inspectionDate?'📅 '+new Date(d.inspectionDate).toLocaleDateString(qaLang==='en'?'en-GB':'fr-FR'):''}</span></div></button>`; }).join('')}</div>`).join('')
+      <div class="qa-c3"><span>☑ ${s.done}/${s.items}</span><span>📐 ${s.dDone}/${s.dims||'—'}</span>${s.nok+s.dNok+s.def?`<span style="color:#ff8a82">✗ ${s.nok+s.dNok+s.def} NOK</span>`:''}<span>${d.inspectionDate?'📅 '+new Date(d.inspectionDate).toLocaleDateString(qaLang==='en'?'en-GB':'fr-FR'):''}</span></div></button>`; }).join('')}</div>`).join('')
       :`<div class="db-card"><p class="db-ok" style="color:var(--text2)">${L_('No inspection file yet.','Aucun dossier pour le moment.')}</p></div>`}`;
 }
 function qaNew(){
@@ -7671,7 +7678,7 @@ function renderQaDossier(el){
     <button class="btn btn-outline btn-sm" onclick="qaReport()">📄 ${L_('Report','Rapport')}</button></div>
     <div class="qa-prog"><div><span>☑ ${L_('Checklist','Checklist')}</span><i><s style="width:${s.items?s.done/s.items*100:0}%"></s></i><b>${s.done}/${s.items}</b></div>
       <div><span>📐 ${L_('Required dimensions','Cotes obligatoires')}</span><i><s style="width:${s.req?s.reqDone/s.req*100:0}%"></s></i><b>${s.reqDone}/${s.req}</b></div>
-      <div><span>📷 Photos</span><b>${s.photos}</b></div><div><span>✗ NOK</span><b style="color:${s.nok+s.dNok?'#ff8a82':'#7fe3d8'}">${s.nok+s.dNok}</b></div></div>
+      <div><span>📷 Photos</span><b>${s.photos}</b></div><div><span>✗ NOK</span><b style="color:${s.nok+s.dNok+s.def?'#ff8a82':'#7fe3d8'}">${s.nok+s.dNok+s.def}</b></div></div>
     <div class="db-tabs" style="position:static">${[['check','☑ Checklist'],['dims','📐 '+L_('Dimensional views','Vues cotées')],['3d','🧊 3D'],['photos','📷 Photos'],['close','✍ '+L_('Sign-off','Clôture')]].map(([k,l])=>`<button class="${qaTab===k?'on':''}" onclick="qaTab='${k}';renderQualite()">${l}${k==='dims'&&s.dNok?` <span class="db-n">${s.dNok}</span>`:''}</button>`).join('')}</div>`;
   if(lock) h+=`<div class="qa-lock">🔒 ${L_('File signed and closed – read only.','Dossier signé et clôturé – lecture seule.')}</div>`;
   if(qaTab==='check') h+=qaRenderCheck(d,T,lock);
@@ -7774,7 +7781,7 @@ function qaRenderClose(d,T,s,lock){
   return `<div class="db-card"><h3>${L_('Inspection summary','Bilan de l’inspection')}</h3>
     <div class="db-tiles"><div class="db-tile" style="border-top-color:var(--accent)"><span>☑ ${L_('Check points','Points de contrôle')}</span><b>${s.done}/${s.items}</b><small>${unanswered?L_(unanswered+' not answered',unanswered+' sans réponse'):L_('all answered','tous renseignés')}</small></div>
       <div class="db-tile" style="border-top-color:#2b8fd6"><span>📐 ${L_('Mandatory dimensions','Cotes obligatoires')}</span><b>${s.reqDone}/${s.req}</b><small>${s.dDone}/${s.dims} ${L_('measured in total','mesurées au total')}</small></div>
-      <div class="db-tile" style="border-top-color:${s.nok+s.dNok?'#ff3b30':'var(--green)'}"><span>✗ NOK</span><b style="color:${s.nok+s.dNok?'#ff8a82':'var(--green)'}">${s.nok+s.dNok}</b><small>${s.nok} ${L_('check points','points')} · ${s.dNok} ${L_('dimensions','cotes')}</small></div></div>
+      <div class="db-tile" style="border-top-color:${s.nok+s.dNok+s.def?'#ff3b30':'var(--green)'}"><span>✗ NOK</span><b style="color:${s.nok+s.dNok+s.def?'#ff8a82':'var(--green)'}">${s.nok+s.dNok+s.def}</b><small>${s.nok} ${L_('check points','points')} · ${s.dNok} ${L_('dimensions','cotes')} · ${s.def} ${L_('3D defects','défauts 3D')}</small></div></div>
     ${missingReq||unanswered||noComment.length?`<div class="qa-warn" style="margin-bottom:8px">⚠ ${[unanswered?L_(`${unanswered} check point(s) not answered`,`${unanswered} point(s) sans réponse`):'',missingReq?L_(`${missingReq} mandatory dimension(s) not measured`,`${missingReq} cote(s) obligatoire(s) non mesurée(s)`):'',noComment.length?L_('NOK without comment: ','NOK sans commentaire : ')+noComment.join(', '):''].filter(Boolean).join(' · ')}</div>`:''}
     ${lock?'':`<label>${L_('Verdict','Verdict')}</label><div class="qa-seg big">${['accepted','reserves','rejected'].map(k=>`<button class="${window._qaVerdict===k?'on '+k:''}" onclick="window._qaVerdict='${k}';renderQualite()">${L_(QA_ST[k][0],QA_ST[k][1])}</button>`).join('')}</div>
     <label>${L_('Reserves / remarks','Réserves / remarques')}</label><textarea id="qaVN" class="qa-com">${_esc(d.verdictNote||'')}</textarea>
@@ -7801,12 +7808,13 @@ function qaReport(){
   w.document.write(`<html><head><meta charset="utf-8"><title>Supplier Acceptance ${_esc(d.pj)}</title><style>body{font-family:Arial,sans-serif;color:#111;margin:14mm;font-size:11px}h1{font-size:18px;color:#06303f;margin:0}h2{font-size:13px;color:#06303f;border-bottom:2px solid #06303f;padding-bottom:3px;margin-top:16px}table{width:100%;border-collapse:collapse;margin-top:6px}td,th{border:1px solid #bbb;padding:4px 5px;vertical-align:top;text-align:left}th{background:#e8f0f3}.st{font-weight:bold}.ph{display:flex;flex-wrap:wrap;gap:6px}.ph figure{margin:0;width:31%;break-inside:avoid}.ph img{width:100%;border:1px solid #ccc}.ph figcaption{font-size:9px;color:#555}.hd{display:flex;justify-content:space-between;align-items:flex-start}.box{border:1px solid #06303f;padding:6px 8px;margin-top:6px}</style></head><body>
     <div class="hd"><div><h1>SUPPLIER ACCEPTANCE SHEET</h1><div>${_esc(T.doc)} · ${_esc(T.scope)}</div></div><div style="text-align:right"><b style="font-size:16px;color:#06303f">ENOGIA</b><br>${new Date().toLocaleDateString('en-GB')}</div></div>
     <table><tr><th>ENOGIA project</th><td>${_esc(d.pj)}</td><th>ORC type</th><td>${_esc((MODELS[d.gamme]||{}).name||'')}</td></tr><tr><th>Supplier</th><td>${_esc(d.supplier||'')}</td><th>Supplier serial number</th><td>${_esc(d.supplierSn||'')}</td></tr><tr><th>Inspector</th><td>${_esc(d.signName||d.inspector||'')}</td><th>Status</th><td class="st">${_esc(QA_ST[d.status||'draft'][0])}</td></tr></table>
-    <div class="box">Check points: ${s.done}/${s.items} · Mandatory dimensions: ${s.reqDone}/${s.req} · NOK: ${s.nok+s.dNok} · Photos: ${ph.length}</div>
+    <div class="box">Check points: ${s.done}/${s.items} · Mandatory dimensions: ${s.reqDone}/${s.req} · NOK: ${s.nok+s.dNok+s.def} · Photos: ${ph.length}</div>
     <h2>Reference documents</h2><table>${Object.entries(T.refs).map(([k,v])=>`<tr><th style="width:60px">${k}</th><td>${_esc(v)}</td></tr>`).join('')}</table>
     ${T.sections.map(sec=>`<h2>${sec.id} – ${_esc(sec.en)}</h2><table><tr><th style="width:34px">Item</th><th>Description</th><th style="width:22%">Acceptable limit</th><th style="width:60px">Result</th><th style="width:70px">Measure</th><th>Comments</th></tr>
       ${sec.items.map(it=>{ const v=r[it.id]||{}; return `<tr><td>${it.id}</td><td>${_esc(it.en)}</td><td>${_esc(it.lim[0])}</td><td class="st" style="color:${stc(v.st)}">${v.st?v.st.toUpperCase():'—'}</td><td>${_esc(v.m||'')}</td><td>${_esc(v.c||'')}</td></tr>`; }).join('')}</table>`).join('')}
     <h2>Dimensional inspection (ISO 13920 class A)</h2><table><tr><th>#</th><th>Sheet</th><th>Description</th><th>Nominal</th><th>Tol.</th><th>Measured</th><th>Result</th></tr>
       ${dims.map(x=>{ const m=dm[x.id]; const has=m&&m.v!=null&&m.v!==''; const ok=has&&Math.abs(+m.v-x.nom)<=tolA(x.nom); return `<tr><td>${x.n}${x.req?'*':''}</td><td>${x.page}</td><td>${_esc(x.en)}</td><td>${x.nom}</td><td>±${tolA(x.nom)}</td><td>${has?m.v:'—'}</td><td class="st" style="color:${has?(ok?'#1a9c6b':'#d93025'):'#777'}">${has?(ok?'OK':'NOK'):'—'}</td></tr>`; }).join('')}</table><div style="font-size:9px;color:#555">* mandatory dimension</div>
+    ${(d.defects||[]).length?`<h2>Defects located on the 3D model</h2><table><tr><th>#</th><th>Severity</th><th>Description</th><th>Check point</th><th>Reported by</th><th>Status</th></tr>${d.defects.map((x,i)=>`<tr><td>${i+1}</td><td class="st" style="color:${x.sev==='minor'?'#a07800':'#d93025'}">${QA_SEV[x.sev||'major'][0]}</td><td>${_esc(x.desc)}</td><td>${x.item||''}</td><td>${_esc(x.by||'')}<br>${new Date(x.at).toLocaleString('en-GB')}</td><td>${x.status==='closed'?'Fixed':'Open'}</td></tr>`).join('')}</table>`:''}
     ${d.verdictNote?`<h2>Reserves / remarks</h2><div class="box">${_esc(d.verdictNote)}</div>`:''}
     <h2>Photos</h2><div class="ph">${ph.map(p=>`<figure><img src="${p.data}"><figcaption>${_esc(p.itemId)} · ${new Date(p.at).toLocaleString('en-GB')}</figcaption></figure>`).join('')||'—'}</div>
     <h2>Sign-off</h2><table><tr><th>Inspector (TÜV NORD)</th><td>${_esc(d.signName||'')}<br>${d.signedAt?new Date(d.signedAt).toLocaleString('en-GB'):''}${d.signature?`<br><img src="${d.signature}" style="height:60px">`:''}</td><th>ENOGIA</th><td style="height:70px"></td></tr></table>
@@ -7827,7 +7835,9 @@ function qaRender3D(d,T){
   return `<div class="qa3d-bar"><div class="sn-seg">${[['iso','Iso'],['front',L_('Front','Face')],['side',L_('Side','Côté')],['top',L_('Top','Dessus')]].map(([k,l])=>`<button onclick="qa3dView('${k}')">${l}</button>`).join('')}</div>
       <div class="sn-seg">${[['both',L_('Solid + edges','Volume + arêtes')],['solid',L_('Solid','Volume')],['edges',L_('Edges','Arêtes')]].map(([k,l])=>`<button class="${qa3dMode===k?'on':''}" onclick="qa3dSetMode('${k}')">${l}</button>`).join('')}</div>
       <div class="qa3d-cut"><span>✂ ${L_('Section','Coupe')}</span><div class="sn-seg">${[['','—'],['z',L_('Length','Longueur')],['x',L_('Width','Largeur')],['y',L_('Height','Hauteur')]].map(([k,l])=>`<button class="${qa3dCut.ax===k?'on':''}" onclick="qa3dCut.ax='${k}';qa3dCut.v=60;renderQualite()">${l}</button>`).join('')}</div>${qa3dCut.ax?`<input type="range" min="2" max="100" value="${qa3dCut.v}" oninput="qa3dCut.v=+this.value;qa3dApplyCut()">`:''}</div></div>
-    <div id="qa3dBox" class="qa3d"></div>
+    ${qaLocked(d)?'':`<div class="qa-defbar ${window._qa3dPick?'on':''}"><button class="btn ${window._qa3dPick?'btn-primary':'btn-outline'} btn-sm" onclick="qaDefToggle()">📍 ${window._qa3dPick?L_('Tap the model where the problem is…','Touchez le modèle à l’endroit du problème…'):L_('Report a defect on the model','Signaler un défaut sur le modèle')}</button>${window._qa3dPick?`<button class="btn btn-outline btn-sm" onclick="qaDefToggle()">${L_('Cancel','Annuler')}</button>`:''}</div>`}
+    <div id="qa3dBox" class="qa3d ${window._qa3dPick?'picking':''}"><div id="qa3dPins" class="qa-pins"></div></div>
+    ${(d.defects||[]).length?`<div class="db-card" style="margin-top:10px"><h3>📍 ${L_('Defects located on the model','Défauts localisés sur le modèle')} <small>${(d.defects||[]).filter(x=>x.status!=='closed').length} ${L_('open','ouvert(s)')}</small></h3>${d.defects.map((x,i)=>`<div class="qa-defrow ${x.status==='closed'?'closed':''}" onclick="qaDefFocus('${x.id}')"><span class="qa-pin static" style="--c:${QA_SEV[x.sev||'major'][2]}">${i+1}</span><div><b>${_esc(x.desc)}</b><small>${L_(QA_SEV[x.sev||'major'][0],QA_SEV[x.sev||'major'][1])}${x.item?' · '+x.item:''} · ${_esc(x.by||'')} · ${new Date(x.at).toLocaleDateString(qaLang==='en'?'en-GB':'fr-FR')}${x.status==='closed'?' · ✓ '+L_('fixed','corrigé'):''} · 📷 ${qaPhotos.filter(p=>p.itemId===x.id).length}</small></div><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();qaDefOpen('${x.id}')">${L_('Open','Ouvrir')}</button></div>`).join('')}</div>`:''}
     <p class="caisse-note">${L_('Drag to rotate · scroll or pinch to zoom · right-click or two fingers to pan. Model: ','Glisser pour tourner · molette ou pincer pour zoomer · clic droit ou deux doigts pour déplacer. Modèle : ')}${_esc(window.QA_ASSETS.plans[T.plan].ref)} (CAO SolidWorks, RAL 5012).</p>`;
 }
 function qa3dBuild(geo){
@@ -7853,12 +7863,12 @@ function qa3dMount(){
     qa3d={r,sc,cam,mesh,edges,plane,size:B.size,th:-0.85,ph:1.08,rad:7200,tgt:new THREE.Vector3(0,0,0)};
     const c=r.domElement; let drag=null, pts={};
     c.addEventListener('contextmenu',e=>e.preventDefault());
-    c.addEventListener('pointerdown',e=>{ c.setPointerCapture(e.pointerId); pts[e.pointerId]={x:e.clientX,y:e.clientY}; drag={btn:e.button,x:e.clientX,y:e.clientY}; });
+    c.addEventListener('pointerdown',e=>{ c.setPointerCapture(e.pointerId); pts[e.pointerId]={x:e.clientX,y:e.clientY}; window._qa3dDown={x:e.clientX,y:e.clientY,n:Object.keys(pts).length}; drag={btn:e.button,x:e.clientX,y:e.clientY}; });
     c.addEventListener('pointermove',e=>{ if(!pts[e.pointerId]) return; const ids=Object.keys(pts);
       if(ids.length===2){ const [a,b]=ids.map(k=>pts[k]); const d0=Math.hypot(a.x-b.x,a.y-b.y); pts[e.pointerId]={x:e.clientX,y:e.clientY}; const [a2,b2]=ids.map(k=>pts[k]); const d1=Math.hypot(a2.x-b2.x,a2.y-b2.y); if(d0>0){ qa3d.rad=Math.max(1200,Math.min(30000,qa3d.rad*d0/d1)); } qa3dPan((e.movementX||0)/2,(e.movementY||0)/2); qa3dDraw(); return; }
       const dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag.x=e.clientX; drag.y=e.clientY; pts[e.pointerId]={x:e.clientX,y:e.clientY};
       if(drag.btn===2||e.shiftKey) qa3dPan(dx,dy); else { qa3d.th-=dx*0.008; qa3d.ph=Math.max(0.08,Math.min(Math.PI-0.08,qa3d.ph-dy*0.008)); } qa3dDraw(); });
-    const up=e=>{ delete pts[e.pointerId]; }; c.addEventListener('pointerup',up); c.addEventListener('pointercancel',up);
+    const up=e=>{ delete pts[e.pointerId]; const dn=window._qa3dDown; if(e.type==='pointerup'&&window._qa3dPick&&dn&&dn.n===1&&Math.hypot(e.clientX-dn.x,e.clientY-dn.y)<7){ const h=qa3dPickAt(e.clientX,e.clientY); if(h) qaDefNew(h); else toast(L_('Tap directly on the frame','Touchez directement le châssis')); } }; c.addEventListener('pointerup',up); c.addEventListener('pointercancel',up);
     c.addEventListener('wheel',e=>{ e.preventDefault(); qa3d.rad=Math.max(1200,Math.min(30000,qa3d.rad*(e.deltaY>0?1.1:0.9))); qa3dDraw(); },{passive:false});
     window.addEventListener('resize',()=>{ if(document.getElementById('qa3dBox')) qa3dResize(); });
   }
@@ -7866,12 +7876,58 @@ function qa3dMount(){
 }
 function qa3dPan(dx,dy){ const k=qa3d.rad*0.0012, cam=qa3d.cam; const right=new THREE.Vector3().setFromMatrixColumn(cam.matrix,0), up=new THREE.Vector3().setFromMatrixColumn(cam.matrix,1); qa3d.tgt.addScaledVector(right,-dx*k).addScaledVector(up,dy*k); }
 function qa3dResize(){ const box=document.getElementById('qa3dBox'); if(!box||!qa3d) return; const w=box.clientWidth, h=box.clientHeight; qa3d.r.setSize(w,h,false); qa3d.r.domElement.style.width='100%'; qa3d.r.domElement.style.height='100%'; qa3d.cam.aspect=w/h; qa3d.cam.updateProjectionMatrix(); qa3dDraw(); }
-function qa3dDraw(){ if(!qa3d) return; const {cam,tgt,th,ph,rad}=qa3d; cam.position.set(tgt.x+rad*Math.sin(ph)*Math.sin(th),tgt.y+rad*Math.cos(ph),tgt.z+rad*Math.sin(ph)*Math.cos(th)); cam.lookAt(tgt); qa3d.r.render(qa3d.sc,cam); }
+function qa3dDraw(){ if(!qa3d) return; const {cam,tgt,th,ph,rad}=qa3d; cam.position.set(tgt.x+rad*Math.sin(ph)*Math.sin(th),tgt.y+rad*Math.cos(ph),tgt.z+rad*Math.sin(ph)*Math.cos(th)); cam.lookAt(tgt); qa3d.r.render(qa3d.sc,cam); qa3dPins(); }
 function qa3dView(k){ if(!qa3d) return; const V={iso:[-0.85,1.08],front:[Math.PI/2,Math.PI/2],side:[0,Math.PI/2],top:[0,0.0001+0.08]}; [qa3d.th,qa3d.ph]=V[k]; qa3d.tgt.set(0,0,0); qa3d.rad=k==='iso'?7200:6200; qa3dDraw(); }
 function qa3dSetMode(m,silent){ qa3dMode=m; if(qa3d){ qa3d.mesh.visible=m!=='edges'; qa3d.edges.visible=m!=='solid'; qa3dDraw(); } if(!silent) document.querySelectorAll('.qa3d-bar .sn-seg:nth-child(2) button').forEach((b,i)=>b.classList.toggle('on',['both','solid','edges'][i]===m)); }
 function qa3dApplyCut(){ if(!qa3d) return; const s=qa3d.size, p=qa3d.plane, ax=qa3dCut.ax, f=qa3dCut.v/100;
   if(!ax){ p.normal.set(0,0,-1); p.constant=99999; } else { const i={x:0,y:1,z:2}[ax], L=s[i]; p.normal.set(ax==='x'?-1:0,ax==='y'?-1:0,ax==='z'?-1:0); p.constant=-L/2+f*L; }
   qa3dDraw(); }
+// ---------- Défauts pointés sur la vue 3D ----------
+const QA_SEV={minor:['Minor','Mineur','#f2c230'],major:['Major','Majeur','#ff8a3d'],blocking:['Blocking','Bloquant','#ff3b30']};
+function qa3dPickAt(cx,cy){ if(!qa3d) return null; const c=qa3d.r.domElement, r=c.getBoundingClientRect(); const v=new THREE.Vector2(((cx-r.left)/r.width)*2-1,-((cy-r.top)/r.height)*2+1);
+  const rc=new THREE.Raycaster(); rc.setFromCamera(v,qa3d.cam); const hits=rc.intersectObject(qa3d.mesh,false).filter(h=>qa3d.plane.distanceToPoint(h.point)>=0); return hits[0]||null; }
+function qa3dPins(){ const box=document.getElementById('qa3dPins'), d=qaCur(); if(!box||!qa3d||!d) return; const L=d.defects||[], c=qa3d.r.domElement, w=c.clientWidth, h=c.clientHeight;
+  const want=L.length+(window._qaDefDraft?1:0);
+  if(box.childElementCount!==want||box.dataset.sig!==L.map(x=>x.id+x.status+x.sev).join()) { box.dataset.sig=L.map(x=>x.id+x.status+x.sev).join(); box.innerHTML=L.map((x,i)=>`<button class="qa-pin ${x.status==='closed'?'closed':''}" style="--c:${QA_SEV[x.sev||'major'][2]}" onclick="qaDefOpen('${x.id}')">${i+1}</button>`).join('')+(window._qaDefDraft?'<span class="qa-pin draft">＋</span>':''); }
+  const all=L.map(x=>x.pos).concat(window._qaDefDraft?[window._qaDefDraft.pos]:[]);
+  [...box.children].forEach((el,i)=>{ const p=all[i]; if(!p) return; const v=new THREE.Vector3(p[0],p[1],p[2]).project(qa3d.cam); const vis=v.z<1&&Math.abs(v.x)<1.05&&Math.abs(v.y)<1.05;
+    el.style.display=vis?'':'none'; el.style.left=((v.x+1)/2*w).toFixed(1)+'px'; el.style.top=((1-v.y)/2*h).toFixed(1)+'px'; }); }
+function qaDefToggle(){ window._qa3dPick=!window._qa3dPick; renderQualite(); }
+function qaDefNew(hit){ const d=qaCur(); if(!d||qaLocked(d)) return; window._qa3dPick=false; window._qaDefDraft={pos:[hit.point.x,hit.point.y,hit.point.z].map(v=>+v.toFixed(1))}; renderQualite(); setTimeout(()=>qaDefForm(null),60); }
+function qaDefForm(id){
+  const d=qaCur(), T=qaTpl(d), x=id?(d.defects||[]).find(z=>z.id===id):{sev:'major',desc:'',item:'',status:'open'}, lock=qaLocked(d), ph=id?qaPhotos.filter(p=>p.itemId===id):[];
+  window._qaDefSev=x.sev||'major';
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='qaDefOv';
+  const n=id?(d.defects||[]).findIndex(z=>z.id===id)+1:(d.defects||[]).length+1;
+  ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()"><h3>📍 ${L_('Defect','Défaut')} n°${n}${x.status==='closed'?' · '+L_('fixed','corrigé'):''}</h3>
+    <div class="req-sub">${L_('Located on the 3D model','Localisé sur le modèle 3D')}${x.by?' · '+_esc(x.by)+' · '+new Date(x.at).toLocaleString(qaLang==='en'?'en-GB':'fr-FR',{dateStyle:'short',timeStyle:'short'}):''}</div>
+    <label>${L_('Severity','Gravité')}</label><div class="qa-seg big" id="qaDefSevs">${Object.entries(QA_SEV).map(([k,v])=>`<button class="${window._qaDefSev===k?'on':''}" style="${window._qaDefSev===k?`background:${v[2]};color:#1a1200`:''}" ${lock?'disabled':''} onclick="window._qaDefSev='${k}';document.querySelectorAll('#qaDefSevs button').forEach(b=>{b.classList.remove('on');b.style.background='';b.style.color='';});this.classList.add('on');this.style.background='${v[2]}';this.style.color='#1a1200'">${L_(v[0],v[1])}</button>`).join('')}</div>
+    <label>${L_('Description of the problem','Description du problème')}</label><textarea id="qaDefDesc" class="qa-com" style="min-height:80px" ${lock?'disabled':''} placeholder="${L_('e.g. weld not ground on upper cross member, 2 holes missing…','ex. soudure non meulée sur la traverse haute, 2 perçages manquants…')}">${_esc(x.desc||'')}</textarea>
+    <label>${L_('Related check point (optional)','Point de contrôle concerné (facultatif)')}</label><select id="qaDefItem" class="qa-sel" style="width:100%" ${lock?'disabled':''}><option value="">—</option>${T.sections.flatMap(s=>s.items).map(i=>`<option value="${i.id}" ${x.item===i.id?'selected':''}>${i.id} – ${_esc(L_(i.en,i.fr)).slice(0,70)}</option>`).join('')}</select>
+    ${id?`<div class="qa-row" style="margin-top:10px"><label class="btn btn-outline btn-sm qa-cam">📷 ${ph.length||''} Photo<input type="file" accept="image/*" capture="environment" multiple style="display:none" ${lock?'disabled':''} onchange="qaAddPhotos('${id}',this).then(()=>{const o=document.getElementById('qaDefOv');if(o)o.remove();qaDefForm('${id}')})"></label>${ph.map(p=>`<img class="qa-mini" src="${p.data}" onclick="qaViewPhoto('${p.id}')">`).join('')}</div>`:`<p class="caisse-note">${L_('A 3D view of the location is attached automatically. You can add photos once the defect is saved.','Une vue 3D de l’emplacement est jointe automatiquement. Vous pourrez ajouter des photos une fois le défaut enregistré.')}</p>`}
+    <div class="req-err" id="qaDefErr"></div>
+    <div class="req-actions">${id&&!lock?`<button class="btn btn-outline" onclick="qaDefDelete('${id}')">🗑</button><button class="btn btn-outline" onclick="qaDefStatus('${id}','${x.status==='closed'?'open':'closed'}')">${x.status==='closed'?L_('Reopen','Rouvrir'):L_('Mark as fixed','Marquer corrigé')}</button>`:''}
+      <button class="btn btn-outline" onclick="qaDefCancel()">${L_('Close','Fermer')}</button>${lock?'':`<button class="btn btn-primary" onclick="qaDefSave(${id?`'${id}'`:'null'})">${L_('Save','Enregistrer')}</button>`}</div></div>`;
+  ov.addEventListener('click',qaDefCancel); document.body.appendChild(ov); if(!id) setTimeout(()=>{ const e=document.getElementById('qaDefDesc'); if(e) e.focus(); },80);
+}
+function qaDefCancel(){ const o=document.getElementById('qaDefOv'); if(o) o.remove(); if(window._qaDefDraft){ window._qaDefDraft=null; qa3dDraw(); } }
+async function qaDefSave(id){ const d=qaCur(); if(!d||qaLocked(d)) return; const desc=(document.getElementById('qaDefDesc').value||'').trim(); if(!desc){ document.getElementById('qaDefErr').textContent=L_('Please describe the problem.','Décrivez le problème.'); return; }
+  const item=document.getElementById('qaDefItem').value, L=[...(d.defects||[])];
+  if(id){ const i=L.findIndex(z=>z.id===id); L[i]={...L[i],desc,item,sev:window._qaDefSev,editedAt:new Date().toISOString()}; }
+  else { const nid='df'+Date.now().toString(36); L.push({id:nid,pos:window._qaDefDraft.pos,desc,item,sev:window._qaDefSev,status:'open',by:qaWho(),at:new Date().toISOString()}); id=nid; }
+  const isNew=!d.defects||!d.defects.some(z=>z.id===id);
+  d.defects=L; if(d.status==='draft') d.status='progress'; window._qaDefDraft=null; document.getElementById('qaDefOv').remove(); await qaSave(d); renderQualite();
+  if(isNew) setTimeout(()=>qaDefSnap(id),200);
+  toast('📍 '+L_('Defect recorded','Défaut enregistré'),'ok'); }
+// Vue 3D de l'emplacement, jointe au défaut comme une photo
+function qaDefSnap(id){ try{ const d=qaCur(); if(!qa3d||!d) return; qa3dDraw(); const c=qa3d.r.domElement, k=Math.min(1,960/c.width), cv=document.createElement('canvas'); cv.width=Math.round(c.width*k); cv.height=Math.round(c.height*k); const g=cv.getContext('2d'); g.drawImage(c,0,0,cv.width,cv.height);
+  const x=d.defects.find(z=>z.id===id), v=new THREE.Vector3(x.pos[0],x.pos[1],x.pos[2]).project(qa3d.cam), px=(v.x+1)/2*cv.width, py=(1-v.y)/2*cv.height; g.fillStyle=QA_SEV[x.sev][2]; g.strokeStyle='#fff'; g.lineWidth=4; g.beginPath(); g.arc(px,py,16,0,7); g.fill(); g.stroke(); g.fillStyle='#111'; g.font='bold 18px sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(String(d.defects.indexOf(x)+1),px,py);
+  const p={id:'qp'+Date.now().toString(36),dossierId:d.id,itemId:id,data:cv.toDataURL('image/jpeg',.72),snap:1,by:qaWho(),at:new Date().toISOString()}; qaPhotos.push(p); window._fsSetDoc(window._fsDoc(window._db,'qaPhotos',p.id),p); renderQualite(); }catch(e){ console.warn(e); } }
+async function qaDefStatus(id,st){ const d=qaCur(); d.defects=(d.defects||[]).map(z=>z.id===id?{...z,status:st,closedAt:st==='closed'?new Date().toISOString():null,closedBy:st==='closed'?qaWho():null}:z); document.getElementById('qaDefOv').remove(); await qaSave(d); renderQualite(); }
+async function qaDefDelete(id){ if(!confirm(L_('Delete this defect?','Supprimer ce défaut ?'))) return; const d=qaCur(); d.defects=(d.defects||[]).filter(z=>z.id!==id); document.getElementById('qaDefOv').remove(); await qaSave(d); renderQualite(); }
+function qaDefOpen(id){ qaDefForm(id); }
+function qaDefFocus(id){ const d=qaCur(), x=(d.defects||[]).find(z=>z.id===id); if(!x||!qa3d) return; qa3d.tgt.set(x.pos[0],x.pos[1],x.pos[2]); qa3d.rad=3200; qa3dDraw(); }
+
 // ---------- Lien contrôleur (sans compte ENOGIA) : lien + QR code vers la partie Qualité seulement ----------
 const qaWho=()=>window._qaGuest?('TÜV · '+(localStorage.getItem('qaInspectorName')||'Inspector')):((window._currentUser&&window._currentUser.email)||'');
 function qaAskName(){ if(!window._qaGuest||localStorage.getItem('qaInspectorName')) return; const n=(prompt('Welcome to ENOGIA supplier acceptance.\nPlease enter your name (it will appear on your checks, photos and report):')||'').trim(); if(n) try{ localStorage.setItem('qaInspectorName',n); }catch(e){} }
