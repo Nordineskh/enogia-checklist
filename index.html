@@ -7636,7 +7636,7 @@ const isInspector=()=>!!window._qaGuest||QA_INSPECTORS.map(x=>x.toLowerCase()).i
 let qaLang='fr', qaList=[], qaPhotos=[], qaOpenId=null, qaTab='check', qaPage=3, qaZoom=1, qaStarted=false, qaPhUnsub=null;
 const L_=(en,fr)=>qaLang==='en'?en:fr;
 // Tolérances ISO 13920 classe A (constructions soudées) — norme indiquée sur le plan
-function tolA(n){ n=Math.abs(n); if(n<=30) return 1; if(n<=120) return 1; if(n<=400) return 1; if(n<=1000) return 2; if(n<=2000) return 3; if(n<=4000) return 4; if(n<=8000) return 5; return 6; }
+function tolA(n){ const g=window._qaTolG||(typeof qaCur==='function'&&qaCur()&&qaCur().gamme)||'eno180ltv3'; return tolFor(n,typeof qaParams==='function'?qaParams(g).tolStd:'ISO 13920 class A'); }
 const QA_TEMPLATES={eno180ltv3:{doc:'Pi085-030-DD003 rev. B',plan:'chassis180',scope:'Frame + piping',
  refs:{DR01:'Pi085-511-DC001-G – Chassis 180LTV3',DR02:'Pi085-510-DC001-C – Cycle ORC',DR03:'Pi085-510-DC007-A – Tank Pi085B',DR04:'Pi085-043-DC001-E – P&ID ENO-180LTV3',DR05:'Pi085-510-DC008-A – Clarinet lub inox',DR06:'Pi085-510-DC004-B – Cycle lub inox'},
  sections:[
@@ -7675,6 +7675,35 @@ const QA_TEMPLATES={eno180ltv3:{doc:'Pi085-030-DD003 rev. B',plan:'chassis180',s
  {id:'D',en:'Assembly',fr:'Montage',items:[
   {id:'D0',en:'Stress-free assembly/disassembly of piping components',fr:'Montage/démontage sans contrainte des composants de tuyauterie',lim:['Tightening torques respected','Couples de serrage respectés'],refs:['DR04']},
   {id:'D1',en:'Stress-free assembly/disassembly of volutes',fr:'Montage/démontage sans contrainte des volutes',lim:['Tightening torques respected','Couples de serrage respectés'],refs:['DR04']}]}]}};
+// ---- Fiche de contrôle ENO 180 MTV3 (plan châssis Pi104-511-DC001-F) : même fiche que la 180 LTV3, adaptée à la nomenclature ----
+QA_TEMPLATES.eno180mtv3=(()=>{
+  const B=JSON.parse(JSON.stringify(QA_TEMPLATES.eno180ltv3));
+  B.doc='Pi085-030-DD003 rev. B – adaptée 180 MTV3'; B.plan='chassis180mt';
+  B.refs={DR01:'Pi104-511-DC001-F – Chassis 180MTV3',DR02:'Pi104 – Cycle ORC 180MTV3 (référence à compléter)',DR03:'Pi104 – Réservoir 180MTV3 (référence à compléter)',DR04:'Pi104 – P&ID ENO-180MTV3 (référence à compléter)',DR05:'Pi104 – Clarinette lub inox (référence à compléter)',DR06:'Pi104 – Cycle lub inox (référence à compléter)'};
+  B.params={s26:13,s20:10,s16:12,trays:25,trayRefs:21,carter:2,lubSup:null,tolStd:'ISO 2768-fH'}; B.rev='F';
+  const sh=s=>s.replace('sheet 11','sheets 10–12').replace('feuille 11','feuilles 10 à 12');
+  const A=B.sections.find(s=>s.id==='A');
+  A.items=A.items.filter(i=>i.id!=='A14').map(i=>{ const x={...i,lim:[sh(i.lim[0]),sh(i.lim[1])]}; delete x.app;
+    if(i.id==='A6') x.lim=['{trays} cable trays ({trayRefs} items, sheet 10) – refer to 3D for positions','{trays} chemins de câbles ({trayRefs} repères, feuille 10) – positions selon la 3D'];
+    if(i.id==='A12'){ x.en='Position & dimensions of supports (heat exchangers, cycle pump, choke, cooling fan, electrical cabinet)'; x.fr='Position et dimensions des supports (échangeurs, pompe de cycle, choke, ventilateur cooling, armoire électrique)'; }
+    if(i.id==='A13') return {id:'A13',planItem:1,en:'Side carter reinforcements – qty {carter}',fr:'Renforts de carter latéraux – qté {carter}',lim:['{carter} reinforcements present and positioned (sheet 10, item 29)','{carter} renforts présents et positionnés (feuille 10, repère 29)'],refs:['DR01'],photo:1,meas:1,count:'carter'};
+    return x; });
+  const i5=A.items.findIndex(i=>i.id==='A5');
+  A.items.splice(i5+1,0,{id:'A5B',en:'Presence and position of tubing half-shell supports Ø20 – qty {s20}',fr:'Présence et position des supports demi-coquille Ø20 – qté {s20}',lim:['{s20} supports (Béné-inox 372121-20), 0 missing tape – sheets 10–12','{s20} supports (Béné-inox 372121-20), aucun ruban manquant – feuilles 10 à 12'],refs:['DR01'],photo:1,meas:1,count:'s20'});
+  B.sections.forEach(s=>{ if(s.id!=='A') s.items=s.items.map(i=>{ const x={...i}; if(x.app) x.app=x.app.filter(k=>k==='ctrl7'); if(x.app&&!x.app.length) delete x.app; return x; }); });
+  return B;
+})();
+// Plans chargés à la demande (un fichier par plan pour garder l'appli légère)
+const QA_PLAN_FILES={chassis180mt:'qualite-assets-180mt.js?v=1'};
+function qaEnsurePlan(d){ const T=qaTpl(d), A=window.QA_ASSETS; if(!A||A.plans[T.plan]||!QA_PLAN_FILES[T.plan]||window['_qaPL'+T.plan]) return; window['_qaPL'+T.plan]=1;
+  loadScriptOnce(QA_PLAN_FILES[T.plan]).then(()=>renderQualite()).catch(()=>{ window['_qaPL'+T.plan]=0; toast('⚠ '+QA_PLAN_FILES[T.plan].split('?')[0]+' introuvable'); }); }
+// Tolérances générales selon la norme du plan : ISO 13920 (constructions soudées) ou ISO 2768 (f / m)
+function tolFor(n,std){ n=Math.abs(n); std=String(std||'ISO 13920 class A');
+  if(/2768/.test(std)){ const fine=/2768\s*[-–]?\s*f/i.test(std);
+    const T=fine?[[3,.05],[6,.05],[30,.1],[120,.15],[400,.2],[1000,.3],[2000,.5],[4000,2]]:[[3,.1],[6,.1],[30,.2],[120,.3],[400,.5],[1000,.8],[2000,1.2],[4000,2]];
+    for(const [lim,t] of T) if(n<=lim) return t; return 3; }
+  if(n<=400) return 1; if(n<=1000) return 2; if(n<=2000) return 3; if(n<=4000) return 4; if(n<=8000) return 5; return 6; }
+
 const QA_APP_T={app1:['Appendix 1 – Piping tappings','Annexe 1 – Piquages tuyauterie'],ctrl1:['Lube filter, lube pressure sensors, lube valve & pump (pump 81 mm, valve Ø37, filter hole Ø10 at 500 mm)','Filtre lub, capteurs pression lub, vanne et pompe lub (pompe 81 mm, vanne Ø37, trou filtre Ø10 à 500 mm)'],ctrl2:['Settling pot, expansion vessel, fan','Pot de décantation, vase d’expansion, ventilateur'],ctrl3:['Choke support, choke cover hole, braking resistor – check all dimensions','Support choke, trou carter choke, résistance de freinage – vérifier toutes les cotes'],ctrl4:['Electrical cabinet','Armoire électrique'],ctrl5:['Turbine support','Support turbine'],ctrl6:['External dimensions (parallelism)','Dimensions extérieures (parallélisme)'],ctrl7:['Unacceptable cleanliness – reference photos','Propreté inacceptable – photos de référence']};
 function qaTpl(d){
   const g=(d&&d.gamme)||'eno180ltv3', base=QA_TEMPLATES[g]||QA_TEMPLATES.eno180ltv3, c=(typeof qaCfg!=='undefined'&&qaCfg[g])||{}, P=typeof qaParams==='function'?qaParams(g):{};
@@ -7695,7 +7724,8 @@ function qaWatchPhotos(id){ if(qaPhUnsub){ try{ qaPhUnsub(); }catch(e){} qaPhUns
 const qaCur=()=>qaList.find(d=>d.id===qaOpenId);
 async function qaSave(d){ d.updatedAt=new Date().toISOString(); const i=qaList.findIndex(x=>x.id===d.id); if(i>=0) qaList[i]=d; else qaList.push(d); try{ await window._fsSetDoc(window._fsDoc(window._db,'qaDossiers',d.id),d); }catch(e){ alert('Enregistrement impossible : '+(e.message||e)); } }
 function showQualite(){ exitTv&&exitTv(); showScreen('scQualite'); qaStart(); if(isInspector()) qaLang='en'; renderQualite(); }
-function qaStats(d){ const T=qaTpl(d), items=T.sections.flatMap(s=>s.items), r=d.results||{}; const dims=window.QA_ASSETS?(qaPlan(d).dims||[]):[];
+function qaStats(d){ const pg=window._qaTolG; window._qaTolG=d.gamme; try{ return _qaStats(d); } finally{ window._qaTolG=pg; } }
+function _qaStats(d){ const T=qaTpl(d), items=T.sections.flatMap(s=>s.items), r=d.results||{}; const dims=window.QA_ASSETS?(qaPlan(d).dims||[]):[];
   const done=items.filter(i=>r[i.id]&&r[i.id].st).length, nok=items.filter(i=>r[i.id]&&r[i.id].st==='nok').length;
   const dm=d.dims||{}, req=dims.filter(x=>x.req), dDone=dims.filter(x=>dm[x.id]&&dm[x.id].v!==''&&dm[x.id].v!=null), dNok=dDone.filter(x=>Math.abs(+dm[x.id].v-x.nom)>tolA(x.nom));
   return {items:items.length,done,nok,dims:dims.length,dDone:dDone.length,req:req.length,reqDone:req.filter(x=>dm[x.id]&&dm[x.id].v!=null&&dm[x.id].v!=='').length,dNok:dNok.length,photos:qaPhotos.filter(p=>p.dossierId===d.id).length,def:(d.defects||[]).filter(x=>x.status!=='closed').length}; }
@@ -7737,6 +7767,7 @@ function qaBack(){ qaOpenId=null; qaWatchPhotos(null); renderQualite(); }
 const qaLocked=d=>['accepted','reserves','rejected'].includes(d.status)&&!(typeof isTimeAdmin==='function'&&isTimeAdmin());
 // ---------- dossier ----------
 function renderQaDossier(el){
+  qaEnsurePlan(qaCur());
   const d=qaCur(), T=qaTpl(d), s=qaStats(d), lock=qaLocked(d);
   const sy=window.scrollY;
   let h=`<div class="qa-dh"><button class="btn btn-outline btn-sm" onclick="qaBack()">← ${L_('Files','Dossiers')}</button>
@@ -7791,7 +7822,7 @@ function qaRenderDims(d,T,lock){
     ${!isInspector()&&P.dims.some(x=>x.check)?`<div class="qa-warn" style="margin-bottom:6px">⚠ ${P.dims.filter(x=>x.check).length} cote(s) non retrouvée(s) sur l’indice ${_esc(P.rev)} : ouvrez-les (bulle en pointillés) pour corriger la valeur ou repositionner la bulle.</div>`:''}
     <div class="qa-plan-wrap"><div class="qa-plan ${window._qaMoveDim?'moving':''}" style="width:${qaZoom*100}%" onclick="qaPlanClick(event)"><img src="${P.pages[qaPage-1]}" alt="">
       ${onPage.map(x=>`<button class="qa-bub ${st(x)} ${x.req?'req':''} ${x.check?'chk':''} ${f&&x.item!==f?'dim':''}" style="left:${x.x}%;top:${x.y}%" onclick="qaDim('${x.id}')" title="${_esc(L_(x.en,x.fr))}">${x.n}</button>`).join('')}</div></div>
-    <p class="caisse-note">${L_('Tap a numbered bubble to enter the measured value. Tolerances: ISO 13920 class A (welded constructions), as specified on the drawing. Bubbles with a blue ring are mandatory.','Touchez une bulle numérotée pour saisir la valeur mesurée. Tolérances : ISO 13920 classe A (constructions soudées), comme indiqué sur le plan. Les bulles cerclées de bleu sont obligatoires.')}</p>
+    <p class="caisse-note">${L_('Tap a numbered bubble to enter the measured value. Tolerances: '+qaParams(d.gamme).tolStd+', as specified on the drawing. Bubbles with a blue ring are mandatory.','Touchez une bulle numérotée pour saisir la valeur mesurée. Tolérances : '+qaParams(d.gamme).tolStd+', comme indiqué sur le plan. Les bulles cerclées de bleu sont obligatoires.')}</p>
     <div class="db-card"><h3>${L_('Dimensions list','Liste des cotes')}</h3><div style="overflow-x:auto"><table class="stk-table ord"><thead><tr><th>#</th><th>${L_('Sheet','Feuille')}</th><th>${L_('Description','Description')}</th><th>Item</th><th class="num">${L_('Nominal','Nominal')}</th><th class="num">${L_('Tol.','Tol.')}</th><th class="num">${L_('Measured','Mesuré')}</th><th class="num">Δ</th></tr></thead><tbody>
     ${P.dims.filter(x=>!f||x.item===f).map(x=>{ const m=dm[x.id], s2=st(x), dv=m&&m.v!==''&&m.v!=null?(+m.v-x.nom):null; return `<tr class="qa-dr ${s2}" onclick="qaPage=${x.page};qaDim('${x.id}')"><td><span class="qa-bub mini ${s2} ${x.req?'req':''}">${x.n}</span></td><td>${x.page}</td><td>${_esc(L_(x.en,x.fr))}</td><td>${x.item}</td><td class="num">${x.nom}</td><td class="num">±${tolA(x.nom)}</td><td class="num"><b>${m&&m.v!=null&&m.v!==''?m.v:'—'}</b></td><td class="num" style="color:${s2==='nok'?'#ff8a82':'#7fe3d8'}">${dv==null?'':(dv>0?'+':'')+Math.round(dv*10)/10}</td></tr>`; }).join('')}</tbody></table></div></div>`;
   return h;
@@ -7803,7 +7834,7 @@ function qaDim(id){
   const ph=qaPhotos.filter(p=>p.itemId===id);
   ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()"><h3><span class="qa-bub mini ${x.req?'req':''}">${x.n}</span> ${_esc(L_(x.en,x.fr))}</h3>
     <div class="req-sub">${L_('Sheet','Feuille')} ${x.page} · ${x.item} · ${x.req?L_('mandatory','obligatoire'):L_('optional','facultative')}</div>
-    <div class="qa-nom"><div><small>${L_('Nominal','Nominal')}</small><b>${x.nom} mm</b></div><div><small>${L_('Tolerance','Tolérance')} (ISO 13920 A)</small><b>± ${tolA(x.nom)} mm</b></div><div><small>${L_('Accepted range','Plage acceptée')}</small><b>${x.nom-tolA(x.nom)} … ${x.nom+tolA(x.nom)}</b></div></div>
+    <div class="qa-nom"><div><small>${L_('Nominal','Nominal')}</small><b>${x.nom} mm</b></div><div><small>${L_('Tolerance','Tolérance')} (${_esc(qaParams(d.gamme).tolStd)})</small><b>± ${tolA(x.nom)} mm</b></div><div><small>${L_('Accepted range','Plage acceptée')}</small><b>${x.nom-tolA(x.nom)} … ${x.nom+tolA(x.nom)}</b></div></div>
     ${!isInspector()?`<div class="qa-admin-dim"><label>Nominal (plan ${_esc(P.rev)})<input type="number" value="${x.nom}" onchange="qaSetNominal('${id}',this.value)"></label><button class="btn btn-outline btn-sm" onclick="qaStartMove('${id}')">📍 Déplacer la bulle</button>${x.check?'<span style="color:#ffd27a;font-size:12px">⚠ non retrouvée sur cet indice</span>':''}</div>`:''}
     <label>${L_('Measured value (mm)','Valeur mesurée (mm)')}</label><input id="qdV" type="number" step="0.1" inputmode="decimal" value="${m.v??''}" ${lock?'disabled':''} oninput="qaDimLive(${x.nom},${tolA(x.nom)})" onkeydown="if(event.key==='Enter')qaDimSave('${id}',true)">
     <div id="qdRes" class="qa-res"></div>
@@ -7879,7 +7910,7 @@ function qaReport(){
     <h2>Reference documents</h2><table>${Object.entries(T.refs).map(([k,v])=>`<tr><th style="width:60px">${k}</th><td>${_esc(v)}</td></tr>`).join('')}</table>
     ${T.sections.map(sec=>`<h2>${sec.id} – ${_esc(sec.en)}</h2><table><tr><th style="width:34px">Item</th><th>Description</th><th style="width:22%">Acceptable limit</th><th style="width:60px">Result</th><th style="width:70px">Measure</th><th>Comments</th></tr>
       ${sec.items.map(it=>{ const v=r[it.id]||{}; return `<tr><td>${it.id}</td><td>${_esc(it.en)}</td><td>${_esc(it.lim[0])}</td><td class="st" style="color:${stc(v.st)}">${v.st?v.st.toUpperCase():'—'}</td><td>${_esc(v.m||'')}</td><td>${_esc(v.c||'')}</td></tr>`; }).join('')}</table>`).join('')}
-    <h2>Dimensional inspection (ISO 13920 class A)</h2><table><tr><th>#</th><th>Sheet</th><th>Description</th><th>Nominal</th><th>Tol.</th><th>Measured</th><th>Result</th></tr>
+    <h2>Dimensional inspection (${_esc(qaParams(d.gamme).tolStd)})</h2><table><tr><th>#</th><th>Sheet</th><th>Description</th><th>Nominal</th><th>Tol.</th><th>Measured</th><th>Result</th></tr>
       ${dims.map(x=>{ const m=dm[x.id]; const has=m&&m.v!=null&&m.v!==''; const ok=has&&Math.abs(+m.v-x.nom)<=tolA(x.nom); return `<tr><td>${x.n}${x.req?'*':''}</td><td>${x.page}</td><td>${_esc(x.en)}</td><td>${x.nom}</td><td>±${tolA(x.nom)}</td><td>${has?m.v:'—'}</td><td class="st" style="color:${has?(ok?'#1a9c6b':'#d93025'):'#777'}">${has?(ok?'OK':'NOK'):'—'}</td></tr>`; }).join('')}</table><div style="font-size:9px;color:#555">* mandatory dimension</div>
     ${(d.defects||[]).length?`<h2>Defects located on the 3D model</h2><table><tr><th>#</th><th>Severity</th><th>Description</th><th>Check point</th><th>Reported by</th><th>Status</th></tr>${d.defects.map((x,i)=>`<tr><td>${i+1}</td><td class="st" style="color:${x.sev==='minor'?'#a07800':'#d93025'}">${QA_SEV[x.sev||'major'][0]}</td><td>${_esc(x.desc)}</td><td>${x.item||''}</td><td>${_esc(x.by||'')}<br>${new Date(x.at).toLocaleString('en-GB')}</td><td>${x.status==='closed'?'Fixed':'Open'}</td></tr>`).join('')}</table>`:''}
     ${d.verdictNote?`<h2>Reserves / remarks</h2><div class="box">${_esc(d.verdictNote)}</div>`:''}
@@ -7895,6 +7926,7 @@ const _qaObs=new MutationObserver(()=>{ if(document.getElementById('qaSig')) qaS
 let qa3d=null, qa3dMode='both', qa3dCut={ax:'',v:100};
 function qaRender3D(d,T){
   const A=window.QA_ASSETS;
+  if(A&&!A.plans[T.plan]) return `<div class="db-card"><p class="db-ok" style="color:var(--text2)">${L_('Loading 3D model…','Chargement du modèle 3D…')}</p></div>`;
   if(A&&!A.plans[T.plan].geo){
     if(!window._qaReloaded){ window._qaReloaded=true; window.QA_ASSETS=null; qaLoadAssets(true).then(()=>renderQualite()).catch(()=>renderQualite()); }
     else return `<div class="db-card"><p class="db-ok" style="color:#ffd27a">⚠ ${L_('The 3D model is missing from qualite-assets.js on the server.','Le modèle 3D est absent du fichier qualite-assets.js en ligne.')}</p><p class="caisse-note">${L_('Please upload the latest qualite-assets.js next to index.html.','Remplacez qualite-assets.js sur GitHub par la dernière version (celle qui contient le modèle 3D), à côté d’index.html, puis rechargez avec Ctrl+Maj+R.')}</p></div>`;
@@ -7918,7 +7950,7 @@ function qa3dBuild(geo){
   return {g,ge,size:mx};
 }
 function qa3dMount(){
-  const box=document.getElementById('qa3dBox'); if(!box) return; const d=qaCur(), T=qaTpl(d), geo=window.QA_ASSETS&&window.QA_ASSETS.plans[T.plan].geo; if(!geo||typeof THREE==='undefined') return;
+  const box=document.getElementById('qa3dBox'); if(!box) return; const d=qaCur(), T=qaTpl(d), geo=window.QA_ASSETS&&window.QA_ASSETS.plans[T.plan]&&window.QA_ASSETS.plans[T.plan].geo; if(!geo||typeof THREE==='undefined') return;
   if(!qa3d){
     const r=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true}); r.setPixelRatio(Math.min(2,window.devicePixelRatio||1)); r.localClippingEnabled=true; r.setClearColor(0xf2f5f7);
     const sc=new THREE.Scene(), cam=new THREE.PerspectiveCamera(35,1,10,60000);
@@ -8036,7 +8068,8 @@ const QA_RECV_CHECKS=[
   ['R6','Internal cleanliness (visual check at inlets)','Propreté intérieure (contrôle visuel aux entrées)'],
   ['R7','Coating RAL 5012 without chips or bare metal','Peinture RAL 5012 sans éclat ni manque']];
 // Les remontées du contrôle fournisseur à vérifier : points NOK, cotes hors tolérance, défauts 3D
-function qaRecvList(d){ const T=qaTpl(d), r=d.results||{}, out=[];
+function qaRecvList(d){ const pg=window._qaTolG; window._qaTolG=d.gamme; try{ return _qaRecvList(d); } finally{ window._qaTolG=pg; } }
+function _qaRecvList(d){ const T=qaTpl(d), r=d.results||{}, out=[];
   T.sections.forEach(s=>s.items.forEach(i=>{ if(r[i.id]&&r[i.id].st==='nok') out.push({key:'C-'+i.id,kind:'check',ref:i.id,title:L_(i.en,i.fr),note:r[i.id].c||'',photo:i.id}); }));
   const P=window.QA_ASSETS?qaPlan(d):{dims:[]}, dm=d.dims||{};
   (P.dims||[]).forEach(x=>{ const m=dm[x.id]; if(m&&m.v!=null&&m.v!==''&&Math.abs(+m.v-x.nom)>tolA(x.nom)) out.push({key:'D-'+x.id,kind:'dim',ref:'📐 '+x.n,title:L_(x.en,x.fr),note:`${L_('Nominal','Nominal')} ${x.nom} ± ${tolA(x.nom)} · ${L_('measured by TÜV','mesuré TÜV')} ${m.v}`,nom:x.nom,tol:tolA(x.nom),photo:x.id}); });
@@ -8116,7 +8149,7 @@ const qaParams=g=>({s26:6,s16:3,trays:21,trayRefs:17,lubSup:2,tolStd:'ISO 13920 
 // Plan effectif d'un dossier : la révision du dossier si elle est connue, sinon la dernière importée
 function qaPlan(d){
   const g=(d&&d.gamme)||'eno180ltv3', base=QA_TEMPLATES[g]||QA_TEMPLATES.eno180ltv3, A=window.QA_ASSETS, asset=A&&A.plans[base.plan], c=qaCfg[g]||{};
-  const rev=(d&&d.planRev)||c.planRev||(asset&&asset.rev)||'G';
+  const rev=(d&&d.planRev)||c.planRev||(asset&&asset.rev)||base.rev||'G';
   const fromCfg=c.planRev&&rev===c.planRev&&c.pages;
   const pages=fromCfg?(qaPageCache[g+'_'+rev]||null):(asset?asset.pages:null);
   if(fromCfg&&!qaPageCache[g+'_'+rev]&&!qaPageCache['_l'+g+rev]) qaLoadCfgPages(g,rev,c.pages);
@@ -8148,11 +8181,11 @@ async function qaAnalyzePdf(file,g){
   const mrevName=file.name.match(/DC\d{3}-([A-Z])-/i); if(!rev&&mrevName) rev=mrevName[1].toUpperCase();
   const planRef=mref?`${mref[1]}-${mref[2]}-${mref[3]}-${rev||'?'}`:file.name.replace(/\.pdf$/i,'');
   // nomenclature (supports, chemins de câbles, supports lub)
-  let bom=null; for(let i=1;i<=n&&!bom;i++){ const b=qaParseBom(words[i]); if(b&&b.some(r=>/cable tray|support/i.test(r.desc))) bom=b; }
+  let bom=null; for(let i=1;i<=n&&!bom;i++){ const b=qaParseBom(words[i]); if(b&&b.some(r=>/cable\s*t?r+ay|support/i.test(r.desc))) bom=b; }
   const P0=qaParams(g), params={...P0};
-  if(bom){ const s26=bom.find(r=>/support\s*Ø\s*26/i.test(r.desc)), s16=bom.find(r=>/support\s*Ø\s*16/i.test(r.desc)), tr=bom.filter(r=>/cable tray/i.test(r.desc)), lub=bom.find(r=>/lub support/i.test(r.desc));
+  if(bom){ const s26=bom.find(r=>/support\s*Ø\s*26/i.test(r.desc)), s16=bom.find(r=>/support\s*Ø\s*16/i.test(r.desc)), s20=bom.find(r=>/support\s*Ø\s*20/i.test(r.desc)), tr=bom.filter(r=>/cable\s*t?r+ay/i.test(r.desc)), lub=bom.find(r=>/lub support/i.test(r.desc)), car=bom.find(r=>/carter/i.test(r.desc)); if(s20) params.s20=s20.qty; if(car) params.carter=car.qty;
     if(s26) params.s26=s26.qty; if(s16) params.s16=s16.qty; if(tr.length){ params.trays=tr.reduce((a,r)=>a+r.qty,0); params.trayRefs=tr.length; } if(lub) params.lubSup=lub.qty; }
-  const tolM=(words[1]||[]).map(w=>w.t).join(' ').match(/ISO\s*13920[^:]*class\s*([A-D])/i); if(tolM) params.tolStd='ISO 13920 class '+tolM[1].toUpperCase();
+  const ftxt=(words[1]||[]).map(w=>w.t).join(' '), tolM=ftxt.match(/ISO\s*13920[^:]*class\s*([A-D])/i), tol2=ftxt.match(/ISO\s*2768\s*[-–]?\s*([fmcv])\s*([HKL])?/i); if(tolM) params.tolStd='ISO 13920 class '+tolM[1].toUpperCase(); else if(tol2) params.tolStd='ISO 2768-'+tol2[1].toLowerCase()+(tol2[2]||'').toUpperCase();
   // relocalisation des cotes de contrôle sur le nouveau plan
   const old=qaPlan({gamme:g}).dims||[], dims=[], lost=[];
   old.forEach(x=>{ const txt=String(x.nom).replace('.',','), alts=[txt,String(x.nom)];
@@ -8198,7 +8231,7 @@ function qaRenderCfg(){
         <label class="btn btn-primary btn-sm" style="cursor:pointer">📊 Importer une nouvelle fiche (Excel)<input type="file" accept=".xls,.xlsx" style="display:none" onchange="qaImportSheet(this)"></label>
         <p class="caisse-note">Les points sont relus depuis l’onglet AcceptanceForm. Traductions, photos obligatoires, annexes et liens aux cotes sont conservés pour les points existants. Les tolérances suivent toujours le plan.</p></div></div>
     <div class="db-card"><h3>🔢 Quantités et normes (issues du plan, modifiables)</h3><div class="qa-params">
-      ${[['s26','Supports demi-coquille Ø26'],['s16','Supports demi-coquille Ø16'],['trays','Chemins de câbles (pièces)'],['trayRefs','Chemins de câbles (repères)'],['lubSup','Supports lub']].map(([k,l])=>`<label>${l}<input type="number" min="0" value="${P[k]}" onchange="qaSetParam('${k}',+this.value)"></label>`).join('')}
+      ${[['s26','Supports demi-coquille Ø26'],['s20','Supports demi-coquille Ø20'],['s16','Supports demi-coquille Ø16'],['trays','Chemins de câbles (pièces)'],['trayRefs','Chemins de câbles (repères)'],['lubSup','Supports lub'],['carter','Renforts de carter']].filter(([k])=>P[k]!=null).map(([k,l])=>`<label>${l}<input type="number" min="0" value="${P[k]}" onchange="qaSetParam('${k}',+this.value)"></label>`).join('')}
       <label>Norme de tolérance<input value="${_esc(P.tolStd)}" onchange="qaSetParam('tolStd',this.value)"></label></div></div>
     ${(c.log||[]).length?`<div class="db-card"><h3>Historique</h3>${c.log.map(l=>`<div class="qa-log">${new Date(l.at).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})} · ${_esc(l.txt)} <small>${_esc(l.by||'')}</small></div>`).join('')}</div>`:''}`
     :`<div class="db-card"><p class="db-ok" style="color:var(--text2)">Cette gamme n’a pas encore de fiche de contrôle. Envoyez-moi sa fiche d’acceptation et son plan châssis pour la créer.</p></div>`}
@@ -8206,8 +8239,8 @@ function qaRenderCfg(){
 }
 async function qaSetParam(k,v){ const c={...(qaCfg[qaCfgG]||{})}; c.params={...qaParams(qaCfgG),[k]:v}; c.updatedAt=new Date().toISOString(); qaCfg[qaCfgG]=c; await window._fsSetDoc(window._fsDoc(window._db,'qaConfig',qaCfgG),c); toast('Paramètre enregistré','ok'); }
 async function qaImportPdf(input){ const f=input.files&&input.files[0]; if(!f) return; const g=qaCfgG; let R; try{ toast('📄 Analyse du plan…'); R=await qaAnalyzePdf(f,g); }catch(e){ alert('Analyse impossible : '+(e.message||e)); return; }
-  const diff=['s26','s16','trays','trayRefs','lubSup','tolStd'].filter(k=>String(R.P0[k])!==String(R.params[k]));
-  const lab={s26:'Supports Ø26',s16:'Supports Ø16',trays:'Chemins de câbles (pièces)',trayRefs:'Chemins de câbles (repères)',lubSup:'Supports lub',tolStd:'Norme de tolérance'};
+  const diff=['s26','s20','s16','trays','trayRefs','lubSup','carter','tolStd'].filter(k=>String(R.P0[k])!==String(R.params[k]));
+  const lab={s26:'Supports Ø26',s20:'Supports Ø20',carter:'Renforts de carter',s16:'Supports Ø16',trays:'Chemins de câbles (pièces)',trayRefs:'Chemins de câbles (repères)',lubSup:'Supports lub',tolStd:'Norme de tolérance'};
   if(!confirm(`Plan ${R.planRef} (indice ${R.rev}, ${R.n} feuilles)\n\n${diff.length?'Changements détectés :\n'+diff.map(k=>`• ${lab[k]} : ${R.P0[k]} → ${R.params[k]}`).join('\n'):'Aucun changement de quantité détecté.'}\n\nCotes de contrôle : ${R.dims.length-R.lost.length}/${R.dims.length} retrouvées${R.lost.length?`\nÀ vérifier : ${R.lost.map(x=>'n°'+x.n+' ('+x.nom+')').join(', ')}`:''}\n\nMettre ce plan en service ?`)) return;
   await qaApplyPdf(g,R); qaRenderCfg(); renderQualite(); }
 async function qaImportSheet(input){ const f=input.files&&input.files[0]; if(!f) return; const g=qaCfgG; let S; try{ S=await qaAnalyzeSheet(f,g); }catch(e){ alert('Lecture impossible : '+(e.message||e)); return; }
