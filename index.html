@@ -849,6 +849,9 @@ body.qa-inspector #btnMenuHome,body.qa-inspector .hdr-right .badge:not(#userEmai
 .qa-pin.static{position:static;transform:none;flex-shrink:0}
 .qa-defbar{display:flex;gap:6px;align-items:center;margin-bottom:8px}
 .qa-defrow{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #ffffff0d;cursor:pointer}.qa-defrow>div{flex:1}.qa-defrow b{font-size:13.5px;font-weight:600}.qa-defrow small{display:block;font-size:11.5px;color:var(--text3)}.qa-defrow.closed b{text-decoration:line-through;opacity:.7}
+.qa-card.late{border-color:#ff6b6266}
+.qa-c4{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:4px;font-size:12px;color:var(--text2)}.qa-c4 .late{color:#ff8a82;font-weight:700}.qa-c4 .today{color:#ffd27a;font-weight:700}.qa-c4 .btn{padding:4px 10px !important;min-height:0 !important}
+.qa-slog{font-size:12px;color:var(--text2);margin-top:8px;border-top:1px solid #ffffff14;padding-top:6px}.qa-slog div{padding:2px 0}.qa-slog small{color:var(--text3)}
 body.qa-inspector .menu-item:not(.qa-mi):not([onclick*="_signOut"]),body.qa-inspector .menu-sec{display:none}
 @media (max-width:700px){ .qa-prog{grid-template-columns:1fr 1fr} .qa-nom{grid-template-columns:1fr} }
 .mp-ov{z-index:4000}
@@ -861,6 +864,12 @@ body.qa-inspector .menu-item:not(.qa-mi):not([onclick*="_signOut"]),body.qa-insp
 .mp-grid figure{margin:0}.mp-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer;background:#ffffff10}
 .mp-grid figure.nc img{border-color:#ff6b62}.mp-grid figcaption{font-size:10.5px;color:var(--text3);margin-top:3px;line-height:1.3}
 .mp-none{font-size:12.5px;color:var(--text3)}
+.sup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.sup-tbl td{vertical-align:middle}
+.sup-row{display:grid;grid-template-columns:minmax(110px,1.2fr) 2fr 54px;gap:10px;align-items:center;padding:6px 0;font-size:13px}.sup-row small{color:var(--text3);font-size:11px}.sup-row i{display:block;height:12px;border-radius:6px;background:#ffffff12;overflow:hidden}.sup-row s{display:block;height:100%;border-radius:6px;text-decoration:none}.sup-row b{text-align:right}
+.sup-score{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;font-weight:800;font-size:16px;background:conic-gradient(var(--c) calc(var(--v)*1%), #ffffff14 0);position:relative}
+.sup-score::before{content:'';position:absolute;inset:6px;border-radius:50%;background:var(--surface)}.sup-score{isolation:isolate}.sup-score::before{z-index:-1}
+.sup-sev{display:flex;min-width:120px;height:20px;border-radius:6px;overflow:hidden}.sup-sev i{display:flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;font-weight:700;color:#1a1200}
 /* Tableau de bord */
 .db-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:4px 0 14px;position:sticky;top:0;z-index:15;background:var(--bg)}
 .db-tabs button{flex-shrink:0;background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap}
@@ -992,15 +1001,13 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
     <div class="menu-sec">Montage</div>
     <button class="menu-item" onclick="closeAppMenu();goHome()"><span class="menu-item-icon">🏠</span> Accueil — checklists</button>
     <button class="menu-item" onclick="closeAppMenu();showModelSelector()"><span class="menu-item-icon">⚙️</span> Sélection gamme</button>
-    <button class="menu-item" onclick="closeAppMenu();showConditionnement()"><span class="menu-item-icon">📦</span> Conditionnement</button>
     <div class="menu-sec">Pilotage</div>
     <button class="menu-item" onclick="closeAppMenu();showDashboard()"><span class="menu-item-icon">📊</span> Tableau de bord</button>
     <button class="menu-item" onclick="closeAppMenu();showPlanning()"><span class="menu-item-icon">📋</span> Planning de production</button>
     <button class="menu-item" onclick="closeAppMenu();showAtelier(false)"><span class="menu-item-icon">🏭</span> Atelier 3D en direct</button>
     <button class="menu-item" onclick="closeAppMenu();showStock()"><span class="menu-item-icon">🗄️</span> Stock</button>
     <button class="menu-item" onclick="closeAppMenu();showCaisses()"><span class="menu-item-icon">📦</span> Caisses atelier</button>
-    <button class="menu-item qa-mi" onclick="closeAppMenu();showQualite()"><span class="menu-item-icon">✅</span> Qualité fournisseur</button>
-    <button class="menu-item" onclick="closeAppMenu();showVSM()"><span class="menu-item-icon">🗺️</span> Value Stream Map</button>
+    <button class="menu-item qa-mi" onclick="closeAppMenu();showQualite()"><span class="menu-item-icon">🔍</span> Qualité fournisseur</button>
     <div class="menu-sec">Écrans atelier</div>
     <button class="menu-item" onclick="closeAppMenu();showPlanTv()"><span class="menu-item-icon">📺</span> Planning (TV)</button>
     <button class="menu-item" onclick="closeAppMenu();showAtelier(true)"><span class="menu-item-icon">🖥️</span> Atelier 3D (TV)</button>
@@ -4717,7 +4724,7 @@ async function renderDashboard(){
   const zoneLbl={z1:'Montage méca',z2:'Montage élec',z3:'Banc d’essai',z4:'Conditionnement'};
   const andonDot={red:'#ff3b30',orange:'#ff9f1a',blue:'#2b8fd6',green:'#2ee07a',idle:'#7a8b92'};
   // --- onglets ---
-  const tabs=[['syn','🏠 Synthèse'],['mach','🏭 Machines'],['qual','⚠️ Qualité'],['temps','⏱ Temps'],['flux','📅 Planning & flux'],['stock','📦 Stock']];
+  const tabs=[['syn','🏠 Synthèse'],['mach','🏭 Machines'],['qual','⚠️ Qualité'],['temps','⏱ Temps'],['flux','📅 Planning & flux'],['stock','📦 Stock'],['four','🏭 Fournisseurs']];
   html+=`<div class="db-tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" class="${dashTab===k?'on':''}" onclick="setDashTab('${k}')">${l}${k==='syn'&&todo.length?` <span class="db-n">${todo.length}</span>`:''}</button>`).join('')}</div>`;
   const pane=(k,inner)=>`<div class="db-pane" data-tab="${k}" ${dashTab===k?'':'hidden'}>${inner}</div>`;
   // Synthèse
@@ -4748,6 +4755,7 @@ async function renderDashboard(){
   // Stock
   html+=pane('stock',`<div class="db-tiles">${sup('📦 Fiabilité stock',kpiStock==null?'—':kpiStock+' %',`${stockOkCount}/${sessionsWithStock.length} machines sans manque`,pctCol(kpiStock,80,60))}${sup('🛒 À commander',stockAlerts.length,`${rupt.length} en rupture`,stockAlerts.length?'#f0a500':'var(--green)')}</div>
     <div class="db-card"><h3>Articles à recommander</h3>${stockAlerts.length?`<div class="db-todo">${stockAlerts.sort((a,b)=>(stockStatus(a)==='rupture'?0:1)-(stockStatus(b)==='rupture'?0:1)).map(a=>`<div class="db-td ${stockStatus(a)==='rupture'?'r':'o'}"><span class="ic">${stockStatus(a)==='rupture'?'🔴':'🟠'}</span><div><b>${_esc(a.designation)}</b><small>${_esc(a.ref)}${a.emplacement?' · '+_esc(a.emplacement):''} · stock ${a.qty??'?'} / seuil ${a.seuil||0}</small></div><button class="btn btn-outline btn-sm" onclick="showStock();setTimeout(()=>openBin('${a.id}','in'),300)">Réception</button></div>`).join('')}</div>`:'<p class="db-ok">✓ Tous les articles sont au-dessus de leur seuil.</p>'}<div style="margin-top:10px"><button class="btn btn-primary btn-sm" onclick="showStock()">Ouvrir le stock</button></div></div>`+(typeof renderManqSection==='function'?renderManqSection():''));
+  html+=pane('four',typeof renderSupplierPane==='function'?renderSupplierPane():'');
   el.innerHTML = html;
 }
 let dashTab='syn';
@@ -7564,6 +7572,61 @@ function undoAutoPlan(){ const b=planTeam.lastAutoBatch; const L=planTasks.filte
   if(!confirm(`Retirer les ${L.length} tâche(s) de la dernière planification automatique qui ne sont pas commencées ?`)) return; L.forEach(t=>planRemove(t.id)); planTeam.lastAutoBatch=null; planSaveCfg(); }
 
 
+// ===================== TABLEAU DE BORD : FOURNISSEURS =====================
+const supKey=s=>String(s||'').trim().toUpperCase().replace(/\s+/g,' ').replace(/\b(SP\.? Z O\.?O\.?|SAS|SARL|SA|GMBH|LTD)\b\.?/g,'').trim()||'—';
+function supplierStats(){
+  const by={};
+  (typeof qaList!=='undefined'?qaList:[]).forEach(d=>{ const k=supKey(d.supplier); const S=by[k]=by[k]||{key:k,name:(d.supplier||'—').trim(),files:[],insp:0,acc:0,res:0,rej:0,nok:0,dnok:0,def:{minor:0,major:0,blocking:0},late:0,delays:[],recv:0,recvOk:0,fixed:0,toFix:0,secs:{},gammes:new Set()};
+    S.files.push(d); S.gammes.add(d.gamme);
+    if(qaClosed(d)){ S.insp++; if(d.status==='accepted') S.acc++; else if(d.status==='reserves') S.res++; else S.rej++;
+      const st=qaStats(d); S.nok+=st.nok; S.dnok+=st.dNok;
+      (d.defects||[]).forEach(x=>S.def[x.sev||'major']++);
+      const T=qaTpl(d); T.sections.forEach(s=>s.items.forEach(i=>{ if((d.results||{})[i.id]&&d.results[i.id].st==='nok') S.secs[s.fr]=(S.secs[s.fr]||0)+1; }));
+      if(d.signedAt&&d.inspectionDate){ const dl=Math.round((new Date(String(d.signedAt).slice(0,10)+'T12:00')-new Date(qaDayKey(d.inspectionDate)+'T12:00'))/864e5); S.delays.push(dl); } }
+    else if(qaDayKey(d.inspectionDate)&&qaDayKey(d.inspectionDate)<todayKey()) S.late++;
+    if(d.reception&&d.reception.validatedAt){ S.recv++; if(d.reception.status==='ok') S.recvOk++; const r=qaRecvStats(d); S.fixed+=r.fixed; S.toFix+=r.fixed+r.notFixed; } });
+  // Stock : ruptures et articles sous le seuil par fournisseur
+  (typeof stockList!=='undefined'?stockList:[]).forEach(a=>{ if(!a.fournisseur) return; const k=supKey(a.fournisseur); if(!by[k]) return; const s=stockStatus(a); by[k].stockRefs=(by[k].stockRefs||0)+1; if(s==='rupture') by[k].rupt=(by[k].rupt||0)+1; });
+  return Object.values(by).map(S=>{
+    const defN=S.def.minor+S.def.major+S.def.blocking, per=S.insp?(S.nok+S.dnok+defN)/S.insp:null;
+    const fpa=S.insp?S.acc/S.insp*100:null, rework=S.toFix?S.fixed/S.toFix*100:null, recvPct=S.recv?S.recvOk/S.recv*100:null;
+    // Score /100 : 1er passage 35 %, densité de défauts 25 %, reprises 25 %, réception conforme 15 %
+    const parts=[[fpa,35],[per==null?null:Math.max(0,100-per*12.5),25],[rework,25],[recvPct,15]].filter(x=>x[0]!=null);
+    const w=parts.reduce((a,x)=>a+x[1],0), score=w?Math.round(parts.reduce((a,x)=>a+x[0]*x[1],0)/w):null;
+    return {...S,defN,per,fpa,rework,recvPct,score,avgDelay:S.delays.length?S.delays.reduce((a,b)=>a+b,0)/S.delays.length:null};
+  }).sort((a,b)=>(b.score??-1)-(a.score??-1)||b.insp-a.insp);
+}
+function renderSupplierPane(){
+  const L=supplierStats();
+  if(!L.length) return `<div class="db-card"><p class="db-ok" style="color:var(--text2)">Aucun dossier de réception fournisseur pour le moment. Les données apparaîtront dès les premiers contrôles TÜV dans 🔍 Qualité fournisseur.</p></div>`;
+  const col=v=>v==null?'var(--text3)':v>=85?'#2ee07a':v>=65?'#ffd27a':'#ff8a82', pc=v=>v==null?'—':Math.round(v)+' %';
+  const best=L.find(s=>s.score!=null), all=L.reduce((a,s)=>({insp:a.insp+s.insp,acc:a.acc+s.acc,fixed:a.fixed+s.fixed,toFix:a.toFix+s.toFix,late:a.late+s.late}),{insp:0,acc:0,fixed:0,toFix:0,late:0});
+  let h=`<div class="db-tiles">
+    <div class="db-tile" style="border-top-color:var(--accent)"><span>🏭 Fournisseurs suivis</span><b>${L.length}</b><small>${all.insp} inspection${all.insp>1?'s':''} clôturée${all.insp>1?'s':''}</small></div>
+    <div class="db-tile" style="border-top-color:#2ee07a"><span>🥇 Le plus performant</span><b style="font-size:22px;color:#7fe3d8">${best?_esc(best.name):'—'}</b><small>${best?'score '+best.score+'/100':'pas encore de donnée'}</small></div>
+    <div class="db-tile" style="border-top-color:#2b8fd6"><span>✅ Acceptés 1er passage</span><b style="color:${col(all.insp?all.acc/all.insp*100:null)}">${pc(all.insp?all.acc/all.insp*100:null)}</b><small>tous fournisseurs</small></div>
+    <div class="db-tile" style="border-top-color:#2aa99e"><span>🔁 Défauts repris</span><b style="color:${col(all.toFix?all.fixed/all.toFix*100:null)}">${pc(all.toFix?all.fixed/all.toFix*100:null)}</b><small>${all.fixed}/${all.toFix} vérifiés à réception</small></div>
+    <div class="db-tile" style="border-top-color:${all.late?'#ff3b30':'var(--green)'}"><span>⚠ Contrôles en retard</span><b style="color:${all.late?'#ff8a82':'var(--green)'}">${all.late}</b><small>date d’inspection dépassée</small></div></div>`;
+  h+=`<div class="db-card"><h3>🏆 Classement des fournisseurs <small>score sur 100 : 1er passage 35 % · défauts par inspection 25 % · reprises 25 % · réception conforme 15 %</small></h3>
+    <div style="overflow-x:auto"><table class="stk-table sup-tbl"><thead><tr><th>#</th><th>Fournisseur</th><th class="num">Score</th><th class="num">Inspections</th><th class="num">1er passage</th><th class="num">Défauts / insp.</th><th>Gravité des défauts 3D</th><th class="num">Reprises</th><th class="num">Réception conforme</th><th class="num">Retards</th></tr></thead><tbody>
+    ${L.map((s,i)=>`<tr><td>${s.score==null?'':['🥇','🥈','🥉'][i]||i+1}</td><td><b>${_esc(s.name)}</b><small style="display:block;color:var(--text3)">${[...s.gammes].map(g=>(MODELS[g]||{}).name||g).join(', ')}</small></td>
+      <td class="num"><span class="sup-score" style="--v:${s.score||0};--c:${col(s.score)}">${s.score==null?'—':s.score}</span></td>
+      <td class="num">${s.insp}${s.files.length>s.insp?`<small style="color:var(--text3)"> +${s.files.length-s.insp}</small>`:''}</td>
+      <td class="num" style="color:${col(s.fpa)}">${pc(s.fpa)}<small style="display:block;color:var(--text3)">${s.acc}✓ ${s.res}~ ${s.rej}✗</small></td>
+      <td class="num" style="color:${s.per==null?'var(--text3)':s.per<=1?'#2ee07a':s.per<=3?'#ffd27a':'#ff8a82'}">${s.per==null?'—':(Math.round(s.per*10)/10)}<small style="display:block;color:var(--text3)">${s.nok} pts · ${s.dnok} cotes · ${s.defN} 3D</small></td>
+      <td>${s.defN?`<span class="sup-sev">${s.def.blocking?`<i style="flex:${s.def.blocking};background:#ff3b30" title="Bloquants">${s.def.blocking}</i>`:''}${s.def.major?`<i style="flex:${s.def.major};background:#ff8a3d" title="Majeurs">${s.def.major}</i>`:''}${s.def.minor?`<i style="flex:${s.def.minor};background:#f2c230" title="Mineurs">${s.def.minor}</i>`:''}</span>`:'<small style="color:var(--text3)">aucun</small>'}</td>
+      <td class="num" style="color:${col(s.rework)}">${pc(s.rework)}<small style="display:block;color:var(--text3)">${s.fixed}/${s.toFix}</small></td>
+      <td class="num" style="color:${col(s.recvPct)}">${pc(s.recvPct)}<small style="display:block;color:var(--text3)">${s.recvOk}/${s.recv}</small></td>
+      <td class="num" style="color:${s.late?'#ff8a82':'var(--text3)'}">${s.late||'—'}${s.avgDelay!=null?`<small style="display:block;color:var(--text3)">signé à ${s.avgDelay>0?'+':''}${Math.round(s.avgDelay*10)/10} j</small>`:''}</td></tr>`).join('')}</tbody></table></div></div>`;
+  // Comparaison visuelle
+  const bars=(title,get,fmt,good)=>{ const V=L.filter(s=>get(s)!=null), mx=Math.max(1,...V.map(get)); return `<div class="db-card"><h3>${title}</h3>${V.length?V.slice().sort((a,b)=>good==='high'?get(b)-get(a):get(a)-get(b)).map(s=>`<div class="sup-row"><span>${_esc(s.name)}<small> · ${s.insp} insp.</small></span><i><s style="width:${Math.max(2,Math.round(get(s)/mx*100))}%;background:${good==='high'?col(get(s)):(get(s)<=1?'#2ee07a':get(s)<=3?'#ffd27a':'#ff6b62')}"></s></i><b>${fmt(get(s))}</b></div>`).join(''):'<p class="db-ok" style="color:var(--text3)">Pas encore de donnée.</p>'}</div>`; };
+  h+=`<div class="sup-grid">${bars('✅ Acceptés au 1er passage',s=>s.fpa,v=>Math.round(v)+' %','high')}${bars('✗ Défauts par inspection',s=>s.per,v=>Math.round(v*10)/10,'low')}${bars('🔁 Taux de reprise des défauts',s=>s.rework,v=>Math.round(v)+' %','high')}</div>`;
+  // Pareto des NOK par rubrique et par fournisseur
+  const secs=[...new Set(L.flatMap(s=>Object.keys(s.secs)))];
+  if(secs.length) h+=`<div class="db-card"><h3>Où se situent les défauts ? <small>points NOK par rubrique de la fiche</small></h3><div style="overflow-x:auto"><table class="stk-table"><thead><tr><th>Fournisseur</th>${secs.map(x=>`<th class="num">${_esc(x)}</th>`).join('')}</tr></thead><tbody>${L.map(s=>`<tr><td><b>${_esc(s.name)}</b></td>${secs.map(x=>`<td class="num" style="color:${s.secs[x]?'#ff8a82':'var(--text3)'}">${s.secs[x]||'—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+  return h;
+}
+
 // ===================== QUALITÉ FOURNISSEUR (Supplier Acceptance – TÜV NORD) =====================
 const QA_INSPECTORS=[];   // adresses des contrôleurs TÜV NORD (accès limité au module Qualité)
 const isInspector=()=>!!window._qaGuest||QA_INSPECTORS.map(x=>x.toLowerCase()).includes(((window._currentUser&&window._currentUser.email)||'').toLowerCase());
@@ -7623,7 +7686,7 @@ const QA_ASSETS_V='3';   // à incrémenter à chaque nouvelle version de qualit
 function qaLoadAssets(bust){ if(window.QA_ASSETS&&!bust) return Promise.resolve(window.QA_ASSETS); if(window._qaAP&&!bust) return window._qaAP;
   window._qaAP=new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='qualite-assets.js?v='+QA_ASSETS_V+(bust?'&t='+Date.now():''); s.onload=()=>res(window.QA_ASSETS); s.onerror=()=>{ window._qaAP=null; rej(new Error('qualite-assets.js introuvable')); }; document.head.appendChild(s); }); return window._qaAP; }
 function qaStart(){ if(qaStarted||!window._fsOnSnapshot) return; qaStarted=true;
-  window._fsOnSnapshot(window._fsCollection(window._db,'qaDossiers'),s=>{ qaList=s.docs.map(d=>({id:d.id,...d.data()})); if(document.getElementById('scQualite').classList.contains('active')) renderQualite(); },e=>console.warn('qa',e)); }
+  window._fsOnSnapshot(window._fsCollection(window._db,'qaDossiers'),s=>{ qaList=s.docs.map(d=>({id:d.id,...d.data()})); if(document.getElementById('scQualite').classList.contains('active')) renderQualite(); if(document.getElementById('scDashboard').classList.contains('active')&&typeof dashTab!=='undefined'&&dashTab==='four') renderDashboard(); },e=>console.warn('qa',e)); }
 function qaWatchPhotos(id){ if(qaPhUnsub){ try{ qaPhUnsub(); }catch(e){} qaPhUnsub=null; } qaPhotos=[]; if(!id||!window._fsOnSnapshot) return;
   qaPhUnsub=window._fsOnSnapshot(window._fsQuery(window._fsCollection(window._db,'qaPhotos'),window._fsWhere('dossierId','==',id)),s=>{ qaPhotos=s.docs.map(d=>({id:d.id,...d.data()})); if(qaOpenId===id) renderQualite(); },()=>{}); }
 const qaCur=()=>qaList.find(d=>d.id===qaOpenId);
@@ -7642,12 +7705,12 @@ function renderQualite(){
   if(qaOpenId&&qaCur()) return renderQaDossier(el);
   qaOpenId=null;
   const L=qaList.slice().sort((a,b)=>(['accepted','reserves','rejected'].includes(a.status)?1:0)-(['accepted','reserves','rejected'].includes(b.status)?1:0)||String(a.inspectionDate||'9').localeCompare(String(b.inspectionDate||'9'))||String(b.createdAt).localeCompare(String(a.createdAt)));
-  const todo=L.filter(d=>!['accepted','reserves','rejected'].includes(d.status)), done=L.filter(d=>['accepted','reserves','rejected'].includes(d.status));
+  const GR=qaGroups(L,insp);
   el.innerHTML=`<div class="qa-top"><div><div class="project-title" style="font-size:26px">${L_('Supplier quality – Acceptance','Qualité fournisseur – Réception')}</div><div style="font-size:12px;color:var(--text3)">${L_('Frame & piping inspections at suppliers (TÜV NORD)','Contrôles châssis et tuyauterie chez les fournisseurs (TÜV NORD)')}</div></div>
     ${insp?'':`<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="qaOpenCfg()">⚙️ ${L_('Settings by range','Paramètres par gamme')}</button><button class="btn btn-outline btn-sm" onclick="qaShareLink()">🔗 ${L_('Inspector link & QR','Lien & QR contrôleur')}</button><button class="btn btn-primary btn-sm" onclick="qaNew()">＋ ${L_('New inspection file','Nouveau dossier')}</button></div>`}</div>
-    ${L.length?[[todo,L_('Machines to inspect','Machines à contrôler')],[done,L_('Closed inspections','Inspections clôturées')]].filter(x=>x[0].length).map(([G,title])=>`<div class="qa-gh">${title} <span>${G.length}</span></div><div class="qa-list">${G.map(d=>{ const s=qaStats(d); return `<button class="qa-card" onclick="qaOpen('${d.id}')"><div class="qa-c1"><b>${_esc(d.pj||'—')}</b>${qaStLbl(d.status)}</div>
+    ${L.length?GR.map(([G,title,col,gk])=>`<div class="qa-gh" style="color:${col}">${title} <span>${G.length}</span></div><div class="qa-list">${G.map(d=>{ const s=qaStats(d); return `<div class="qa-card ${gk==='late'?'late':''}" role="button" tabindex="0" onclick="qaOpen('${d.id}')"><div class="qa-c1"><b>${_esc(d.pj||'—')}</b><span style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">${qaStLbl(d.status)}${insp?'':qaRecvChip(d)}</span></div>
       <div class="qa-c2">${_esc((MODELS[d.gamme]||{}).name||d.gamme)} · ${_esc(d.supplier||'')}${d.supplierSn?' · S/N '+_esc(d.supplierSn):''}</div>
-      <div class="qa-c3"><span>☑ ${s.done}/${s.items}</span><span>📐 ${s.dDone}/${s.dims||'—'}</span>${s.nok+s.dNok+s.def?`<span style="color:#ff8a82">✗ ${s.nok+s.dNok+s.def} NOK</span>`:''}<span>${d.inspectionDate?'📅 '+new Date(d.inspectionDate).toLocaleDateString(qaLang==='en'?'en-GB':'fr-FR'):''}</span></div></button>`; }).join('')}</div>`).join('')
+      <div class="qa-c3"><span>☑ ${s.done}/${s.items}</span><span>📐 ${s.dDone}/${s.dims||'—'}</span>${s.nok+s.dNok+s.def?`<span style="color:#ff8a82">✗ ${s.nok+s.dNok+s.def} NOK</span>`:''}</div><div class="qa-c4"><span class="${gk}">📅 ${d.inspectionDate?new Date(qaDayKey(d.inspectionDate)+'T12:00').toLocaleDateString(qaLang==='en'?'en-GB':'fr-FR',{weekday:'short',day:'numeric',month:'short'})+(d.inspectionTime?' · '+d.inspectionTime:'')+' · '+qaRel(d):L_('not scheduled','non planifié')}</span>${insp||qaClosed(d)?'':`<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();qaPlanOpen('${d.id}')">${L_('Schedule','Planifier')}</button>`}</div></div>`; }).join('')}</div>`).join('')
       :`<div class="db-card"><p class="db-ok" style="color:var(--text2)">${L_('No inspection file yet.','Aucun dossier pour le moment.')}</p></div>`}`;
 }
 function qaNew(){
@@ -7675,15 +7738,16 @@ function renderQaDossier(el){
   const sy=window.scrollY;
   let h=`<div class="qa-dh"><button class="btn btn-outline btn-sm" onclick="qaBack()">← ${L_('Files','Dossiers')}</button>
     <div class="qa-dt"><b>${_esc(d.pj)}</b> ${qaStLbl(d.status)}<small>${_esc((MODELS[d.gamme]||{}).name||'')} · ${_esc(d.supplier||'—')}${d.supplierSn?' · S/N '+_esc(d.supplierSn):''} · ${L_('Inspector','Inspecteur')} : ${_esc(d.inspector||'—')} · ${_esc(T.doc)} · ${L_('Drawing','Plan')} ${_esc(qaPlan(d).ref||'')}</small></div>
-    <button class="btn btn-outline btn-sm" onclick="qaReport()">📄 ${L_('Report','Rapport')}</button></div>
+    ${isInspector()?'':`<button class="btn btn-outline btn-sm" onclick="qaPlanOpen('${d.id}')">📅 ${d.inspectionDate?new Date(qaDayKey(d.inspectionDate)+'T12:00').toLocaleDateString('fr-FR'):'Planifier'}</button>`}<button class="btn btn-outline btn-sm" onclick="qaReport()">📄 ${L_('Report','Rapport')}</button></div>
     <div class="qa-prog"><div><span>☑ ${L_('Checklist','Checklist')}</span><i><s style="width:${s.items?s.done/s.items*100:0}%"></s></i><b>${s.done}/${s.items}</b></div>
       <div><span>📐 ${L_('Required dimensions','Cotes obligatoires')}</span><i><s style="width:${s.req?s.reqDone/s.req*100:0}%"></s></i><b>${s.reqDone}/${s.req}</b></div>
       <div><span>📷 Photos</span><b>${s.photos}</b></div><div><span>✗ NOK</span><b style="color:${s.nok+s.dNok+s.def?'#ff8a82':'#7fe3d8'}">${s.nok+s.dNok+s.def}</b></div></div>
-    <div class="db-tabs" style="position:static">${[['check','☑ Checklist'],['dims','📐 '+L_('Dimensional views','Vues cotées')],['3d','🧊 3D'],['photos','📷 Photos'],['close','✍ '+L_('Sign-off','Clôture')]].map(([k,l])=>`<button class="${qaTab===k?'on':''}" onclick="qaTab='${k}';renderQualite()">${l}${k==='dims'&&s.dNok?` <span class="db-n">${s.dNok}</span>`:''}</button>`).join('')}</div>`;
+    <div class="db-tabs" style="position:static">${[['check','☑ Checklist'],['dims','📐 '+L_('Dimensional views','Vues cotées')],['3d','🧊 3D'],['photos','📷 Photos'],['close','✍ '+L_('Sign-off','Clôture')]].concat(isInspector()?[]:[['recv','🏭 Réception atelier']]).map(([k,l])=>`<button class="${qaTab===k?'on':''}" onclick="qaTab='${k}';renderQualite()">${l}${k==='dims'&&s.dNok?` <span class="db-n">${s.dNok}</span>`:''}</button>`).join('')}</div>`;
   if(lock) h+=`<div class="qa-lock">🔒 ${L_('File signed and closed – read only.','Dossier signé et clôturé – lecture seule.')}</div>`;
   if(qaTab==='check') h+=qaRenderCheck(d,T,lock);
   else if(qaTab==='dims') h+=qaRenderDims(d,T,lock);
   else if(qaTab==='3d') h+=qaRender3D(d,T);
+  else if(qaTab==='recv') h+=qaRenderRecv(d);
   else if(qaTab==='photos') h+=qaRenderPhotos(d,T,lock);
   else h+=qaRenderClose(d,T,s,lock);
   el.innerHTML=h; window.scrollTo(0,sy);
@@ -7816,6 +7880,7 @@ function qaReport(){
       ${dims.map(x=>{ const m=dm[x.id]; const has=m&&m.v!=null&&m.v!==''; const ok=has&&Math.abs(+m.v-x.nom)<=tolA(x.nom); return `<tr><td>${x.n}${x.req?'*':''}</td><td>${x.page}</td><td>${_esc(x.en)}</td><td>${x.nom}</td><td>±${tolA(x.nom)}</td><td>${has?m.v:'—'}</td><td class="st" style="color:${has?(ok?'#1a9c6b':'#d93025'):'#777'}">${has?(ok?'OK':'NOK'):'—'}</td></tr>`; }).join('')}</table><div style="font-size:9px;color:#555">* mandatory dimension</div>
     ${(d.defects||[]).length?`<h2>Defects located on the 3D model</h2><table><tr><th>#</th><th>Severity</th><th>Description</th><th>Check point</th><th>Reported by</th><th>Status</th></tr>${d.defects.map((x,i)=>`<tr><td>${i+1}</td><td class="st" style="color:${x.sev==='minor'?'#a07800':'#d93025'}">${QA_SEV[x.sev||'major'][0]}</td><td>${_esc(x.desc)}</td><td>${x.item||''}</td><td>${_esc(x.by||'')}<br>${new Date(x.at).toLocaleString('en-GB')}</td><td>${x.status==='closed'?'Fixed':'Open'}</td></tr>`).join('')}</table>`:''}
     ${d.verdictNote?`<h2>Reserves / remarks</h2><div class="box">${_esc(d.verdictNote)}</div>`:''}
+    ${d.reception&&d.reception.validatedAt?`<h2>ENOGIA reception check</h2><div class="box">Result: <b>${QA_RECV_ST[d.reception.status][0]}</b> · ${_esc(d.reception.by||'')} · ${new Date(d.reception.validatedAt).toLocaleString('en-GB')}${d.reception.note?'<br>'+_esc(d.reception.note):''}</div><table><tr><th>Item</th><th>Description</th><th>Result</th><th>Comment</th></tr>${qaRecvList(d).map(x=>{ const v=((d.reception.res||{})[x.key])||{}; return `<tr><td>${_esc(x.ref)}</td><td>${_esc(x.title)}</td><td class="st" style="color:${v.st==='ok'?'#1a9c6b':v.st==='nok'?'#d93025':'#777'}">${v.st==='ok'?'Reworked':v.st==='nok'?'Not reworked':v.st==='na'?'N/A':'—'}${v.m!=null&&v.m!==''?' ('+v.m+' mm)':''}</td><td>${_esc(v.c||'')}</td></tr>`; }).join('')}${QA_RECV_CHECKS.map(c=>{ const v=((d.reception.res||{})[c[0]])||{}; return `<tr><td>${c[0]}</td><td>${_esc(c[1])}</td><td class="st" style="color:${v.st==='ok'?'#1a9c6b':v.st==='nok'?'#d93025':'#777'}">${v.st?v.st.toUpperCase():'—'}</td><td>${_esc(v.c||'')}</td></tr>`; }).join('')}</table>`:''}
     <h2>Photos</h2><div class="ph">${ph.map(p=>`<figure><img src="${p.data}"><figcaption>${_esc(p.itemId)} · ${new Date(p.at).toLocaleString('en-GB')}</figcaption></figure>`).join('')||'—'}</div>
     <h2>Sign-off</h2><table><tr><th>Inspector (TÜV NORD)</th><td>${_esc(d.signName||'')}<br>${d.signedAt?new Date(d.signedAt).toLocaleString('en-GB'):''}${d.signature?`<br><img src="${d.signature}" style="height:60px">`:''}</td><th>ENOGIA</th><td style="height:70px"></td></tr></table>
     <script>setTimeout(()=>print(),600)<\/script></body></html>`); w.document.close();
@@ -7928,6 +7993,89 @@ async function qaDefDelete(id){ if(!confirm(L_('Delete this defect?','Supprimer 
 function qaDefOpen(id){ qaDefForm(id); }
 function qaDefFocus(id){ const d=qaCur(), x=(d.defects||[]).find(z=>z.id===id); if(!x||!qa3d) return; qa3d.tgt.set(x.pos[0],x.pos[1],x.pos[2]); qa3d.rad=3200; qa3dDraw(); }
 
+// ---------- Planification des contrôles ----------
+const qaClosed=d=>['accepted','reserves','rejected'].includes(d.status);
+const qaDayKey=v=>v?String(v).slice(0,10):'';
+function qaRel(d){ const k=qaDayKey(d.inspectionDate); if(!k) return ''; const t=todayKey(), diff=Math.round((new Date(k+'T12:00')-new Date(t+'T12:00'))/864e5);
+  if(qaClosed(d)) return L_('inspected','inspecté')+' '+new Date(k+'T12:00').toLocaleDateString(qaLang==='en'?'en-GB':'fr-FR');
+  if(diff===0) return L_('today','aujourd’hui'); if(diff===1) return L_('tomorrow','demain'); if(diff>1) return L_('in '+diff+' days','dans '+diff+' j'); return L_(-diff+' day(s) late',-diff+' j de retard'); }
+function qaGroups(L,insp){
+  const t=todayKey(), G={late:[],today:[],next:[],nodate:[],recv:[],done:[]};
+  L.forEach(d=>{ const k=qaDayKey(d.inspectionDate);
+    if(qaClosed(d)){ if(!insp&&!(d.reception&&d.reception.validatedAt)) G.recv.push(d); else G.done.push(d); return; }
+    if(!k) G.nodate.push(d); else if(k<t) G.late.push(d); else if(k===t) G.today.push(d); else G.next.push(d); });
+  const byDate=(a,b)=>String(a.inspectionDate||'').localeCompare(String(b.inspectionDate||''));
+  Object.values(G).forEach(x=>x.sort(byDate)); G.done.reverse();
+  return [['late','⚠ '+L_('Overdue inspections','Contrôles en retard'),'#ff8a82'],['today','📍 '+L_('Today','Aujourd’hui'),'#ffd27a'],['next','📅 '+L_('Upcoming inspections','Contrôles à venir'),'#9fdcff'],['nodate',L_('To be scheduled','À planifier'),'var(--text3)'],['recv','🏭 '+L_('To check at reception','À contrôler à réception'),'#7fe3d8'],['done',L_('Closed','Clôturés'),'var(--text3)']].map(([k,t2,c])=>[G[k],t2,c,k]).filter(x=>x[0].length);
+}
+function qaPlanOpen(id){
+  const d=qaList.find(x=>x.id===id); if(!d) return; const k=qaDayKey(d.inspectionDate), tm=d.inspectionTime||'';
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='qaPlanOv';
+  ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()"><h3>📅 ${L_('Schedule the inspection','Planifier le contrôle')} – ${_esc(d.pj)}</h3>
+    <div class="req-sub">${_esc(d.supplier||'')}${d.supplierSn?' · S/N '+_esc(d.supplierSn):''}</div>
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px"><div><label>Date</label><input id="qpD" type="date" value="${k}"></div><div><label>${L_('Time','Heure')}</label><input id="qpT" type="time" value="${tm}"></div></div>
+    <label>${L_('Inspector (TÜV NORD)','Inspecteur (TÜV NORD)')}</label><input id="qpI" value="${_esc(d.inspector||'')}" autocomplete="off">
+    <label>${L_('Note / reason for rescheduling','Note / motif de report')}</label><input id="qpN" autocomplete="off" placeholder="${L_('optional','facultatif')}">
+    ${(d.schedLog||[]).length?`<div class="qa-slog">${d.schedLog.slice(-6).reverse().map(l=>`<div>${new Date(l.at).toLocaleDateString('fr-FR')} · ${l.from?_esc(l.from)+' → ':''}<b>${_esc(l.to||'—')}</b>${l.note?' · '+_esc(l.note):''} <small>${_esc(l.by||'')}</small></div>`).join('')}</div>`:''}
+    <div class="req-actions"><button class="btn btn-outline" onclick="document.getElementById('qaPlanOv').remove()">${L_('Cancel','Annuler')}</button><button class="btn btn-primary" onclick="qaPlanSave('${id}')">${L_('Save','Enregistrer')}</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov);
+}
+async function qaPlanSave(id){ const d=qaList.find(x=>x.id===id); const nd=document.getElementById('qpD').value, nt=document.getElementById('qpT').value, ni=document.getElementById('qpI').value.trim(), note=document.getElementById('qpN').value.trim();
+  const from=qaDayKey(d.inspectionDate); if(nd!==from||note) d.schedLog=[...(d.schedLog||[]),{at:new Date().toISOString(),by:qaWho(),from,to:nd,note}];
+  d.inspectionDate=nd; d.inspectionTime=nt; d.inspector=ni; document.getElementById('qaPlanOv').remove(); await qaSave(d); toast('📅 '+L_('Inspection scheduled','Contrôle planifié'),'ok'); renderQualite(); }
+// ---------- Contrôle réception à l'atelier ENOGIA ----------
+const QA_RECV_CHECKS=[
+  ['R1','No transport damage (frame, supports, piping)','Aucun dommage de transport (châssis, supports, tuyauteries)'],
+  ['R2','Frame complete: half-shell supports, cable trays, lube supports','Châssis complet : supports demi-coquille, chemins de câbles, supports lub'],
+  ['R3','Protection caps on every pipe inlet','Bouchons de protection sur chaque entrée de tuyauterie'],
+  ['R4','CE plates and marking present and readable','Plaques CE et marquage présents et lisibles'],
+  ['R5','Documents received (TÜV report, material certificate, endoscopy report)','Documents reçus (rapport TÜV, certificat matière, rapport endoscopique)'],
+  ['R6','Internal cleanliness (visual check at inlets)','Propreté intérieure (contrôle visuel aux entrées)'],
+  ['R7','Coating RAL 5012 without chips or bare metal','Peinture RAL 5012 sans éclat ni manque']];
+// Les remontées du contrôle fournisseur à vérifier : points NOK, cotes hors tolérance, défauts 3D
+function qaRecvList(d){ const T=qaTpl(d), r=d.results||{}, out=[];
+  T.sections.forEach(s=>s.items.forEach(i=>{ if(r[i.id]&&r[i.id].st==='nok') out.push({key:'C-'+i.id,kind:'check',ref:i.id,title:L_(i.en,i.fr),note:r[i.id].c||'',photo:i.id}); }));
+  const P=window.QA_ASSETS?qaPlan(d):{dims:[]}, dm=d.dims||{};
+  (P.dims||[]).forEach(x=>{ const m=dm[x.id]; if(m&&m.v!=null&&m.v!==''&&Math.abs(+m.v-x.nom)>tolA(x.nom)) out.push({key:'D-'+x.id,kind:'dim',ref:'📐 '+x.n,title:L_(x.en,x.fr),note:`${L_('Nominal','Nominal')} ${x.nom} ± ${tolA(x.nom)} · ${L_('measured by TÜV','mesuré TÜV')} ${m.v}`,nom:x.nom,tol:tolA(x.nom),photo:x.id}); });
+  (d.defects||[]).forEach((x,i)=>out.push({key:'F-'+x.id,kind:'def',ref:'📍 '+(i+1),title:x.desc,note:L_(QA_SEV[x.sev||'major'][0],QA_SEV[x.sev||'major'][1])+(x.status==='closed'?' · '+L_('marked fixed by supplier','marqué corrigé chez le fournisseur'):''),photo:x.id}));
+  return out; }
+function qaRecvStats(d){ const R=(d.reception||{}).res||{}, L=qaRecvList(d), C=QA_RECV_CHECKS;
+  const fixed=L.filter(x=>R[x.key]&&R[x.key].st==='ok').length, notFixed=L.filter(x=>R[x.key]&&R[x.key].st==='nok').length, cDone=C.filter(c=>R[c[0]]&&R[c[0]].st).length, cNok=C.filter(c=>R[c[0]]&&R[c[0]].st==='nok').length;
+  return {n:L.length,fixed,notFixed,todo:L.length-fixed-notFixed-L.filter(x=>R[x.key]&&R[x.key].st==='na').length,cDone,cNok,c:C.length}; }
+const QA_RECV_ST={ok:['Compliant','Conforme','#2aa99e'],reserves:['With reserves','Avec réserves','#f2c230'],rejected:['Refused','Refusé','#ff3b30']};
+function qaRenderRecv(d){
+  const rc=d.reception||{}, R=rc.res||{}, L=qaRecvList(d), S=qaRecvStats(d), lock=!!rc.validatedAt&&!(typeof isTimeAdmin==='function'&&isTimeAdmin());
+  const row=(key,ref,title,note,kind,extra)=>{ const v=R[key]||{}, ph=qaPhotos.filter(p=>p.itemId==='RC-'+key);
+    return `<div class="qa-it ${v.st||''}"><div class="qa-ih"><span class="qa-id">${ref}</span><div class="qa-tx"><b>${_esc(title)}</b>${note?`<small>${_esc(note)}</small>`:''}</div></div>
+      ${extra||''}
+      <div class="qa-row"><div class="qa-seg">${(kind==='rework'?[['ok','✓ Repris'],['nok','✗ Non repris'],['na','N/A']]:[['ok','✓ OK'],['nok','✗ NOK'],['na','N/A']]).map(([k,l])=>`<button class="${v.st===k?'on '+k:''}" ${lock?'disabled':''} onclick="qaRecvSet('${key}','st','${v.st===k?'':k}')">${l}</button>`).join('')}</div>
+        ${kind==='dim'?`<input class="qa-meas" type="number" step="0.1" placeholder="Nouvelle mesure (mm)" value="${v.m??''}" ${lock?'disabled':''} onchange="qaRecvSet('${key}','m',this.value)">`:''}
+        <label class="btn btn-outline btn-sm qa-cam">📷 ${ph.length||''}<input type="file" accept="image/*" capture="environment" multiple style="display:none" ${lock?'disabled':''} onchange="qaAddPhotos('RC-${key}',this)"></label></div>
+      ${ph.length?`<div class="qa-thumbs">${ph.map(p=>`<img src="${p.data}" onclick="qaViewPhoto('${p.id}')" alt="">`).join('')}</div>`:''}
+      <input class="qa-com" style="min-height:0" placeholder="Commentaire" value="${_esc(v.c||'')}" ${lock?'disabled':''} onchange="qaRecvSet('${key}','c',this.value)"></div>`; };
+  let h=`<div class="qa-prog"><div><span>🔁 Reprises fournisseur vérifiées</span><i><s style="width:${S.n?(S.n-S.todo)/S.n*100:100}%"></s></i><b>${S.n-S.todo}/${S.n}</b></div><div><span>✓ Reprises faites</span><b style="color:#7fe3d8">${S.fixed}</b></div><div><span>✗ Non reprises</span><b style="color:${S.notFixed?'#ff8a82':'#7fe3d8'}">${S.notFixed}</b></div><div><span>☑ Contrôles réception</span><b>${S.cDone}/${S.c}</b></div></div>`;
+  if(rc.validatedAt) h+=`<div class="qa-lock" style="border-color:${QA_RECV_ST[rc.status][2]};color:${QA_RECV_ST[rc.status][2]}">🏭 Réception validée : <b>${QA_RECV_ST[rc.status][1]}</b> · ${_esc(rc.by||'')} · ${new Date(rc.validatedAt).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})}${rc.note?' · '+_esc(rc.note):''}${typeof isTimeAdmin==='function'&&isTimeAdmin()?` <button class="btn btn-outline btn-sm" onclick="qaRecvReopen()">Rouvrir</button>`:''}</div>`;
+  h+=`<details class="qa-sec" open><summary><span class="pl-chev">▸</span><b>🔁 Remontées du contrôle fournisseur : reprises à vérifier</b><em>${S.n?S.n+' remontée(s)':'aucune'}</em></summary>
+    ${L.length?L.map(x=>{ const v=R[x.key]||{}; const extra=x.kind==='dim'&&v.m!=null&&v.m!==''?`<div class="qa-res"><span class="${Math.abs(+v.m-x.nom)<=x.tol?'ok':'nok'}">${Math.abs(+v.m-x.nom)<=x.tol?'✓ Désormais dans la tolérance':'✗ Toujours hors tolérance'} (Δ ${(+v.m-x.nom>0?'+':'')+Math.round((+v.m-x.nom)*10)/10} mm)</span></div>`:'';
+      const sup=qaPhotos.filter(p=>p.itemId===x.photo).slice(0,4); return row(x.key,x.ref,x.title,x.note,x.kind==='dim'?'dim':'rework',(sup.length?`<div class="qa-thumbs" title="Photos du contrôle fournisseur">${sup.map(p=>`<img src="${p.data}" onclick="qaViewPhoto('${p.id}')" alt="" style="opacity:.85">`).join('')}<small style="align-self:center;color:var(--text3);font-size:11px">photos TÜV</small></div>`:'')+extra); }).join('')
+      :'<p class="caisse-note" style="padding:0 14px 12px">Aucun NOK, aucune cote hors tolérance et aucun défaut relevé chez le fournisseur.</p>'}</details>
+    <details class="qa-sec" open><summary><span class="pl-chev">▸</span><b>☑ Contrôles à réception</b><em>${S.cDone}/${S.c}${S.cNok?` · <span style="color:#ff8a82">${S.cNok} NOK</span>`:''}</em></summary>${QA_RECV_CHECKS.map(c=>row(c[0],c[0],c[2],'','check')).join('')}</details>`;
+  if(!rc.validatedAt){ const sug=S.notFixed||S.cNok?'reserves':'ok';
+    h+=`<div class="db-card"><h3>🏭 Valider la réception</h3>${S.todo||S.cDone<S.c?`<div class="qa-warn" style="margin-bottom:8px">⚠ ${[S.todo?S.todo+' reprise(s) non vérifiée(s)':'',S.cDone<S.c?(S.c-S.cDone)+' contrôle(s) sans réponse':''].filter(Boolean).join(' · ')}</div>`:''}
+      <div class="qa-seg big">${Object.entries(QA_RECV_ST).map(([k,v])=>`<button class="${(window._qaRecvV||sug)===k?'on '+(k==='ok'?'accepted':k):''}" onclick="window._qaRecvV='${k}';renderQualite()">${v[1]}</button>`).join('')}</div>
+      <label>Réserves / actions demandées au fournisseur</label><textarea id="qaRecvNote" class="qa-com">${_esc(rc.note||'')}</textarea>
+      <button class="btn btn-primary btn-full" style="margin-top:10px" onclick="qaRecvValidate()">✓ Valider la réception</button></div>`; }
+  return h;
+}
+async function qaRecvSet(key,field,val){ const d=qaCur(); if(!d) return; const rc={...(d.reception||{})}; rc.res={...(rc.res||{}),[key]:{...((rc.res||{})[key]||{}),[field]:field==='m'&&val!==''?+val:val,by:qaWho(),at:new Date().toISOString()}};
+  if(field==='m'&&val!==''){ const x=qaRecvList(d).find(z=>z.key===key); if(x&&x.kind==='dim') rc.res[key].st=Math.abs(+val-x.nom)<=x.tol?'ok':'nok'; }
+   if(!rc.startedAt) rc.startedAt=new Date().toISOString(); d.reception=rc; await qaSave(d); renderQualite(); }
+async function qaRecvValidate(){ const d=qaCur(), S=qaRecvStats(d), v=window._qaRecvV||(S.notFixed||S.cNok?'reserves':'ok');
+  if((S.todo||S.cDone<S.c)&&!confirm('Certaines reprises ou contrôles ne sont pas renseignés. Valider quand même ?')) return;
+  d.reception={...(d.reception||{}),status:v,note:document.getElementById('qaRecvNote').value,validatedAt:new Date().toISOString(),by:qaWho()}; window._qaRecvV=null; await qaSave(d); toast('🏭 Réception validée','ok'); renderQualite(); }
+async function qaRecvReopen(){ if(!confirm('Rouvrir la réception ?')) return; const d=qaCur(); d.reception={...(d.reception||{}),validatedAt:null}; await qaSave(d); renderQualite(); }
+const qaRecvChip=d=>{ const rc=d.reception||{}; if(rc.validatedAt){ const s=QA_RECV_ST[rc.status]; return `<span class="qa-st" style="background:${s[2]}22;color:${s[2]};border-color:${s[2]}66">🏭 ${s[1]}</span>`; } if(qaClosed(d)) return `<span class="qa-st" style="background:#7fe3d822;color:#7fe3d8;border-color:#7fe3d866">🏭 À réceptionner</span>`; return ''; };
+
 // ---------- Lien contrôleur (sans compte ENOGIA) : lien + QR code vers la partie Qualité seulement ----------
 const qaWho=()=>window._qaGuest?('TÜV · '+(localStorage.getItem('qaInspectorName')||'Inspector')):((window._currentUser&&window._currentUser.email)||'');
 function qaAskName(){ if(!window._qaGuest||localStorage.getItem('qaInspectorName')) return; const n=(prompt('Welcome to ENOGIA supplier acceptance.\nPlease enter your name (it will appear on your checks, photos and report):')||'').trim(); if(n) try{ localStorage.setItem('qaInspectorName',n); }catch(e){} }
@@ -7959,6 +8107,8 @@ let qaCfg={}, qaPageCache={};
 function qaCfgStart(){ if(window._qaCfgL||!window._fsOnSnapshot) return; window._qaCfgL=true;
   window._fsOnSnapshot(window._fsCollection(window._db,'qaConfig'),s=>{ qaCfg={}; s.docs.forEach(x=>qaCfg[x.id]=x.data()); if(document.getElementById('scQualite').classList.contains('active')) renderQualite(); },()=>{}); }
 document.addEventListener('firebaseReady',()=>setTimeout(qaCfgStart,800));
+// Les dossiers qualité alimentent aussi le tableau de bord (onglet Fournisseurs)
+document.addEventListener('firebaseReady',()=>setTimeout(()=>{ if(!isInspector()) qaStart(); },1500));
 const qaParams=g=>({s26:6,s16:3,trays:21,trayRefs:17,lubSup:2,tolStd:'ISO 13920 class A',...((QA_TEMPLATES[g]||{}).params||{}),...((qaCfg[g]||{}).params||{})});
 // Plan effectif d'un dossier : la révision du dossier si elle est connue, sinon la dernière importée
 function qaPlan(d){
@@ -8079,7 +8229,7 @@ function renderQaKpi(){
   const bs=Object.entries(bySec).sort((a,b)=>b[1]-a[1]), mx=bs.length?bs[0][1]:1;
   return `<div class="dash-section-title">🏭 Réception fournisseur (TÜV NORD)</div><div class="db-tiles">
     <div class="db-tile" style="border-top-color:var(--accent)"><span>✅ Acceptés 1er passage</span><b style="color:#7fe3d8">${closed.length?Math.round(acc/closed.length*100)+' %':'—'}</b><small>${acc} accepté(s) · ${res} avec réserves · ${rej} refusé(s)</small></div>
-    <div class="db-tile" style="border-top-color:#2b8fd6"><span>📂 Dossiers</span><b>${qaList.length}</b><small>${qaList.length-closed.length} en cours</small></div></div>
+    <div class="db-tile" style="border-top-color:#2b8fd6"><span>📂 Dossiers</span><b>${qaList.length}</b><small>${qaList.length-closed.length} en cours · ${qaList.filter(d=>!qaClosed(d)&&qaDayKey(d.inspectionDate)&&qaDayKey(d.inspectionDate)<todayKey()).length} en retard</small></div>${(()=>{ const R=qaList.filter(d=>d.reception&&d.reception.validatedAt); const tot=R.reduce((a,d)=>{ const s=qaRecvStats(d); return [a[0]+s.fixed,a[1]+s.fixed+s.notFixed]; },[0,0]); return `<div class="db-tile" style="border-top-color:#2aa99e"><span>🔁 Reprises fournisseur</span><b style="color:#7fe3d8">${tot[1]?Math.round(tot[0]/tot[1]*100)+' %':'—'}</b><small>${tot[0]}/${tot[1]} défaut(s) repris · ${R.length} réception(s) validée(s)</small></div>`; })()}</div>
     ${bs.length?`<div class="db-card"><h3>NOK par rubrique</h3>${bs.map(([k,v])=>`<div class="nva-row"><span>${_esc(k)}</span><span class="nva-bar"><i style="width:${Math.round(v/mx*100)}%;background:#ff6b62"></i></span><b>${v}</b><small></small></div>`).join('')}</div>`:''}`;
 }
 
