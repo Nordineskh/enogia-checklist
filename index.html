@@ -870,6 +870,12 @@ body.qa-inspector .menu-item:not(.qa-mi):not([onclick*="_signOut"]),body.qa-insp
 .sup-score{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;font-weight:800;font-size:16px;background:conic-gradient(var(--c) calc(var(--v)*1%), #ffffff14 0);position:relative}
 .sup-score::before{content:'';position:absolute;inset:6px;border-radius:50%;background:var(--surface)}.sup-score{isolation:isolate}.sup-score::before{z-index:-1}
 .sup-sev{display:flex;min-width:120px;height:20px;border-radius:6px;overflow:hidden}.sup-sev i{display:flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;font-weight:700;color:#1a1200}
+.cost-cfg{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--text2)}
+.cost-cfg input{width:80px !important;padding:6px 8px !important}.cost-cfg small{flex-basis:100%;color:var(--text3);font-size:11.5px}
+.cost-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;min-width:8px}.cost-bar i{display:block}
+#dashboardContent .stk-table td.num{white-space:nowrap}
+.rw-btn.rp{margin-left:6px;background:#9b7bff22;border-color:#9b7bff66;color:#d6caff}
+.rp-chk{display:flex !important;align-items:center;gap:8px;margin-top:10px;text-transform:none !important;letter-spacing:0 !important;font-size:13px !important;color:var(--text2) !important}.rp-chk input{width:auto !important}
 /* Tableau de bord */
 .db-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:4px 0 14px;position:sticky;top:0;z-index:15;background:var(--bg)}
 .db-tabs button{flex-shrink:0;background:var(--surface);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap}
@@ -4727,7 +4733,7 @@ async function renderDashboard(){
   const zoneLbl={z1:'Montage méca',z2:'Montage élec',z3:'Banc d’essai',z4:'Conditionnement'};
   const andonDot={red:'#ff3b30',orange:'#ff9f1a',blue:'#2b8fd6',green:'#2ee07a',idle:'#7a8b92'};
   // --- onglets ---
-  const tabs=[['syn','🏠 Synthèse'],['mach','🏭 Machines'],['qual','⚠️ Qualité'],['temps','⏱ Temps'],['flux','📅 Planning & flux'],['stock','📦 Stock'],['four','🏭 Fournisseurs']];
+  const tabs=[['syn','🏠 Synthèse'],['mach','🏭 Machines'],['qual','⚠️ Qualité'],['temps','⏱ Temps'],['flux','📅 Planning & flux'],['stock','📦 Stock'],['four','🏭 Fournisseurs'],['couts','💶 Coûts']];
   html+=`<div class="db-tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" class="${dashTab===k?'on':''}" onclick="setDashTab('${k}')">${l}${k==='syn'&&todo.length?` <span class="db-n">${todo.length}</span>`:''}</button>`).join('')}</div>`;
   const pane=(k,inner)=>`<div class="db-pane" data-tab="${k}" ${dashTab===k?'':'hidden'}>${inner}</div>`;
   // Synthèse
@@ -4759,6 +4765,7 @@ async function renderDashboard(){
   html+=pane('stock',`<div class="db-tiles">${sup('📦 Fiabilité stock',kpiStock==null?'—':kpiStock+' %',`${stockOkCount}/${sessionsWithStock.length} machines sans manque`,pctCol(kpiStock,80,60))}${sup('🛒 À commander',stockAlerts.length,`${rupt.length} en rupture`,stockAlerts.length?'#f0a500':'var(--green)')}</div>
     <div class="db-card"><h3>Articles à recommander</h3>${stockAlerts.length?`<div class="db-todo">${stockAlerts.sort((a,b)=>(stockStatus(a)==='rupture'?0:1)-(stockStatus(b)==='rupture'?0:1)).map(a=>`<div class="db-td ${stockStatus(a)==='rupture'?'r':'o'}"><span class="ic">${stockStatus(a)==='rupture'?'🔴':'🟠'}</span><div><b>${_esc(a.designation)}</b><small>${_esc(a.ref)}${a.emplacement?' · '+_esc(a.emplacement):''} · stock ${a.qty??'?'} / seuil ${a.seuil||0}</small></div><button class="btn btn-outline btn-sm" onclick="showStock();setTimeout(()=>openBin('${a.id}','in'),300)">Réception</button></div>`).join('')}</div>`:'<p class="db-ok">✓ Tous les articles sont au-dessus de leur seuil.</p>'}<div style="margin-top:10px"><button class="btn btn-primary btn-sm" onclick="showStock()">Ouvrir le stock</button></div></div>`+(typeof renderManqSection==='function'?renderManqSection():''));
   html+=pane('four',typeof renderSupplierPane==='function'?renderSupplierPane():'');
+  html+=pane('couts',typeof renderCostPane==='function'?renderCostPane(monthSessions):'');
   el.innerHTML = html;
 }
 let dashTab='syn';
@@ -4845,8 +4852,8 @@ function renderGantt(sessions, isAdmin){
     html += `<div style="display:flex;align-items:center;margin-bottom:6px;background:${rowBg};border-radius:4px;padding:4px 0">`;
     // Label
     html += `<div style="width:150px;flex-shrink:0;padding-right:10px">
-      <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${s.serie}">${s.serie}</div>
-      <div style="font-size:10px;color:var(--text3)">${s.op}</div>
+      ${(()=>{ const ss=(typeof findSess==='function'&&findSess(s.id))||s, pj=(ss.projet&&ss.projet!=='–'?ss.projet:'')||(s.projet&&s.projet!=='–'?s.projet:'')||(s.serie&&s.serie!=='–'?s.serie:'Sans PJ'), gm=(MODELS[ss.modelId||s.modelId]||{}).name||'', sn=s.serie&&s.serie!=='–'&&s.serie!==pj?' · S/N '+s.serie:'';
+        return `<div style="font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${_esc(pj+(gm?' — '+gm:'')+sn)}">${_esc(pj)}</div><div style="font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${_esc(gm+sn)}${s.op&&s.op!=='–'?' · '+_esc(s.op):''}</div>`; })()}
     </div>`;
 
     // Bar area
@@ -6692,7 +6699,7 @@ function renderReworkBar(si){
   return `<div class="rw-bar" id="rwBar">${act?`<div class="rw-live ${act.paused?'paused':''}">
       <span class="rw-ic">${rwType(act.type)[1]}</span><div style="flex:1;min-width:0"><b>Reprise en cours — ${_esc(rwType(act.type)[2])}</b><small>${act.itemLabel?_esc(act.itemLabel)+' · ':''}${act.paused?'en pause':'chrono'} <span class="rw-clock" data-rw="${act.id}">${rwClock(rwSec(act))}</span>${act.comment?' · '+_esc(act.comment):''}</small></div>
       <button class="rw-pause" onclick="rwPause('${act.id}')">${act.paused?'▶ Reprendre':'⏸ Pause'}</button><button class="rw-end" onclick="rwEnd('${act.id}')">✓ Fin de reprise</button></div>`
-    :`<button class="rw-btn" onclick="openReworkForm()">🔧 Reprise</button>`}
+    :`<button class="rw-btn" onclick="openReworkForm()">🔧 Reprise</button>`}<button class="rw-btn rp" onclick="openReplForm({stepName:((MODELS[session.modelId]||MODELS.eno180ltv3).getSteps()[${si}]||{}).name})">♻ Pièce remplacée</button>
     ${done.length?`<div class="rw-hist">${done.length} reprise${done.length>1?'s':''} sur cette étape · ${hm(tot)} : ${done.slice(-3).map(r=>`${rwType(r.type)[1]} ${_esc(rwType(r.type)[2])} (${hm(rwSec(r))})`).join(' · ')}</div>`:''}</div>`;
 }
 function refreshRwBar(){ const el=document.getElementById('rwBar'); if(el&&session){ const d=document.createElement('div'); d.innerHTML=renderReworkBar(currentStep); el.replaceWith(d.firstElementChild); } }
@@ -7574,6 +7581,97 @@ function applyAutoPlan(){
 function undoAutoPlan(){ const b=planTeam.lastAutoBatch; const L=planTasks.filter(t=>t.autoBatch===b&&taskStatus(t).st==='todo'); if(!b||!L.length){ toast('Rien à annuler'); return; }
   if(!confirm(`Retirer les ${L.length} tâche(s) de la dernière planification automatique qui ne sont pas commencées ?`)) return; L.forEach(t=>planRemove(t.id)); planTeam.lastAutoBatch=null; planSaveCfg(); }
 
+
+// ===================== REMPLACEMENTS DE FOURNITURES / MATIÈRE (surcoût non-qualité) =====================
+let replList=[];
+document.addEventListener('firebaseReady',()=>setTimeout(()=>{ if(typeof isInspector==='function'&&isInspector()) return; try{ window._fsOnSnapshot(window._fsCollection(window._db,'replacements'),s=>{ replList=s.docs.map(d=>({id:d.id,...d.data()})); if(document.getElementById('scDashboard').classList.contains('active')&&typeof dashTab!=='undefined'&&dashTab==='couts') renderDashboard(); },()=>{}); }catch(e){} },1300));
+const REPL_REASONS=['Pièce non conforme','Casse / détérioration au montage','Erreur de montage','Modification technique','Pièce perdue','Autre'];
+const artPrice=a=>{ if(!a) return null; for(const k of ['prix','pu','prixUnitaire','price','cout','coût']) if(a[k]!=null&&!isNaN(parseFloat(String(a[k]).replace(',','.')))) return parseFloat(String(a[k]).replace(',','.')); return null; };
+function openReplForm(opt){
+  opt=opt||{}; const ss=opt.sessionId!=null?findSess(opt.sessionId):(session||null);
+  const all=(typeof liveSessions!=='undefined'&&liveSessions.length?liveSessions:sessions);
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='replOv';
+  ov.innerHTML=`<div class="req-box" onclick="event.stopPropagation()"><h3>♻ Remplacement de fourniture / matière</h3>
+    <div class="req-sub">Pièce ou matière remplacée en plus de la gamme : le surcoût est suivi dans Tableau de bord → Coûts.</div>
+    <label>Machine</label><select id="rpS">${all.map(s=>`<option value="${s.id}" ${ss&&String(ss.id)===String(s.id)?'selected':''}>${_esc((s.projet&&s.projet!=='–'?s.projet:'')||s.serie||'')} · ${_esc((MODELS[s.modelId]||{}).name||'')}</option>`).join('')}</select>
+    <label>Article remplacé</label><input id="rpA" list="rpList" placeholder="Rechercher dans le stock ou saisir librement" autocomplete="off" oninput="replPick()">
+    <datalist id="rpList">${(typeof stockList!=='undefined'?stockList:[]).slice(0,800).map(a=>`<option value="${_esc((a.ref?a.ref+' – ':'')+a.designation)}">`).join('')}</datalist>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label>Quantité</label><input id="rpQ" type="number" min="0" step="any" value="1" oninput="replTot()"></div><div><label>Prix unitaire (€ HT)</label><input id="rpP" type="number" min="0" step="0.01" placeholder="0,00" oninput="replTot()"></div></div>
+    <div class="qa-res" id="rpT"></div>
+    <label>Motif</label><div class="req-chips">${REPL_REASONS.map(r=>`<button class="req-chip" onclick="this.parentNode.querySelectorAll('.req-chip').forEach(b=>b.classList.toggle('on',b===this));window._rpR='${r.replace(/'/g,"\\'")}'">${r}</button>`).join('')}</div>
+    <label>Précision (facultatif)</label><input id="rpC" autocomplete="off">
+    <label class="rp-chk" id="rpStockL" style="display:none"><input type="checkbox" id="rpStock" checked> Sortir la quantité du stock</label>
+    <div class="req-err" id="rpErr"></div>
+    <div class="req-actions"><button class="btn btn-outline" onclick="document.getElementById('replOv').remove()">Annuler</button><button class="btn btn-primary" onclick="replSave(${opt.stepName?`'${String(opt.stepName).replace(/'/g,"\\'")}'`:'null'})">Enregistrer</button></div></div>`;
+  ov.addEventListener('click',()=>ov.remove()); window._rpR=null; window._rpArt=null; document.body.appendChild(ov);
+}
+function replPick(){ const v=document.getElementById('rpA').value, a=(stockList||[]).find(x=>((x.ref?x.ref+' – ':'')+x.designation)===v); window._rpArt=a||null;
+  document.getElementById('rpStockL').style.display=a?'flex':'none'; const p=artPrice(a); if(a&&p!=null&&!document.getElementById('rpP').value) document.getElementById('rpP').value=p; replTot(); }
+function replTot(){ const q=+document.getElementById('rpQ').value||0, p=+document.getElementById('rpP').value||0; document.getElementById('rpT').innerHTML=q&&p?`<span class="nok">Surcoût : ${(q*p).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})} €</span>`:''; }
+async function replSave(stepName){
+  const sid=document.getElementById('rpS').value, s=findSess(sid), txt=document.getElementById('rpA').value.trim(), q=+document.getElementById('rpQ').value||0, p=+document.getElementById('rpP').value, e=document.getElementById('rpErr');
+  if(!txt){ e.textContent='Indiquez l’article remplacé.'; return; } if(!(q>0)){ e.textContent='Quantité invalide.'; return; } if(isNaN(p)||document.getElementById('rpP').value===''){ e.textContent='Indiquez le prix unitaire.'; return; } if(!window._rpR){ e.textContent='Choisissez un motif.'; return; }
+  const a=window._rpArt, steps=s?(MODELS[s.modelId]||MODELS.eno180ltv3).getSteps():[];
+  const r={id:'rp'+Date.now().toString(36),sessionId:sid,pj:s?((s.projet&&s.projet!=='–'?s.projet:'')||s.serie||''):'',model:s?s.modelId:'',stepName:stepName||(s&&session&&String(session.id)===String(sid)?(steps[currentStep]||{}).name:'')||'',
+    artId:a?a.id:null,ref:a?a.ref||'':'',designation:a?a.designation:txt,qty:q,unit:p,total:Math.round(q*p*100)/100,reason:window._rpR,comment:document.getElementById('rpC').value.trim(),by:(window._currentUser&&window._currentUser.email)||'',at:new Date().toISOString()};
+  try{ await window._fsSetDoc(window._fsDoc(window._db,'replacements',r.id),r); replList.push(r); }catch(err){ alert('Enregistrement impossible : '+(err.message||err)); return; }
+  if(a&&document.getElementById('rpStock').checked&&typeof applyStockMove==='function') applyStockMove(a.id,'out',q,r.pj);
+  document.getElementById('replOv').remove(); toast(`♻ Remplacement enregistré · ${r.total.toLocaleString('fr-FR')} €`,'ok'); if(typeof dashTab!=='undefined'&&document.getElementById('scDashboard').classList.contains('active')) renderDashboard();
+}
+async function replDelete(id){ if(!confirm('Supprimer ce remplacement ?')) return; try{ await window._fsDeleteDoc(window._fsDoc(window._db,'replacements',id)); }catch(e){} replList=replList.filter(r=>r.id!==id); renderDashboard(); }
+const replFor=sid=>replList.filter(r=>String(r.sessionId)===String(sid));
+
+// ===================== TABLEAU DE BORD : COÛTS =====================
+// Taux par défaut : coût moyen chargé d'un technicien en France (≈ 33 k€ brut/an × 1,42 de charges patronales ÷ 1 607 h) ≈ 30 €/h
+let costCfg={rate:30,stopPeople:1,loaded:false};
+async function costLoad(){ if(costCfg.loaded||!window._fsGetDoc) return; costCfg.loaded=true; try{ const s=await window._fsGetDoc(window._fsDoc(window._db,'planConfig','costs')); if(s.exists()){ costCfg={...costCfg,...s.data(),loaded:true}; if(typeof dashTab!=='undefined'&&dashTab==='couts') renderDashboard(); } }catch(e){} }
+async function costSave(k,v){ if(!(typeof isTimeAdmin==='function'&&isTimeAdmin())) return; costCfg[k]=+v||0; try{ const {loaded,...d}=costCfg; await window._fsSetDoc(window._fsDoc(window._db,'planConfig','costs'),d); }catch(e){ alert('Enregistrement impossible : '+(e.message||e)); } renderDashboard(); }
+function costOfSession(s){
+  let va=0, rw=0, nrw=0; const rwByType={};
+  (s.steps||[]).forEach((st,si)=>{ (st.items||[]).forEach(it=>{ va+=Math.max(0,rawItemSeconds(it)+(typeof timeCorr==='function'?timeCorr(s.id,si,it.id):0)); });
+    (st.reworks||[]).forEach(r=>{ const ov=typeof rwOverride==='function'?rwOverride(s.id,'rw_'+si+'_'+r.id):null; if(ov===0) return; const sec=ov!=null?ov:rwSec(r); rw+=sec; nrw++; rwByType[r.type]=(rwByType[r.type]||0)+sec; }); });
+  const stopH=(typeof arretList==='function'?arretList([s]):[]).reduce((a,x)=>a+x.h,0);
+  const R=costCfg.rate||0, vaH=va/3600, rwH=rw/3600, stH=stopH*(costCfg.stopPeople||1);
+  const RP=replFor(s.id), rpC=RP.reduce((a,r)=>a+(+r.total||0),0);
+  return {s,pj:(s.projet&&s.projet!=='–'?s.projet:'')||(s.serie&&s.serie!=='–'?s.serie:'—'),model:(MODELS[s.modelId]||{}).name||s.modelId||'—',done:calcProgress(s).pct>=100,
+    vaH,rwH,stH,nrw,rwByType,nrp:RP.length,rpC,op:vaH*R,rwC:rwH*R,stC:stH*R,nvaC:(rwH+stH)*R,tot:(vaH+rwH+stH)*R+rpC};
+}
+const eur=v=>v==null||isNaN(v)?'—':Math.round(v).toLocaleString('fr-FR')+' €';
+function renderCostPane(list){
+  costLoad();
+  const adm=typeof isTimeAdmin==='function'&&isTimeAdmin(), M=list.map(costOfSession);
+  if(!M.length) return '<div class="db-card"><p class="db-ok" style="color:var(--text2)">Aucune machine sur la période.</p></div>';
+  const T=M.reduce((a,x)=>({op:a.op+x.op,rw:a.rw+x.rwC,st:a.st+x.stC,nva:a.nva+x.nvaC,rp:a.rp+x.rpC,nrp:a.nrp+x.nrp,tot:a.tot+x.tot}),{op:0,rw:0,st:0,nva:0,rp:0,nrp:0,tot:0});
+  const byG={}; M.forEach(x=>{ const g=byG[x.model]=byG[x.model]||{model:x.model,n:0,nd:0,op:0,rw:0,st:0,nva:0,rp:0,tot:0,opDone:0,totDone:0,vaH:0}; g.n++; g.rp+=x.rpC; g.op+=x.op; g.rw+=x.rwC; g.st+=x.stC; g.nva+=x.nvaC; g.tot+=x.tot; g.vaH+=x.vaH; if(x.done){ g.nd++; g.opDone+=x.op; g.totDone+=x.tot; } });
+  const G=Object.values(byG).sort((a,b)=>b.tot-a.tot), mx=Math.max(1,...G.map(g=>g.tot));
+  let h=`<div class="cost-cfg"><span>Taux horaire chargé</span>${adm?`<input type="number" min="0" step="1" value="${costCfg.rate}" onchange="costSave('rate',this.value)"> €/h`:`<b>${costCfg.rate} €/h</b>`}
+      <span style="margin-left:14px">Personnes immobilisées par arrêt</span>${adm?`<input type="number" min="0" step="1" value="${costCfg.stopPeople}" onchange="costSave('stopPeople',this.value)">`:`<b>${costCfg.stopPeople}</b>`}
+      <small>Coût = heures × taux. Production : temps chronométrés (corrigés). NVA : reprises + arrêts de production. Remplacements : pièces et matière remplacées en plus de la gamme (quantité × prix unitaire).</small><button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openReplForm({sessionId:(liveSessions[0]||sessions[0]||{}).id})">♻ Ajouter un remplacement</button></div>
+    <div class="db-tiles">
+      <div class="db-tile" style="border-top-color:var(--accent)"><span>💶 Coût total</span><b>${eur(T.tot)}</b><small>${M.length} machine${M.length>1?'s':''} · main-d’œuvre + remplacements</small></div>
+      <div class="db-tile" style="border-top-color:#2aa99e"><span>🔧 Coût opérationnel</span><b style="color:#7fe3d8">${eur(T.op)}</b><small>temps de production</small></div>
+      <div class="db-tile" style="border-top-color:#ff8a3d"><span>🔁 Coût des reprises</span><b style="color:#ffb37a">${eur(T.rw)}</b><small>${M.reduce((a,x)=>a+x.nrw,0)} reprise(s)</small></div>
+      <div class="db-tile" style="border-top-color:#ff3b30"><span>⛔ Coût des arrêts</span><b style="color:#ff8a82">${eur(T.st)}</b><small>arrêts de production (Andon)</small></div>
+      <div class="db-tile" style="border-top-color:#9b7bff"><span>♻ Remplacements fournitures</span><b style="color:#c3b1ff">${eur(T.rp)}</b><small>${T.nrp} remplacement(s) · surcoût matière</small></div>
+      <div class="db-tile" style="border-top-color:#ff3b30"><span>⚠ Coût NVA</span><b style="color:#ff8a82">${eur(T.nva)}</b><small>${T.tot?Math.round(T.nva/T.tot*100):0} % du coût total</small></div></div>`;
+  h+=`<div class="db-card"><h3>Par gamme</h3><div style="overflow-x:auto"><table class="stk-table"><thead><tr><th>Gamme</th><th class="num">Machines</th><th class="num">Heures prod.</th><th class="num">Coût opérationnel</th><th class="num">Coût op. moyen / machine terminée</th><th class="num">Reprises</th><th class="num">Arrêts</th><th class="num">NVA total</th><th class="num">% NVA</th><th class="num">Remplacements</th><th class="num">Coût total</th><th style="min-width:160px">Répartition</th></tr></thead><tbody>
+    ${G.map(g=>`<tr><td style="white-space:nowrap"><b>${_esc(g.model)}</b></td><td class="num">${g.n}<small style="color:var(--text3)"> (${g.nd} term.)</small></td><td class="num">${fmtH(g.vaH)}</td><td class="num">${eur(g.op)}</td><td class="num"><b>${g.nd?eur(g.opDone/g.nd):'—'}</b></td><td class="num" style="color:#ffb37a">${eur(g.rw)}</td><td class="num" style="color:#ff8a82">${eur(g.st)}</td><td class="num" style="color:#ff8a82"><b>${eur(g.nva)}</b></td><td class="num">${g.tot?Math.round(g.nva/g.tot*100)+' %':'—'}</td><td class="num" style="color:${g.rp?'#c3b1ff':'var(--text3)'}">${eur(g.rp)}</td><td class="num"><b>${eur(g.tot)}</b></td>
+      <td><span class="cost-bar" style="width:${Math.max(4,g.tot/mx*100)}%"><i style="flex:${g.op||0};background:#2aa99e"></i><i style="flex:${g.rw||0};background:#ff8a3d"></i><i style="flex:${g.st||0};background:#ff3b30"></i><i style="flex:${g.rp||0};background:#9b7bff"></i></span></td></tr>`).join('')}</tbody></table></div>
+    <p class="caisse-note">Barres : <span style="color:#7fe3d8">■</span> opérationnel · <span style="color:#ffb37a">■</span> reprises · <span style="color:#ff8a82">■</span> arrêts · <span style="color:#c3b1ff">■</span> remplacements.</p></div>`;
+  const ML=M.slice().sort((a,b)=>b.nvaC-a.nvaC);
+  h+=`<div class="db-card"><h3>Par machine <small>triées par coût NVA</small></h3><div style="overflow-x:auto"><table class="stk-table"><thead><tr><th>PJ</th><th>Gamme</th><th class="num">Heures prod.</th><th class="num">Coût opérationnel</th><th class="num">Reprises</th><th class="num">Coût reprises</th><th class="num">Arrêts</th><th class="num">Coût arrêts</th><th class="num">Coût NVA</th><th class="num">Remplacements</th><th class="num">Coût total</th></tr></thead><tbody>
+    ${ML.map(x=>`<tr><td><b>${_esc(x.pj)}</b>${x.done?' <small style="color:#7fe3d8">✓</small>':''}</td><td>${_esc(x.model)}</td><td class="num">${fmtH(x.vaH)}</td><td class="num">${eur(x.op)}</td><td class="num">${x.nrw?x.nrw+' · '+fmtH(x.rwH):'—'}</td><td class="num" style="color:${x.rwC?'#ffb37a':'var(--text3)'}">${eur(x.rwC)}</td><td class="num">${x.stH?fmtH(x.stH):'—'}</td><td class="num" style="color:${x.stC?'#ff8a82':'var(--text3)'}">${eur(x.stC)}</td><td class="num" style="color:${x.nvaC?'#ff8a82':'var(--text3)'}"><b>${eur(x.nvaC)}</b></td><td class="num" style="color:${x.rpC?'#c3b1ff':'var(--text3)'}">${x.nrp?eur(x.rpC)+'<small style="display:block;color:var(--text3)">'+x.nrp+' pièce(s)</small>':'—'}</td><td class="num"><b>${eur(x.tot)}</b></td></tr>`).join('')}</tbody></table></div></div>`;
+  const RT={}; M.forEach(x=>Object.entries(x.rwByType).forEach(([k,v])=>RT[k]=(RT[k]||0)+v/3600*(costCfg.rate||0)));
+  const RL=Object.entries(RT).sort((a,b)=>b[1]-a[1]), rmx=RL.length?RL[0][1]:1;
+  const RPL=M.flatMap(x=>replFor(x.s.id).map(r=>({...r,model:x.model}))).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+  if(RPL.length){ const byR={}; RPL.forEach(r=>byR[r.reason]=(byR[r.reason]||0)+(+r.total||0)); const rr=Object.entries(byR).sort((a,b)=>b[1]-a[1]), rm=rr[0][1]||1;
+    h+=`<div class="db-card"><h3>♻ Remplacements de fournitures / matière <small>${RPL.length} · ${eur(T.rp)}</small></h3>
+      ${rr.map(([k,v])=>`<div class="sup-row"><span>${_esc(k)}</span><i><s style="width:${Math.max(2,v/rm*100)}%;background:#9b7bff"></s></i><b>${eur(v)}</b></div>`).join('')}
+      <div style="overflow-x:auto;margin-top:10px"><table class="stk-table"><thead><tr><th>Date</th><th>PJ</th><th>Gamme</th><th>Étape</th><th>Article</th><th class="num">Qté</th><th class="num">PU</th><th class="num">Total</th><th>Motif</th><th>Par</th>${adm?'<th></th>':''}</tr></thead><tbody>
+      ${RPL.map(r=>`<tr><td>${new Date(r.at).toLocaleDateString('fr-FR')}</td><td><b>${_esc(r.pj)}</b></td><td>${_esc(r.model)}</td><td>${_esc(r.stepName||'')}</td><td>${r.ref?`<small style="color:var(--text3)">${_esc(r.ref)}</small><br>`:''}${_esc(r.designation)}${r.comment?`<small style="display:block;color:var(--text3)">${_esc(r.comment)}</small>`:''}</td><td class="num">${r.qty}</td><td class="num">${(+r.unit).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})} €</td><td class="num" style="color:#c3b1ff"><b>${(+r.total).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})} €</b></td><td>${_esc(r.reason)}</td><td><small>${_esc(String(r.by||'').split('@')[0])}</small></td>${adm?`<td><button class="btn btn-outline btn-sm" onclick="replDelete('${r.id}')">🗑</button></td>`:''}</tr>`).join('')}</tbody></table></div></div>`; }
+  if(RL.length) h+=`<div class="db-card"><h3>Coût des reprises par type</h3>${RL.map(([k,v])=>`<div class="sup-row"><span>${_esc(k)}</span><i><s style="width:${Math.max(2,v/rmx*100)}%;background:#ff8a3d"></s></i><b>${eur(v)}</b></div>`).join('')}</div>`;
+  return h;
+}
 
 // ===================== TABLEAU DE BORD : FOURNISSEURS =====================
 const supKey=s=>String(s||'').trim().toUpperCase().replace(/\s+/g,' ').replace(/\b(SP\.? Z O\.?O\.?|SAS|SARL|SA|GMBH|LTD)\b\.?/g,'').trim()||'—';
