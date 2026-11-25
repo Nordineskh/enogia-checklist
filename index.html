@@ -1016,6 +1016,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
     <button class="menu-item" onclick="closeAppMenu();showAtelier(false)"><span class="menu-item-icon">🏭</span> Atelier 3D en direct</button>
     <button class="menu-item" onclick="closeAppMenu();showStock()"><span class="menu-item-icon">🗄️</span> Stock</button>
     <button class="menu-item" onclick="closeAppMenu();showCaisses()"><span class="menu-item-icon">📦</span> Caisses atelier</button>
+    <button class="menu-item inv-mi" onclick="closeAppMenu();openInventory()" style="display:none"><span class="menu-item-icon">📊</span> Inventaire des données</button>
     <button class="menu-item qa-mi" onclick="closeAppMenu();showQualite()"><span class="menu-item-icon">🔍</span> Qualité fournisseur</button>
     <div class="menu-sec">Écrans atelier</div>
     <button class="menu-item" onclick="closeAppMenu();showPlanTv()"><span class="menu-item-icon">📺</span> Planning (TV)</button>
@@ -7623,6 +7624,38 @@ async function replSave(stepName){
 async function replDelete(id){ if(!confirm('Supprimer ce remplacement ?')) return; try{ await window._fsDeleteDoc(window._fsDoc(window._db,'replacements',id)); }catch(e){} replList=replList.filter(r=>r.id!==id); renderDashboard(); }
 const replFor=sid=>replList.filter(r=>String(r.sessionId)===String(sid));
 
+// ===================== INVENTAIRE DES DONNÉES (préparation de la migration) =====================
+const INV_COLLS=['sessions','photos','stepModels','stepModelChunks','machineModelFiles','machineModelFileChunks','timeCorrections','dashboard','notifications','andon','stock','machineFlow','planning','planConfig','caisses','manquants','replacements','qaDossiers','qaPhotos','qaAccess','qaConfig','qaPlanPages'];
+function invScan(v,acc){ if(typeof v==='string'){ if(v.startsWith('data:image')){ acc.img++; acc.imgB+=v.length; } else if(v.length>20000){ acc.big++; acc.bigB+=v.length; } return; } if(Array.isArray(v)) v.forEach(x=>invScan(x,acc)); else if(v&&typeof v==='object') Object.values(v).forEach(x=>invScan(x,acc)); }
+const invMB=b=>(b/1048576).toFixed(b<1048576?2:1).replace('.',',')+' Mo';
+async function openInventory(){
+  if(!(typeof isTimeAdmin==='function'&&isTimeAdmin())){ alert('Réservé à l’administrateur.'); return; }
+  const ov=document.createElement('div'); ov.className='req-overlay'; ov.id='invOv';
+  ov.innerHTML='<div class="req-box" style="max-width:860px;max-height:92vh;overflow:auto" onclick="event.stopPropagation()" id="invBox"><h3>📊 Inventaire des données</h3><p class="req-sub" id="invProg">Lecture des collections…</p></div>';
+  ov.addEventListener('click',()=>ov.remove()); document.body.appendChild(ov);
+  const rows=[]; window._invData={};
+  for(const c of INV_COLLS){ document.getElementById('invProg').textContent='Lecture : '+c+'…';
+    try{ const s=await window._fsGetDocs(window._fsCollection(window._db,c)); const acc={c,n:s.size,bytes:0,maxB:0,img:0,imgB:0,big:0,bigB:0}; const docs={};
+      s.docs.forEach(d=>{ const v=d.data(), j=JSON.stringify(v).length; acc.bytes+=j; if(j>acc.maxB) acc.maxB=j; invScan(v,acc); docs[d.id]=v; });
+      rows.push(acc); window._invData[c]=docs; }catch(e){ rows.push({c,n:'—',err:e.code||e.message}); } }
+  window._invRows=rows; renderInventory();
+}
+function renderInventory(){ const box=document.getElementById('invBox'); if(!box) return; const R=window._invRows, ok=R.filter(r=>!r.err);
+  const T=ok.reduce((a,r)=>({n:a.n+r.n,b:a.b+r.bytes,img:a.img+r.img,imgB:a.imgB+r.imgB}),{n:0,b:0,img:0,imgB:0});
+  const mc=ok.filter(r=>/Chunks$/.test(r.c)), models={n:mc.reduce((a,r)=>a+r.n,0),bytes:mc.reduce((a,r)=>a+r.bytes,0)}, mdl={n:ok.filter(r=>r.c==='stepModels'||r.c==='machineModelFiles').reduce((a,r)=>a+r.n,0)};
+  box.innerHTML=`<h3>📊 Inventaire des données</h3><div class="req-sub">Projet Firebase <b>enogia-checklist</b> · ${new Date().toLocaleString('fr-FR')}</div>
+    <div class="db-tiles"><div class="db-tile"><span>Documents</span><b>${T.n}</b><small>${ok.length} collections lues</small></div><div class="db-tile"><span>Volume total</span><b>${invMB(T.b)}</b><small>texte JSON</small></div>
+      <div class="db-tile"><span>Images en base64</span><b>${T.img}</b><small>${invMB(T.imgB)}</small></div><div class="db-tile"><span>Modèles 3D</span><b>${mdl.n}</b><small>${models.n} morceaux · ${invMB(models.bytes)}</small></div></div>
+    <div style="overflow-x:auto"><table class="stk-table"><thead><tr><th>Collection</th><th class="num">Documents</th><th class="num">Volume</th><th class="num">Plus gros document</th><th class="num">Images (base64)</th><th>Remarque</th></tr></thead><tbody>
+    ${R.map(r=>r.err?`<tr><td><code>${r.c}</code></td><td colspan="5" style="color:#ff8a82">lecture impossible : ${_esc(String(r.err))}</td></tr>`:`<tr><td><code>${r.c}</code></td><td class="num">${r.n}</td><td class="num">${invMB(r.bytes)}</td><td class="num" style="color:${r.maxB>800000?'#ff8a82':r.maxB>500000?'#ffd27a':'inherit'}">${invMB(r.maxB)}</td><td class="num">${r.img?r.img+' · '+invMB(r.imgB):'—'}</td><td><small>${r.maxB>800000?'proche de la limite de 1 Mo par document':r.img?'→ Storage':''}</small></td></tr>`).join('')}</tbody></table></div>
+    <div class="req-actions"><button class="btn btn-outline" onclick="invCopy()">📋 Copier le rapport</button><button class="btn btn-outline" onclick="invExport(false)">⬇ Sauvegarde sans images</button><button class="btn btn-primary" onclick="invExport(true)">⬇ Sauvegarde complète (JSON)</button></div>
+    <p class="caisse-note">La sauvegarde télécharge toutes les collections dans un fichier JSON (identifiants conservés). À faire avant toute migration.</p>`; }
+function invCopy(){ const R=window._invRows; const txt='Inventaire Firestore enogia-checklist – '+new Date().toLocaleString('fr-FR')+'\n\n| Collection | Documents | Volume | Plus gros doc | Images base64 |\n|---|---|---|---|---|\n'+R.map(r=>r.err?`| ${r.c} | erreur ${r.err} | | | |`:`| ${r.c} | ${r.n} | ${invMB(r.bytes)} | ${invMB(r.maxB)} | ${r.img?r.img+' ('+invMB(r.imgB)+')':'0'} |`).join('\n');
+  navigator.clipboard.writeText(txt).then(()=>toast('Rapport copié','ok')).catch(()=>alert(txt)); }
+function invExport(withImg){ const strip=v=>typeof v==='string'&&v.startsWith('data:image')?'[image retirée]':Array.isArray(v)?v.map(strip):v&&typeof v==='object'?Object.fromEntries(Object.entries(v).map(([k,x])=>[k,strip(x)])):v;
+  const data={project:'enogia-checklist',exportedAt:new Date().toISOString(),withImages:withImg,collections:withImg?window._invData:strip(window._invData)};
+  const b=new Blob([JSON.stringify(data)],{type:'application/json'}), a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='enogia-checklist-'+(withImg?'complet':'sans-images')+'-'+todayKey()+'.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),5000); }
+
 // ===================== TABLEAU DE BORD : COÛTS =====================
 // Taux par défaut : coût moyen chargé d'un technicien en France (≈ 33 k€ brut/an × 1,42 de charges patronales ÷ 1 607 h) ≈ 30 €/h
 let costCfg={rate:30,crew:2,machineCrew:{},stepCrew:{},loaded:false};
@@ -8258,6 +8291,7 @@ let qaCfg={}, qaPageCache={};
 function qaCfgStart(){ if(window._qaCfgL||!window._fsOnSnapshot) return; window._qaCfgL=true;
   window._fsOnSnapshot(window._fsCollection(window._db,'qaConfig'),s=>{ qaCfg={}; s.docs.forEach(x=>qaCfg[x.id]=x.data()); if(document.getElementById('scQualite').classList.contains('active')) renderQualite(); },()=>{}); }
 document.addEventListener('firebaseReady',()=>setTimeout(qaCfgStart,800));
+document.addEventListener('firebaseReady',()=>setTimeout(()=>{ const b=document.querySelector('.inv-mi'); if(b&&typeof isTimeAdmin==='function'&&isTimeAdmin()) b.style.display=''; },1000));
 // Les dossiers qualité alimentent aussi le tableau de bord (onglet Fournisseurs)
 document.addEventListener('firebaseReady',()=>setTimeout(()=>{ if(!isInspector()) qaStart(); },1500));
 const qaParams=g=>({s26:6,s16:3,trays:21,trayRefs:17,lubSup:2,tolStd:'ISO 13920 class A',...((QA_TEMPLATES[g]||{}).params||{}),...((qaCfg[g]||{}).params||{})});
